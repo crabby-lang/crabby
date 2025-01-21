@@ -24,20 +24,32 @@ pub enum Token {
     For,
     #[token("in")]
     In,
+    #[token("where")]
+    Where,
     #[token("range")]
     Range,
     #[token("macro")]
     Macro,
     #[token("match")]
     Match,
+    #[token("case")]
+    Case,
     #[token("elseif")]
     Elseif,
+    #[token("pub")]
+    Public,
+    #[token("enum")]
+    Enum,
+    #[token("struct")]
+    Struct,
+
+    // Imports
     #[token("import")]
     Import,
     #[token("from")]
     From,
-    #[token("pub")]
-    Public,
+    #[token("as")]
+    As,
 
     // Literals
     #[regex(r"-?[0-9]+\.[0-9]+", |lex| lex.slice().parse::<f64>().ok())]
@@ -51,6 +63,12 @@ pub enum Token {
 
     #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*", |lex| Some(lex.slice().to_string()))]
     Identifier(String),
+   
+    #[token("true")]
+    True,
+
+    #[token("false")]
+    False,
 
     // Operators and delimiters
     #[token("+")]
@@ -79,6 +97,8 @@ pub enum Token {
     And,
     #[token("||")]
     Or,
+    #[token("->")]
+    Arrow,
     #[token("!")]
     Not,
     #[token("@")]

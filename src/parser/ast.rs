@@ -32,6 +32,16 @@ pub enum Statement {
         condition: Box<Expression>,
         body: Box<Statement>,
     },
+    Enum {
+        name: String,
+        variants: Vec<EnumVariant>,
+        where_clause: Option<Box<Expression>>,
+    },
+    Struct {
+        name: String,
+        fields: Vec<StructField>,
+        where_clause: Option<Box<Expression>>,
+    },
     Loop {
         count: Box<Expression>,
         body: Box<Statement>,
@@ -50,12 +60,29 @@ pub enum Statement {
 }
 
 #[derive(Debug, Clone)]
+pub struct EnumVariant {
+    pub name: String,
+    pub fields: Option<Vec<Expression>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct StructField {
+    pub name: String,
+    pub type_expr: Expression,
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression {
     Integer(i64),
     Float(f64),
     String(String),
     Variable(String),
     Range(Box<Expression>),
+    Boolean(bool),
+    Where {
+        expr: Box<Expression>,
+        condition: Box<Expression>,
+    },
     Binary {
         left: Box<Expression>,
         operator: BinaryOp,

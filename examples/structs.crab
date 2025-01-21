@@ -1,0 +1,6 @@
+// Crabby's 'Struct' and 'Where' statements
+
+struct Point where x >= 0 {
+    x: i64,
+    y: i64,
+}

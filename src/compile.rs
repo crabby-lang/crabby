@@ -19,6 +19,7 @@ enum Value {
     Float(f64),
     String(String),
     Lambda(Function),
+    Boolean(bool),
 }
 
 impl Value {
@@ -28,6 +29,7 @@ impl Value {
             Value::Float(f) => f.to_string(),
             Value::String(s) => s.clone(),
             Value::Lambda(_) => "<lambda>".to_string(),
+            Value::Boolean(b) => b.to_string(),
         }
     }
 }
@@ -185,7 +187,7 @@ impl Compiler {
         }
     }
 
-    fn load_module(&mut self, current_file: &Path, name: &str, source: &str) -> Result<(), CrabbyError> {
+    fn load_module(&mut self, current_file: &Path, _name: &str, source: &str) -> Result<(), CrabbyError> {
         let resolved_path = self.resolve_path(current_file, source);
 
         println!("Trying to load: {}", resolved_path.display());
@@ -290,6 +292,18 @@ impl Compiler {
                     Err(CrabbyError::CompileError("Iterator must be a range".to_string()))
                 }
             }
+            Statement::Enum { name, variants, where_clause } => {
+                // For now, just store enum definition in variables
+                let value = Value::String(format!("enum {}", name));
+                self.variables.insert(name.clone(), value);
+                Ok(None)
+            }
+            Statement::Struct { name, fields, where_clause } => {
+                // For now, just store struct definition in variables
+                let value = Value::String(format!("struct {}", name));
+                self.variables.insert(name.clone(), value);
+                Ok(None)
+            }
             Statement::Import { name, source } => {
                 if let Some(source_path) = source {
                     // Create a new compiler instance for the imported module
@@ -365,10 +379,6 @@ impl Compiler {
         }
     }
 
-    // fn compile_statement_original(&mut self, statement: &Statement) -> Result<Option<Value>, CrabbyError> {
-    //    unimplemented!("Original statement compilation")
-    // }
-
     fn compile_expression(&mut self, expression: &Expression) -> Result<Value, CrabbyError> {
         match expression {
             Expression::Integer(n) => Ok(Value::Integer(*n)),
@@ -378,6 +388,15 @@ impl Compiler {
                 self.variables.get(name).cloned().ok_or_else(|| {
                     CrabbyError::CompileError(format!("Undefined variable: {}", name))
                 })
+            },
+            Expression::Boolean(value) => Ok(Value::Integer(if *value { 1 } else { 0 })),
+            Expression::Where { expr, condition } => {
+                // For now, evaluate the condition and return the expression if true
+                let cond_value = self.compile_expression(condition)?;
+                match cond_value {
+                    Value::Integer(0) => Ok(Value::Integer(0)),
+                    _ => self.compile_expression(expr),
+                }
             },
             Expression::Range(count) => {
                 let count_value = self.compile_expression(count)?;

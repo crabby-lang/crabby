@@ -3,7 +3,10 @@
 let x = 42
 let y = 3.14
 let message = "Hello, Crabby!"
+let h = "hello"
+let w = " world"
 
 print(x)
 print(y)
 print(message)
+print(h + w)

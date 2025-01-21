@@ -35,12 +35,14 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Return(Box::new(expr)))
             },
+            Token::Enum => self.parse_enum_statement(),
+            Token::Where => self.parse_where_statement(),
             Token::If => self.parse_if_statement(),
             Token::While => self.parse_while_statement(),
             _ => {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Expression(expr))
-            }
+            },
         }
     }
 
@@ -199,6 +201,14 @@ impl<'a> Parser<'a> {
                     Ok(Expression::Variable(name))
                 }
             }
+            Token::True => {
+                self.advance();
+                Ok(Expression::Boolean(true))
+            }
+            Token::False => {
+                self.advance();
+                Ok(Expression::Boolean(false))
+            }
             Token::Range => {
                 self.advance(); // consume 'range'
                 self.consume(&Token::LParen, "Expected '(' after 'range'")?;
@@ -267,9 +277,9 @@ impl<'a> Parser<'a> {
 
     fn parse_loop_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'loop'
-        
+
         let count = self.parse_expression()?;
-        
+
         self.consume(&Token::Colon, "Expected ':' after loop count")?;
         let body = self.parse_block()?;
 
@@ -281,7 +291,7 @@ impl<'a> Parser<'a> {
 
     fn parse_for_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'for'
-        
+
         let variable = if let Token::Identifier(name) = &self.peek().token {
             name.clone()
         } else {
@@ -290,9 +300,9 @@ impl<'a> Parser<'a> {
         self.advance();
 
         self.consume(&Token::In, "Expected 'in' after variable name")?;
-        
+
         let iterator = self.parse_expression()?;
-        
+
         self.consume(&Token::Colon, "Expected ':' after iterator expression")?;
         let body = self.parse_block()?;
 
@@ -303,9 +313,131 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_enum_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'enum'
+        
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected enum name"));
+        };
+        self.advance();
+
+        let mut where_clause = None;
+        if matches!(self.peek().token, Token::Where) {
+            self.advance(); // consume 'where'
+            where_clause = Some(Box::new(self.parse_expression()?));
+        }
+
+        self.consume(&Token::LBrace, "Expected '{' after enum name")?;
+        
+        let mut variants = Vec::new();
+        while !matches!(self.peek().token, Token::RBrace) {
+            let variant_name = if let Token::Identifier(name) = &self.peek().token {
+                name.clone()
+            } else {
+                return Err(self.error("Expected variant name"));
+            };
+            self.advance();
+
+            let fields = if matches!(self.peek().token, Token::LParen) {
+                self.advance(); // consume '('
+                let mut fields = Vec::new();
+                
+                while !matches!(self.peek().token, Token::RParen) {
+                    fields.push(self.parse_expression()?);
+                    if matches!(self.peek().token, Token::Comma) {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                
+                self.consume(&Token::RParen, "Expected ')' after variant fields")?;
+                Some(fields)
+            } else {
+                None
+            };
+
+            variants.push(EnumVariant { name: variant_name, fields });
+
+            if matches!(self.peek().token, Token::Comma) {
+                self.advance();
+            }
+        }
+
+        self.consume(&Token::RBrace, "Expected '}' after enum variants")?;
+
+        Ok(Statement::Enum {
+            name,
+            variants,
+            where_clause,
+        })
+    }
+
+    fn parse_struct_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'struct'
+        
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected struct name"));
+        };
+        self.advance();
+
+        let mut where_clause = None;
+        if matches!(self.peek().token, Token::Where) {
+            self.advance(); // consume 'where'
+            where_clause = Some(Box::new(self.parse_expression()?));
+        }
+
+        self.consume(&Token::LBrace, "Expected '{' after struct name")?;
+        
+        let mut fields = Vec::new();
+        while !matches!(self.peek().token, Token::RBrace) {
+            let field_name = if let Token::Identifier(name) = &self.peek().token {
+                name.clone()
+            } else {
+                return Err(self.error("Expected field name"));
+            };
+            self.advance();
+
+            self.consume(&Token::Colon, "Expected ':' after field name")?;
+            let type_expr = self.parse_expression()?;
+
+            fields.push(StructField {
+                name: field_name,
+                type_expr,
+            });
+
+            if matches!(self.peek().token, Token::Comma) {
+                self.advance();
+            }
+        }
+
+        self.consume(&Token::RBrace, "Expected '}' after struct fields")?;
+
+        Ok(Statement::Struct {
+            name,
+            fields,
+            where_clause,
+        })
+    }
+
+    fn parse_where_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'where'
+        let condition = self.parse_expression()?;
+        let body = self.parse_block()?;
+
+        Ok(Statement::Expression(Expression::Where {
+            expr: Box::new(Expression::Variable("_".to_string())), // placeholder for now
+            condition: Box::new(condition),
+        }))
+    }
+
     fn parse_import_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'import'
-    
+
         let name = if let Token::Identifier(name) = &self.peek().token {
             name.clone()
         } else {
