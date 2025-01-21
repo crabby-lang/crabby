@@ -104,7 +104,8 @@ ifelse.crab:
 ```js
 // if-else statements
 
-let true = 1
+let x = true
+let y = false
 
 if true: {
     print("True!")
