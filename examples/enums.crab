@@ -1,0 +1,7 @@
+// Crabby's 'Enum' Statements
+
+enum Color where size > 0 {
+    Red,
+    Green,
+    RGB(i64, i64, i64),
+}
