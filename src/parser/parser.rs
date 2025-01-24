@@ -39,6 +39,8 @@ impl<'a> Parser<'a> {
             Token::Where => self.parse_where_statement(),
             Token::If => self.parse_if_statement(),
             Token::While => self.parse_while_statement(),
+            Token::Async => self.parse_async_statement(),
+            Token::Await => self.parse_await_statement(),
             _ => {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Expression(expr))
@@ -86,12 +88,90 @@ impl<'a> Parser<'a> {
         })
     }
 
-    // fn parse_match_statement() {
-    //    // ...
-    // }
+    fn parse_match_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'match'
+        let value = self.parse_expression()?;
+        self.consume(&Token::LBrace, "Expected '{' after match expression")?;
 
-    fn parse_macro_statement() {
-        // ...
+        let mut arms = Vec::new();
+        while !matches!(self.peek().token, Token::RBrace) {
+            // Checking for the 'case' keyword
+            if !matches!(self.peek().token, Token::Case) {
+                return Err(CrabbyError::MissingCaseKeyword(
+                    "Expected 'case' keyword in match arm".to_string(),
+                ));
+            }
+            self.advance(); // consume 'case'
+
+            let pattern = self.parse_expression()?;
+            self.consume(&Token::Arrow, "Expected '=>' after match pattern")?;
+            let body = self.parse_expression()?;
+            arms.push((pattern, body));
+
+            if matches!(self.peek().token, Token::Comma) {
+                self.advance();
+            }
+        }
+
+        self.consume(&Token::RBrace, "Expected '}' after match arms")?;
+
+        Ok(Statement::Match {
+            value: Box::new(value),
+            arms,
+        })
+    }
+
+    fn parse_macro_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'macro'
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected macro name"));
+        };
+        self.advance();
+
+        self.consume(&Token::LParen, "Expected '(' after macro name")?;
+        let mut params = Vec::new();
+        while !matches!(self.peek().token, Token::RParen) {
+            if let Token::Identifier(param) = &self.peek().token {
+                params.push(param.clone());
+                self.advance();
+                if matches!(self.peek().token, Token::Comma) {
+                    self.advance();
+                }
+            } else {
+                return Err(self.error("Expected parameter name"));
+            }
+        }
+        self.consume(&Token::RParen, "Expected ')'")?;
+        self.consume(&Token::Colon, "Expected ':' after parameters")?;
+        
+        let body = self.parse_block()?;
+        Ok(Statement::Macro { name, params, body: Box::new(body) })
+    }
+
+    fn parse_async_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'async'
+        self.consume(&Token::LBrace, "Expected '{' after async")?;
+        let body = self.parse_block()?;
+        Ok(Statement::Async(Box::new(body)))
+    }
+
+    fn parse_await_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'await'
+        let expr = self.parse_expression()?;
+        Ok(Statement::Await(Box::new(expr)))
+    }
+
+    fn parse_and_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'and'
+        let left = self.parse_expression()?;
+        self.consume(&Token::Comma, "Expected ',' after first expression")?;
+        let right = self.parse_expression()?;
+        Ok(Statement::And {
+            left: Box::new(left),
+            right: Box::new(right),
+        })
     }
 
     fn parse_if_statement(&mut self) -> Result<Statement, CrabbyError> {
@@ -315,7 +395,7 @@ impl<'a> Parser<'a> {
 
     fn parse_enum_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'enum'
-        
+
         let name = if let Token::Identifier(name) = &self.peek().token {
             name.clone()
         } else {
@@ -330,7 +410,7 @@ impl<'a> Parser<'a> {
         }
 
         self.consume(&Token::LBrace, "Expected '{' after enum name")?;
-        
+
         let mut variants = Vec::new();
         while !matches!(self.peek().token, Token::RBrace) {
             let variant_name = if let Token::Identifier(name) = &self.peek().token {
@@ -343,7 +423,7 @@ impl<'a> Parser<'a> {
             let fields = if matches!(self.peek().token, Token::LParen) {
                 self.advance(); // consume '('
                 let mut fields = Vec::new();
-                
+
                 while !matches!(self.peek().token, Token::RParen) {
                     fields.push(self.parse_expression()?);
                     if matches!(self.peek().token, Token::Comma) {
@@ -352,7 +432,7 @@ impl<'a> Parser<'a> {
                         break;
                     }
                 }
-                
+
                 self.consume(&Token::RParen, "Expected ')' after variant fields")?;
                 Some(fields)
             } else {
@@ -377,7 +457,7 @@ impl<'a> Parser<'a> {
 
     fn parse_struct_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'struct'
-        
+
         let name = if let Token::Identifier(name) = &self.peek().token {
             name.clone()
         } else {
@@ -392,7 +472,7 @@ impl<'a> Parser<'a> {
         }
 
         self.consume(&Token::LBrace, "Expected '{' after struct name")?;
-        
+
         let mut fields = Vec::new();
         while !matches!(self.peek().token, Token::RBrace) {
             let field_name = if let Token::Identifier(name) = &self.peek().token {

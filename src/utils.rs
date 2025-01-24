@@ -35,6 +35,15 @@ pub enum CrabbyError {
         message: String,
     },
 
+    #[error("Invalid match pattern: {0}")]
+    InvalidMatchPattern(String),
+
+    #[error("Missing match arm: {0}")]
+    MissingMatchArm(String),
+
+    #[error("Missing case in match: {0}")]
+    MissingCaseKeyword(String),
+
     #[error("Compilation error: {0}")]
     CompileError(String),
 }

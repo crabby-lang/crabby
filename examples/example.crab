@@ -6,7 +6,12 @@ let message = "Hello, Crabby!"
 let h = "hello"
 let w = " world"
 
+def foo(): {
+    print("bar")
+}
+
 print(x)
 print(y)
 print(message)
 print(h + w)
+foo()

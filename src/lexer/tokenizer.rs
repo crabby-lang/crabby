@@ -22,6 +22,10 @@ pub enum Token {
     Loop,
     #[token("for")]
     For,
+    #[token("as")]
+    As,
+    #[token("and")]
+    And,
     #[token("in")]
     In,
     #[token("where")]
@@ -42,14 +46,16 @@ pub enum Token {
     Enum,
     #[token("struct")]
     Struct,
+    #[token("async")]
+    Async,
+    #[token("await")]
+    Await,
 
     // Imports
     #[token("import")]
     Import,
     #[token("from")]
     From,
-    #[token("as")]
-    As,
 
     // Literals
     #[regex(r"-?[0-9]+\.[0-9]+", |lex| lex.slice().parse::<f64>().ok())]
@@ -63,7 +69,7 @@ pub enum Token {
 
     #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*", |lex| Some(lex.slice().to_string()))]
     Identifier(String),
-   
+
     #[token("true")]
     True,
 
@@ -83,6 +89,8 @@ pub enum Token {
     Equals,
     #[token("$")]
     DollarSign,
+    #[token("?")]
+    QuestionMark,
     #[token("!=")]
     NotEquals,
     #[token("<")]
@@ -93,12 +101,14 @@ pub enum Token {
     LessThanOrEqual,
     #[token(">=")]
     GreaterThanOrEqual,
-    #[token("&&")]
-    And,
+    // #[token("&&")]
+    //And,
     #[token("||")]
     Or,
-    #[token("->")]
+    #[token("=>")]
     Arrow,
+    #[token("->")]
+    CoolerArrow,
     #[token("!")]
     Not,
     #[token("@")]

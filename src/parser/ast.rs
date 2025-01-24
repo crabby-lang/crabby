@@ -28,6 +28,18 @@ pub enum Statement {
         then_branch: Box<Statement>,
         else_branch: Option<Box<Statement>>,
     },
+    Async {
+        condition: Box<Expression>,
+        body: Box<Statement>,
+    },
+    Await {
+        condition: Box<Expression>,
+        body: Box<Statement>,
+    },
+    And {
+        left: String,
+        right: String,
+    },
     While {
         condition: Box<Expression>,
         body: Box<Statement>,
@@ -46,6 +58,10 @@ pub enum Statement {
         count: Box<Expression>,
         body: Box<Statement>,
     },
+    Match {
+        value: Box<Expression>,
+        arms: Vec<MatchArm>,
+    },
     ForIn {
         variable: String,
         iterator: Box<Expression>,
@@ -57,6 +73,12 @@ pub enum Statement {
     },
     Block(Vec<Statement>),
     Expression(Expression),
+}
+
+#[derive(Debug, Clone)]
+pub struct MatchArm {
+    pub pattern: Expression,
+    pub body: Expression,
 }
 
 #[derive(Debug, Clone)]
@@ -79,6 +101,7 @@ pub enum Expression {
     Variable(String),
     Range(Box<Expression>),
     Boolean(bool),
+    Pattern(PatternKind)
     Where {
         expr: Box<Expression>,
         condition: Box<Expression>,
@@ -99,6 +122,13 @@ pub enum Expression {
 }
 
 #[derive(Debug, Clone)]
+pub enum PatternKind {
+    Literal(Expression),
+    Variable(String),
+    Wildcard,
+}
+
+#[derive(Debug, Clone)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -106,4 +136,5 @@ pub enum BinaryOp {
     Div,
     Eq,
     Dot,
+    MatchOp,
 }
