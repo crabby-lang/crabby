@@ -1,9 +1,8 @@
 # Crabby: The Modern Programming Language Written in Rust
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-![StarloSearch](https://avatars.githubusercontent.com/u/139462470?s=48&v=4)
+![Crabby](https://avatars.githubusercontent.com/u/139462470?s=48&v=4)
+
+![GitHub contributors](https://img.shields.io/github/contributors/crabby-lang/crabby?style=for-the-badge&color=blue)
 
 ![GitHub License](https://img.shields.io/github/license/Kazooki123/crabby?style=for-the-badge&logo=gnu&logoColor=%23A42E2B)
 
@@ -117,7 +116,7 @@ if true: {
 
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly ahh message :3
 
-## Package Manager when?
+## Package Manager📦
 
 The closest package manager `Crabby` can have is [crab](https://github.com/crabby-lang/crab/)🦀, it functions likely the same as Rust `cargo` but for **Crabby**
 
