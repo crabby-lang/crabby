@@ -119,9 +119,7 @@ Note: **Crabby** supports commenting, use `//` to comment out a code or leave a 
 
 ## Package Manager when?
 
-It's in development and I'm still planning how to use in it.
-**Crabby** doesn't support things like `import` or `export` for now
-but well do in the future 😄
+The closest package manager `Crabby` can have is [crab](https://github.com/crabby-lang/crab/)🦀, it functions likely the same as Rust `cargo` but for **Crabby**
 
 ## Contributing
 
