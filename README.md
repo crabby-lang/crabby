@@ -10,8 +10,8 @@
 
 ![Logo](https://github.com/Kazooki123/crabby/blob/main/crabbylogo.jpg)
 
-Crabby is a modern High-level, multi-paradigm, functional programming language.
-With a **Pythonic** style syntax, it is designed to be readable, ease-to-use for beginners, and powerful enough for advanced users.
+Crabby is a **Modern High-level**, **Multi-paradigm**, and a *functional* programming language.
+With a **Pythonic** style syntax, it is designed to be _readable_, _ease-to-use_ for beginners, and _powerful_ enough for advanced users.
 
 ## What Change?
 
@@ -51,6 +51,8 @@ cargo run examples/example.crab
 ```
 
 ## Syntax
+
+In **Crabby🦀**, its' syntax mostly resembles **Python** in general BUT there are `hints` of Functional Programming syntax since Crabby aims to be versitile, functional and powerful to use not just for advanced programmers but for beginners also!
 
 It's default file format is a `.crab` or `.cb`
 But for now it's `.crab`
