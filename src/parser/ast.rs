@@ -101,7 +101,7 @@ pub enum Expression {
     Variable(String),
     Range(Box<Expression>),
     Boolean(bool),
-    Pattern(PatternKind)
+    Pattern(Box<PatternKind>),
     Where {
         expr: Box<Expression>,
         condition: Box<Expression>,
@@ -123,7 +123,7 @@ pub enum Expression {
 
 #[derive(Debug, Clone)]
 pub enum PatternKind {
-    Literal(Expression),
+    Literal(Box<Expression>),
     Variable(String),
     Wildcard,
 }

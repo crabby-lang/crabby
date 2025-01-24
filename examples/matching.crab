@@ -1,0 +1,6 @@
+// Crabby's match & case statements
+
+match value: {
+    case 1 => "one",
+    case _ => "default",
+}

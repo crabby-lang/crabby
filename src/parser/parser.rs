@@ -177,7 +177,7 @@ impl<'a> Parser<'a> {
     fn parse_if_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'if'
         let condition = self.parse_expression()?;
-        self.consume(&Token::Colon, "Expected ':' after if condition")?;
+        // self.consume(&Token::Colon, "Expected ':' after if condition")?;
 
         let then_branch = self.parse_block()?;
 
