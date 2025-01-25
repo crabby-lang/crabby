@@ -4,10 +4,10 @@
 // Option 1 : Loop
 
 loop 10: {
-    print("Hello, Crabby!") // Prints it 5 times
+    print("Hello, Crabby!") // Prints it 10 times
 }
 
-// Option 2: for i in range()
+// Option 2: for loops
 
 let x = range(10)
 
@@ -15,8 +15,8 @@ for i in x: {
     print(i) // Prints it 10 times
 }
 
-let x1 = 10
+let y = 10
 
-for i in range(x1): {
+for i in range(y): {
     print(i)
 }

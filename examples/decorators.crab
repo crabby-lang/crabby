@@ -1,0 +1,11 @@
+// Crabby Decorators -  A way of Metaprogramming
+// Just like Macros but it takes a different approach
+
+def sprinkles(): {
+    print("Adding Sprinkles!❄️")
+}
+
+@sprinkles
+def ice_cream(): {
+    print("Here is your ice cream! 🍨")
+}

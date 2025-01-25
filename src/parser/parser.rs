@@ -56,6 +56,8 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Return(Box::new(expr)))
             },
+            Token::Match => self.parse_match_statement(),
+            Token::And => self.parse_and_statement(),
             Token::Enum => self.parse_enum_statement(),
             Token::Where => self.parse_where_statement(),
             Token::If => self.parse_if_statement(),

@@ -11,14 +11,16 @@
 ![Logo](https://github.com/Kazooki123/crabby/blob/main/crabbylogo.jpg)
 
 Crabby is a **Modern High-level**, **Multi-paradigm**, and a *functional* programming language.
-With a **Pythonic** style syntax, it is designed to be _readable_, _ease-to-use_ for beginners, and _powerful_ enough for advanced users.
+It is designed to be *readable*, *ease-to-use* for beginners, and *powerful* enough for advanced users.
+
+It syntactically resembles **Python**, But it's a Functional programming language by default.
 
 ## What Change?
 
 As you may notice, Crabby has been through phases of rewrite, and if you're thinking that
 **Crabby** is abounded, well... You're Wrong!
 
-Crabby has been officially and well be written in **Rust** due to it's memory safety and type checkings compared to *C*.
+Crabby has been officially and well be written in **Rust** due to it's memory safety and type checking compared to *C*.
 
 Here's what changed:
 
@@ -52,7 +54,7 @@ cargo run examples/example.crab
 
 ## Syntax
 
-In **Crabby🦀**, its' syntax mostly resembles **Python** in general BUT there are `hints` of Functional Programming syntax since Crabby aims to be versitile, functional and powerful to use not just for advanced programmers but for beginners also!
+In **Crabby🦀**, its' syntax mostly resembles **Python** in general BUT there are `hints` of Functional Programming syntax since Crabby aims to be versatile, functional and powerful to use not just for advanced programmers but for beginners also!
 
 It's default file format is a `.crab` or `.cb`
 But for now it's `.crab`
@@ -117,6 +119,8 @@ if x {
 ```
 
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly ahh message :3
+
+Speaking of comments, **Crabby** also support `Docstrings`!
 
 ## Package Manager📦
 
