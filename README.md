@@ -107,7 +107,7 @@ ifelse.crab:
 let x = true
 let y = false
 
-if true: {
+if x {
     print("True!")
 } else {
     print("Nope!")

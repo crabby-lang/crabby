@@ -23,6 +23,27 @@ impl<'a> Parser<'a> {
         Ok(program)
     }
 
+    fn parse_params(&mut self) -> Result<Vec<String>, CrabbyError> {
+        self.consume(&Token::LParen, "Expected '(' after function name")?;
+        let mut params = Vec::new();
+        
+        while !matches!(self.peek().token, Token::RParen) {
+            if let Token::Identifier(name) = &self.peek().token {
+                params.push(name.clone());
+                self.advance();
+                
+                if matches!(self.peek().token, Token::Comma) {
+                    self.advance();
+                }
+            } else {
+                return Err(self.error("Expected parameter name"));
+            }
+        }
+        
+        self.consume(&Token::RParen, "Expected ')' after parameters")?;
+        Ok(params)
+    }
+
     fn parse_statement(&mut self) -> Result<Statement, CrabbyError> {
         match &self.peek().token {
             Token::Loop => self.parse_loop_statement(),
@@ -95,7 +116,6 @@ impl<'a> Parser<'a> {
 
         let mut arms = Vec::new();
         while !matches!(self.peek().token, Token::RBrace) {
-            // Checking for the 'case' keyword
             if !matches!(self.peek().token, Token::Case) {
                 return Err(CrabbyError::MissingCaseKeyword(
                     "Expected 'case' keyword in match arm".to_string(),
@@ -106,7 +126,7 @@ impl<'a> Parser<'a> {
             let pattern = self.parse_expression()?;
             self.consume(&Token::Arrow, "Expected '=>' after match pattern")?;
             let body = self.parse_expression()?;
-            arms.push((pattern, body));
+            arms.push(MatchArm { pattern, body });
 
             if matches!(self.peek().token, Token::Comma) {
                 self.advance();
@@ -130,47 +150,50 @@ impl<'a> Parser<'a> {
         };
         self.advance();
 
-        self.consume(&Token::LParen, "Expected '(' after macro name")?;
-        let mut params = Vec::new();
-        while !matches!(self.peek().token, Token::RParen) {
-            if let Token::Identifier(param) = &self.peek().token {
-                params.push(param.clone());
-                self.advance();
-                if matches!(self.peek().token, Token::Comma) {
-                    self.advance();
-                }
-            } else {
-                return Err(self.error("Expected parameter name"));
-            }
-        }
-        self.consume(&Token::RParen, "Expected ')'")?;
-        self.consume(&Token::Colon, "Expected ':' after parameters")?;
-        
+        let params = self.parse_params()?;
         let body = self.parse_block()?;
-        Ok(Statement::Macro { name, params, body: Box::new(body) })
+
+        Ok(Statement::Macro {
+            name,
+            params: params.join(","), // Join params into single string
+            body: Box::new(Expression::Lambda {
+                params: params,
+                body: Box::new(body),
+            }),
+        })
     }
 
     fn parse_async_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'async'
-        self.consume(&Token::LBrace, "Expected '{' after async")?;
+        let condition = self.parse_expression()?;
         let body = self.parse_block()?;
-        Ok(Statement::Async(Box::new(body)))
+
+        Ok(Statement::Async {
+            condition: Box::new(condition),
+            body: Box::new(body),
+        })
     }
 
-    fn parse_await_statement(&mut self) -> Result<Statement, CrabbyError> {
+    fn parse_await_statement(&mut self) -> Result<Statement,    CrabbyError> {
         self.advance(); // consume 'await'
-        let expr = self.parse_expression()?;
-        Ok(Statement::Await(Box::new(expr)))
+        let condition = self.parse_expression()?;
+        let body = self.parse_block()?;
+
+        Ok(Statement::Await {
+            condition: Box::new(condition),
+            body: Box::new(body),
+        })
     }
 
     fn parse_and_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'and'
         let left = self.parse_expression()?;
-        self.consume(&Token::Comma, "Expected ',' after first expression")?;
+        self.consume(&Token::And, "Expected 'and' operator")?;
         let right = self.parse_expression()?;
+    
         Ok(Statement::And {
-            left: Box::new(left),
-            right: Box::new(right),
+            left: left.to_string(),
+            right: right.to_string(),
         })
     }
 
@@ -236,10 +259,11 @@ impl<'a> Parser<'a> {
     fn parse_multiplication(&mut self) -> Result<Expression, CrabbyError> {
         let mut expr = self.parse_primary()?;
 
-        while matches!(self.peek().token, Token::Star | Token::Slash) {
+        while matches!(self.peek().token, Token::Star | Token::Slash | Token::Arrow) {
             let operator = match self.peek().token {
                 Token::Star => BinaryOp::Mul,
                 Token::Slash => BinaryOp::Div,
+                Token::Arrow => BinaryOp::MatchOp,
                 _ => unreachable!(),
             };
             self.advance();
@@ -507,11 +531,13 @@ impl<'a> Parser<'a> {
     fn parse_where_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'where'
         let condition = self.parse_expression()?;
+        let expr = self.parse_expression()?;
         let body = self.parse_block()?;
 
         Ok(Statement::Expression(Expression::Where {
-            expr: Box::new(Expression::Variable("_".to_string())), // placeholder for now
+            expr: Box::new(expr),
             condition: Box::new(condition),
+            body: Box::new(body),
         }))
     }
 

@@ -3,7 +3,7 @@
 let x = true
 let y = false
 
-if x: {
+if x {
     print("True!")
 } else {
     print("False!")

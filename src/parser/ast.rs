@@ -11,7 +11,7 @@ impl Program {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     FunctionDef {
         name: String,
@@ -62,6 +62,11 @@ pub enum Statement {
         value: Box<Expression>,
         arms: Vec<MatchArm>,
     },
+    Macro {
+        name: String,
+        params: String,
+        body: Box<Expression>,
+    },
     ForIn {
         variable: String,
         iterator: Box<Expression>,
@@ -75,25 +80,25 @@ pub enum Statement {
     Expression(Expression),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MatchArm {
     pub pattern: Expression,
     pub body: Expression,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct EnumVariant {
     pub name: String,
     pub fields: Option<Vec<Expression>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct StructField {
     pub name: String,
     pub type_expr: Expression,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
     Integer(i64),
     Float(f64),
@@ -105,6 +110,7 @@ pub enum Expression {
     Where {
         expr: Box<Expression>,
         condition: Box<Expression>,
+        body: Box<Statement>, 
     },
     Binary {
         left: Box<Expression>,
@@ -121,14 +127,14 @@ pub enum Expression {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PatternKind {
     Literal(Box<Expression>),
     Variable(String),
     Wildcard,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BinaryOp {
     Add,
     Sub,

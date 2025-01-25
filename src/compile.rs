@@ -13,7 +13,7 @@ pub struct Compiler {
     current_file: Option<PathBuf>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 enum Value {
     Integer(i64),
     Float(f64),
@@ -32,9 +32,29 @@ impl Value {
             Value::Boolean(b) => b.to_string(),
         }
     }
+
+    fn matches(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Value::Integer(a), Value::Integer(b)) => a == b,
+            (Value::Float(a), Value::Float(b)) => a == b,
+            (Value::String(a), Value::String(b)) => a == b,
+            (Value::Boolean(a), Value::Boolean(b)) => a == b,
+            _ => false,
+        }
+    }
+
+    fn equals(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Value::Integer(a), Value::Integer(b)) => a == b,
+            (Value::Float(a), Value::Float(b)) => a == b,
+            (Value::String(a), Value::String(b)) => a == b,
+            (Value::Boolean(a), Value::Boolean(b)) => a == b,
+            _ => false,
+        }
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 struct Function {
     params: Vec<String>,
     body: Box<Statement>,
@@ -191,12 +211,12 @@ impl Compiler {
         let resolved_path = self.resolve_path(current_file, source);
 
         println!("Trying to load: {}", resolved_path.display());
-        
+
         // Try to read the source file
         let source_code = fs::read_to_string(&resolved_path).map_err(|e| {
             CrabbyError::CompileError(format!(
-                "Failed to read module '{}': {} (resolved path: {})", 
-                source, 
+                "Failed to read module '{}': {} (resolved path: {})",
+                source,
                 e,
                 resolved_path.display()
             ))
@@ -209,13 +229,45 @@ impl Compiler {
         // Creates a new compiler instance for the module
         let mut module_compiler = Compiler::new(Some(resolved_path));
         module_compiler.compile(&ast)?;
-    
+
         // Only exposes public functions
         for (name, value) in module_compiler.module.public_items {
             self.variables.insert(name, value);
         }
 
         Ok(())
+    }
+
+    fn compile_match(&mut self, value: &Expression, arms: &[MatchArm]) -> Result<Option<Value>, CrabbyError> {
+        let match_value = self.compile_expression(value)?;
+
+        for arm in arms {
+            if self.pattern_matches(&match_value, &arm.pattern)? {
+                return Ok(Some(self.compile_expression(&arm.body)?));
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn pattern_matches(&mut self, value: &Value, pattern: &Expression) -> Result<bool, CrabbyError> {
+        match pattern {
+            Expression::Pattern(pattern_kind) => match &**pattern_kind {
+                PatternKind::Literal(expr) => Ok(value == &self.compile_expression(expr)?),
+                PatternKind::Variable(_) => Ok(true),
+                PatternKind::Wildcard => Ok(true),
+            },
+            _ => Ok(false),
+        }
+    }
+
+    fn compile_where(&mut self, expr: &Expression, condition: &Expression, body: &Statement) -> Result<Value, CrabbyError> {
+        let cond_value = self.compile_expression(condition)?;
+        if let Value::Boolean(true) = cond_value {
+            self.compile_expression(expr)
+        } else {
+            Ok(Value::Boolean(false))
+        }
     }
 
     fn compile_statement(&mut self, statement: &Statement) -> Result<Option<Value>, CrabbyError> {
@@ -243,6 +295,26 @@ impl Compiler {
 
                 Ok(None)
             }
+            Statement::Async { condition, body } => {
+                let _condition = self.compile_expression(condition)?;
+                self.compile_statement(body)
+            }
+            Statement::Await { condition, body } => {
+                let _condition = self.compile_expression(condition)?;
+                self.compile_statement(body)
+            }
+            Statement::And { left, right } => {
+                let left_val = Value::String(left.clone());
+                let right_val = Value::String(right.clone());
+                Ok(Some(Value::Boolean(left_val == right_val)))
+            }
+            Statement::Macro { name, params, body } => {
+                self.variables.insert(name.clone(), Value::Lambda(Function {
+                    params: vec![params.clone()],
+                    body: Box::new(Statement::Expression(*(*body).clone())),
+                }));
+                Ok(None)
+            }
             Statement::Let { name, value } => {
                 let is_public = name.starts_with("pub ");
                 let var_name = if is_public {
@@ -265,6 +337,7 @@ impl Compiler {
 
                 Ok(None)
             }
+            Statement::Match { value, arms } => self.compile_match(value, arms),
             Statement::Return(expr) => {
                 let value = self.compile_expression(expr)?;
                 Ok(Some(value))
@@ -390,12 +463,14 @@ impl Compiler {
                 })
             },
             Expression::Boolean(value) => Ok(Value::Integer(if *value { 1 } else { 0 })),
-            Expression::Where { expr, condition } => {
-                // For now, evaluate the condition and return the expression if true
+            Expression::Where { expr, condition, body } => {
                 let cond_value = self.compile_expression(condition)?;
                 match cond_value {
-                    Value::Integer(0) => Ok(Value::Integer(0)),
-                    _ => self.compile_expression(expr),
+                    Value::Boolean(true) => {
+                        self.compile_statement(body)?;
+                        self.compile_expression(expr)
+                    },
+                    _ => Ok(Value::Boolean(false)),
                 }
             },
             Expression::Range(count) => {
@@ -405,6 +480,13 @@ impl Compiler {
                 } else {
                     Err(CrabbyError::CompileError("Range argument must be an integer".to_string()))
                 }
+            },
+            Expression::Pattern(pattern_kind) => match &**pattern_kind {
+                PatternKind::Literal(expr) => self.compile_expression(expr),
+                PatternKind::Variable(name) => Ok(self.variables.get(name)
+                    .ok_or_else(|| CrabbyError::CompileError(format!("Undefined variable: {}", name)))?
+                    .clone()),
+                PatternKind::Wildcard => Ok(Value::Boolean(true)),
             },
             Expression::Call { function, arguments } => {
                 if function == "print" {
@@ -486,6 +568,7 @@ impl Compiler {
                                 Ok(Value::Float(l / r))
                             }
                             BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
+                            BinaryOp::MatchOp => Ok(Value::Boolean((*left).matches(&*right))),
                             BinaryOp::Dot => Err(CrabbyError::CompileError("Cannot use dot operator with numbers".to_string())),
                         }
                     }
@@ -503,6 +586,7 @@ impl Compiler {
                                 Ok(Value::Float(l / r))
                             }
                             BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
+                            BinaryOp::MatchOp => Err(CrabbyError::CompileError("Cannot use match operator with numbers".to_string())),
                             BinaryOp::Dot => Err(CrabbyError::CompileError("Cannot use dot operator with numbers".to_string())),
                         }
                     }
