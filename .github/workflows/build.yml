@@ -16,6 +16,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install Rust nightly
+      run: rustup toolchain install nightly
+    - name: Add nightly to path
+      run: rustup default nightly
+    - name: Update Rust and Cargo
+      run: rustup update
     - name: Build
       run: cargo build --verbose
     - name: Run tests
