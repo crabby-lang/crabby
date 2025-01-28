@@ -1,22 +1,22 @@
 // crabby can do math!!
 
 // addition
-let x1 = 1
-let y1 = 2
+let x = 1
+let y = 2
 
 // multiplication
-let x2 = 4
-let y2 = 7
+let a = 4
+let b = 7
 
 // subtraction
-let x3 = 10
-let y3 = 3
+let c = 10
+let s = 3
 
 // division
-let x4 = 10
-let y4 = 3
+let d = 10
+let z = 3
 
-print(x1 + y1)
-print(x2 * y2)
-print(x3 - y3)
-print(x4 / y4) // For some reason it can't do things like 3.33333 or something like that.
+print(x + y)
+print(a * b)
+print(c - s)
+print(d / z)

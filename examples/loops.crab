@@ -3,7 +3,7 @@
 
 // Option 1 : Loop
 
-loop 10: {
+loop 10 {
     print("Hello, Crabby!") // Prints it 10 times
 }
 
@@ -11,12 +11,12 @@ loop 10: {
 
 let x = range(10)
 
-for i in x: {
+for i in x {
     print(i) // Prints it 10 times
 }
 
 let y = 10
 
-for i in range(y): {
+for i in range(y) {
     print(i)
 }

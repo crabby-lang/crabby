@@ -8,3 +8,13 @@ if x {
 } else {
     print("False!")
 }
+
+let a = 0.1
+let b = 0.2
+let c = a + b
+
+if c {
+    print("True!")
+} else {
+    print("False!")
+}

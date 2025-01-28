@@ -35,5 +35,5 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": "crabby",
-  "projectOwner": "Kazooki123"
+  "projectOwner": "crabby-lang"
 }

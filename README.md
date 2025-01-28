@@ -33,19 +33,19 @@ Here's what changed:
 
 ## Installation
 
-1. Git clone:
+Step 1: Git clone
 
 ```bash
 git clone https://github.com/Kazooki123/crabby.git
 ```
 
-2. Make sure to have `rust` and `cargo` installed
+Step 2: Make sure to have `rust` and `cargo` installed
 
 ```bash
 cargo --version
 ```
 
-3. Build it and Test it for yourself
+Step 3: Build it and Test it for yourself
 
 ```bash
 cargo build
@@ -69,6 +69,16 @@ let message = "Hello, Crabby!"
 print(x)
 print(y)
 print(message)
+```
+
+functions.crab:
+
+```rs
+pub def foo() {
+    print("Hello!")
+}
+
+foo()
 ```
 
 helloworld.crab:
@@ -118,18 +128,35 @@ if x {
 
 ```
 
+loops.crab:
+
+```py
+let x = range(10)
+
+for i in x: {
+    print(i) // Prints it 10 times
+}
+
+let y = 10
+
+for i in range(y): {
+    print(i)
+}
+```
+
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly ahh message :3
 
 Speaking of comments, **Crabby** also support `Docstrings`!
 
 ## Package Manager📦
 
-The closest package manager `Crabby` can have is [crab](https://github.com/crabby-lang/crab/)🦀, it functions likely the same as Rust `cargo` but for **Crabby**
+The closest package manager `Crabby` can have is [crab](https://github.com/crabby-lang/crab/)🦀 (which is still in development),
+it functions likely the same as Rust `cargo` but for **Crabby**
 
 ## Contributing
 
 Crabby is open to contributions! Feel free to open an issue or a pull request.
-Make sure to read the [contributing guidelines](CONTRIBUTING.md) before getting started.
+Make sure to read the [Contributing Guidelines](CONTRIBUTING.md) before getting started.
 
 ## LICENSE
 
@@ -145,9 +172,9 @@ Thanks goes to these wonderful people that used to help this project! 👨‍�
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Satvik-2727"><img src="https://avatars.githubusercontent.com/u/87568817?v=4?s=100" width="100px;" alt="Mr.Coder"/><br /><sub><b>Mr.Coder</b></sub></a><br /><a href="https://github.com/Kazooki123/crabby/commits?author=Satvik-2727" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Scarleyegaming"><img src="https://avatars.githubusercontent.com/u/93965392?v=4?s=100" width="100px;" alt="Saturo"/><br /><sub><b>Saturo</b></sub></a><br /><a href="https://github.com/Kazooki123/crabby/commits?author=Scarleyegaming" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://tiramify.dev"><img src="https://avatars.githubusercontent.com/u/94789999?v=4?s=100" width="100px;" alt="Trnx"/><br /><sub><b>Trnx</b></sub></a><br /><a href="https://github.com/Kazooki123/crabby/commits?author=trnxdev" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Satvik-2727"><img src="https://avatars.githubusercontent.com/u/87568817?v=4?s=100" width="100px;" alt="Mr.Coder"/><br /><sub><b>Mr.Coder</b></sub></a><br /><a href="https://github.com/crabby-lang/crabby/commits?author=Satvik-2727" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Scarleyegaming"><img src="https://avatars.githubusercontent.com/u/93965392?v=4?s=100" width="100px;" alt="Saturo"/><br /><sub><b>Saturo</b></sub></a><br /><a href="https://github.com/crabby-lang/crabby/commits?author=Scarleyegaming" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://tiramify.dev"><img src="https://avatars.githubusercontent.com/u/94789999?v=4?s=100" width="100px;" alt="Trnx"/><br /><sub><b>Trnx</b></sub></a><br /><a href="https://github.com/crabby-lang/crabby/commits?author=trnxdev" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

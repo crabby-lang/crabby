@@ -106,6 +106,7 @@ pub enum Expression {
     Variable(String),
     Range(Box<Expression>),
     Boolean(bool),
+    Array(),
     Pattern(Box<PatternKind>),
     Where {
         expr: Box<Expression>,

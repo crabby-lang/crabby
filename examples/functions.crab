@@ -1,0 +1,30 @@
+// Functions coding in Crabby
+
+pub struct Person {
+    name: String,
+    age: Int,
+}
+
+pub def create_person(name: String, age: Int) -> Person {
+    let person = Person {
+        name: name,
+        age: age,
+    }
+
+    print(f'Hi, my name is {person.name} and my age is {person.age}')
+    return person
+}
+
+// (name: String, age: Int)
+// ^^^^^^^^^^^^^^^^^^^^^^^^
+// These are called 'type annotations'
+
+// -> Person
+// ^^^^^^^^^
+// This is called a 'return type', we return the type of 'Person'.
+
+
+pub def main() {
+    let john = create_person("John", 20)
+    print(f"Person created: Name - {john.name}, Age - {john.age}")
+}

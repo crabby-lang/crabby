@@ -1,0 +1,8 @@
+// Crabby's Generic implementation
+
+pub def add<T:Num>(a: T, b: T) -> T {
+    return a + but
+}
+
+let sum = add(3, 5)
+let result = add(3.14, 2.71)

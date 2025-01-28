@@ -1,11 +1,11 @@
 // Import statements
 
-import foo from "./export.crab"         // Works also because it's public
+import foo from "export"         // Works also because it's public
 
-// or vise versa like - from export import foo
+// or vise versa like - from "export" import foo
 
-import greet from "./export.crab"    // Works - greet is public
-import helper from "./export.crab"    // Error - helper is private
+import greet from "export"    // Works - greet is public
+import helper from "export."    // Error - helper is private
 
 foo()
 greet()

@@ -42,6 +42,8 @@ pub enum Token {
     Elseif,
     #[token("pub")]
     Public,
+    #[token("private")] // You can have a function have private or not, if not it'll still treat it private
+    Private,
     #[token("enum")]
     Enum,
     #[token("struct")]
@@ -50,6 +52,34 @@ pub enum Token {
     Async,
     #[token("await")]
     Await,
+    #[token("mut")]
+    Mutable,
+    #[token("const")]
+    Constant,
+    #[token("class")]
+    Class,
+    #[token("self")]
+    Self,
+    #[token("new")]
+    New,
+    #[token("impl")]
+    Implement,
+    #[token("extends")]
+    Extends,
+    #[token("trait")]
+    Trait,
+    #[token("override")]
+    Override,
+    #[token("module")]
+    Module,
+    #[token("global")] // Acts like 'pub', you can just 2 options depending on your needs
+    Global,
+    #[token("static")]
+    Static,
+    #[token("var")]
+    Variable,
+    #[token("do")] // Does looping (procedural way)
+    Do,
 
     // Imports
     #[token("import")]
@@ -91,6 +121,8 @@ pub enum Token {
     DollarSign,
     #[token("?")]
     QuestionMark,
+    #[token("_")]
+    Underscore,
     #[token("!=")]
     NotEquals,
     #[token("<")]
@@ -103,6 +135,8 @@ pub enum Token {
     GreaterThanOrEqual,
     // #[token("&&")]
     //And,
+    #[token("|>")]
+    Pipe,
     #[token("||")]
     Or,
     #[token("=>")]
@@ -123,6 +157,12 @@ pub enum Token {
     LBrace,
     #[token("}")]
     RBrace,
+    #[token("[")]
+    LBracket,
+    #[token("]")]
+    RBracket,
+    // #[token("<>")]
+    // AngleBracket,
     #[token(":")]
     Colon,
     #[token(",")]

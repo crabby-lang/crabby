@@ -1,14 +1,14 @@
 // Exporting a function in Crabby
 
-pub def foo: {
+pub def foo() {
     print("An export statement")
 }
 
-pub def greet: {
+pub def greet() {
     print("Hello!")
     helper()  // Can use private function within module
 }
 
-def helper: {  // Private function
+def helper() {  // Private function
     print("I'm helping!")
 }

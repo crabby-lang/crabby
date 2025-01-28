@@ -1,13 +1,13 @@
 // Crabby's 'Struct' and 'Where' statements
 
 struct Point where x >= 0 {
-    x: i64,
-    y: i64,
+    x: Int,
+    y: Int,
 }
 
 pub struct Person {
     name: String,
-    age: i64,
+    age: Int,
     hobbies: String,
     birthday: Date,
 }

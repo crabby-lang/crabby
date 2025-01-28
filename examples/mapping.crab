@@ -1,0 +1,9 @@
+// Crabby Mapping function
+
+let numbers = [1, 2, 3, 4]
+let squared = numbers.map(|x| x * x)
+
+print(squared)
+
+let doubled = numbers.map(lambda x: x * 2)
+print(doubled)

@@ -2,6 +2,7 @@ use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
 use crate::compile::parse;
+use crate::deadcode::DeadCodeAnalyzer;
 
 mod utils;
 mod lexer;
@@ -19,6 +20,9 @@ struct Cli {
 
     #[arg(short, long, help = "Show version information")]
     version: bool,
+
+    #[arg(long, help = "Analyze code for unused declarations")]
+    analyze_deadcode: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,6 +52,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Compilation
         compiler.compile(&ast)?;
+    }
+
+    if cli.analyze_deadcode {
+        let mut analyzer = DeadCodeAnalyzer::new();
+        let warnings = analyzer.analyze(&ast)?;
+    
+        if !warnings.is_empty() {
+            println!("\nDead code warnings:");
+            for warning in warnings {
+                println!("Warning: Unused {} '{}' at line {}, column {}", 
+                    warning.kind,
+                    warning.symbol,
+                    warning.line,
+                    warning.column
+                );
+            }
+        }
     }
 
     Ok(())

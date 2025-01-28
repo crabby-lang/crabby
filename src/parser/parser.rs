@@ -26,12 +26,12 @@ impl<'a> Parser<'a> {
     fn parse_params(&mut self) -> Result<Vec<String>, CrabbyError> {
         self.consume(&Token::LParen, "Expected '(' after function name")?;
         let mut params = Vec::new();
-        
+
         while !matches!(self.peek().token, Token::RParen) {
             if let Token::Identifier(name) = &self.peek().token {
                 params.push(name.clone());
                 self.advance();
-                
+
                 if matches!(self.peek().token, Token::Comma) {
                     self.advance();
                 }
@@ -39,7 +39,7 @@ impl<'a> Parser<'a> {
                 return Err(self.error("Expected parameter name"));
             }
         }
-        
+
         self.consume(&Token::RParen, "Expected ')' after parameters")?;
         Ok(params)
     }
@@ -101,7 +101,7 @@ impl<'a> Parser<'a> {
         }
         self.advance(); // consume ')'
 
-        self.consume(&Token::Colon, "Expected ':' after parameters")?;
+        // self.consume(&Token::Colon, "Expected ':' after parameters")?;
         let body = self.parse_block()?;
 
         Ok(Statement::FunctionDef {
@@ -192,7 +192,7 @@ impl<'a> Parser<'a> {
         let left = self.parse_expression()?;
         self.consume(&Token::And, "Expected 'and' operator")?;
         let right = self.parse_expression()?;
-    
+
         Ok(Statement::And {
             left: left.to_string(),
             right: right.to_string(),
@@ -344,7 +344,7 @@ impl<'a> Parser<'a> {
                 }
                 self.advance(); // consume ')'
 
-                self.consume(&Token::Colon, "Expected ':' after parameters")?;
+                // self.consume(&Token::Colon, "Expected ':' after parameters")?;
                 let body = self.parse_block()?;
 
                 Ok(Expression::Lambda {
@@ -386,7 +386,7 @@ impl<'a> Parser<'a> {
 
         let count = self.parse_expression()?;
 
-        self.consume(&Token::Colon, "Expected ':' after loop count")?;
+        // self.consume(&Token::Colon, "Expected ':' after loop count")?;
         let body = self.parse_block()?;
 
         Ok(Statement::Loop {
@@ -409,7 +409,7 @@ impl<'a> Parser<'a> {
 
         let iterator = self.parse_expression()?;
 
-        self.consume(&Token::Colon, "Expected ':' after iterator expression")?;
+        // self.consume(&Token::Colon, "Expected ':' after iterator expression")?;
         let body = self.parse_block()?;
 
         Ok(Statement::ForIn {

@@ -1,0 +1,7 @@
+// Types in Crabby: Optional/Nullable Types
+
+let value: Option<Int> = None
+
+if value.is_some() {
+    print(value.unwrap())
+}
