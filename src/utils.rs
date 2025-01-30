@@ -72,6 +72,16 @@ impl Expression {
             (Expression::String(a), Expression::String(b)) => a == b,
             (Expression::Variable(a), Expression::Variable(b)) => a == b,
             (Expression::Boolean(a), Expression::Boolean(b)) => a == b,
+            (Expression::Array(a), Expression::Array(b)) => {
+                if a.len() != b.len() {
+                    return false;
+                }
+                a.iter().zip(b.iter()).all(|(x, y)| x.matches(y))
+            },
+            (Expression::Index { array: a1, index: i1 },
+             Expression::Index { array: a2, index: i2 }) => {
+                a1.matches(a2) && i1.matches(i2)
+            },
             _ => false,
         }
     }
@@ -94,7 +104,7 @@ impl fmt::Display for Expression {
                 write!(f, "({} {} {})", left, operator, right)
             },
             Expression::Call { function, arguments } => {
-                write!(f, "{}({})", function, 
+                write!(f, "{}({})", function,
                     arguments.iter()
                         .map(|arg| arg.to_string())
                         .collect::<Vec<_>>()
@@ -102,10 +112,21 @@ impl fmt::Display for Expression {
                 )
             },
             Expression::Lambda { params, body } => {
-                write!(f, "lambda({}) {}", 
+                write!(f, "lambda({}) {}",
                     params.join(", "),
                     body
                 )
+            },
+            Expression::Array(elements) => {
+                write!(f, "[{}]",
+                    elements.iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            },
+            Expression::Index { array, index } => {
+                write!(f, "{}[{}]", array, index)
             },
         }
     }
@@ -129,7 +150,7 @@ impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Statement::Block(stmts) => {
-                write!(f, "{{ {} }}", 
+                write!(f, "{{ {} }}",
                     stmts.iter()
                         .map(|stmt| stmt.to_string())
                         .collect::<Vec<_>>()

@@ -11,3 +11,5 @@ pub async def main() {
     let data = await fetch_data("http://api.example.com")
     print(data)
 }
+
+// Got any problem? You can create an issue for this file!

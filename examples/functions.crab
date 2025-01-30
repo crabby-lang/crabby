@@ -28,3 +28,5 @@ pub def main() {
     let john = create_person("John", 20)
     print(f"Person created: Name - {john.name}, Age - {john.age}")
 }
+
+// Got any problem? You can create an issue for this file!

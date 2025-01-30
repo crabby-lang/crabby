@@ -6,3 +6,5 @@ pub def add<T:Num>(a: T, b: T) -> T {
 
 let sum = add(3, 5)
 let result = add(3.14, 2.71)
+
+// Got any problem? You can create an issue for this file!

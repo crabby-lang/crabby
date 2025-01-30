@@ -5,3 +5,5 @@ enum Color where size > 0 {
     Green,
     RGB(i64, i64, i64),
 }
+
+// Got any problem? You can create an issue for this file!

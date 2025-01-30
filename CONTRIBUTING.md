@@ -66,3 +66,14 @@ git push origin feature/my-new-feature
 
 In Crabby, we review your changes or features carefully, making sure no **malicious** or **sneaky**
 code is written to the language, it may take up to a couple of minutes to hours, or in some cases, days.
+
+## What can I contribute?
+
+You can **contribute** to Crabby🦀 by:
+
+- Fixing bugs
+- Adding new features (e.g Crabby's Syntax, Improvements, Optimization, the Compiler)
+- Issuing a change of Crabby's syntax
+- Library/Package making
+- Expanding the documentation
+- Testing & Benchmarking Crabby

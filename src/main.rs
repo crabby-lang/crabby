@@ -8,6 +8,7 @@ mod utils;
 mod lexer;
 mod parser;
 mod compile;
+mod deadcode;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
@@ -41,32 +42,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Get the absolute path of the input file
         let absolute_path = input.canonicalize()?;
         let source = fs::read_to_string(&absolute_path)?;
-        // Lexical analysis
         let tokens = lexer::tokenize(&source)?;
-
-        // Parsing
         let ast = parse(tokens)?;
-
-        // Create compiler with the current file path
         let mut compiler = compile::Compiler::new(Some(absolute_path));
-
-        // Compilation
         compiler.compile(&ast)?;
-    }
 
-    if cli.analyze_deadcode {
-        let mut analyzer = DeadCodeAnalyzer::new();
-        let warnings = analyzer.analyze(&ast)?;
-    
-        if !warnings.is_empty() {
-            println!("\nDead code warnings:");
-            for warning in warnings {
-                println!("Warning: Unused {} '{}' at line {}, column {}", 
-                    warning.kind,
-                    warning.symbol,
-                    warning.line,
-                    warning.column
-                );
+        if cli.analyze_deadcode {
+            let mut analyzer = DeadCodeAnalyzer::new();
+            let warnings = analyzer.analyze(&ast)?;
+
+            if !warnings.is_empty() {
+                println!("\nDead code warnings:");
+                for warning in warnings {
+                    println!("Warning: Unused {} '{}' at line {}, column {}",
+                        warning.kind,
+                        warning.symbol,
+                        warning.line,
+                        warning.column
+                    );
+                }
             }
         }
     }

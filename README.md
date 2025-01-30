@@ -10,8 +10,11 @@
 
 ![Logo](https://github.com/Kazooki123/crabby/blob/main/crabbylogo.jpg)
 
-Crabby is a **Modern High-level**, **Multi-paradigm**, and a *functional* programming language.
+Crabby is a **Modern High-level**, **Versatile**, **Multi-paradigm**, **general-purpose**, and a **hybrid approach** programming language.
 It is designed to be *readable*, *ease-to-use* for beginners, and *powerful* enough for advanced users.
+
+Crabby is leaning into *multi-paradigm*, supporting paradigms like **OOP** and **Procedural** style of programming.
+But if you want the functional nature of Crabby, It is still a **Functional** programming language by default.
 
 It syntactically resembles **Python**, But it's a Functional programming language by default.
 
@@ -32,6 +35,8 @@ Here's what changed:
 6. More parsing and features!
 
 ## Installation
+
+`Note`: **We highly recommend to use the nightly toolchain edition of rust**
 
 Step 1: Git clone
 

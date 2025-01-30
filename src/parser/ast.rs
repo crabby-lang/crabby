@@ -22,6 +22,20 @@ pub enum Statement {
         name: String,
         value: Box<Expression>,
     },
+    Const {
+        name: String,
+        value: Box<Expression>,
+    },
+    Var {
+        name: String,
+        value: Box<Expression>,
+    },
+    Trait {
+    
+    },
+    Impl {
+        
+    }
     Return(Box<Expression>),
     If {
         condition: Box<Expression>,
@@ -76,6 +90,22 @@ pub enum Statement {
         name: String,
         source: Option<String>,
     },
+    Static {
+        name: String,
+        value: Option<Box<Expression>>,
+    },
+    Class {
+        name: String,
+        fields: Vec<StructField>,
+        methods: Vec<Statement>,
+        parent: Option<String>,
+        implements: Vec<String>,
+    },
+    ArrayAssign {
+        array: Expression,
+        index: Box<Expression>,
+        value: Box<Expression>,
+    },
     Block(Vec<Statement>),
     Expression(Expression),
 }
@@ -106,12 +136,16 @@ pub enum Expression {
     Variable(String),
     Range(Box<Expression>),
     Boolean(bool),
-    Array(),
+    Array(Vec<Expression>),
     Pattern(Box<PatternKind>),
     Where {
         expr: Box<Expression>,
         condition: Box<Expression>,
-        body: Box<Statement>, 
+        body: Box<Statement>,
+    },
+    FString {
+        template: String,
+        expressions: Vec<Expression>,
     },
     Binary {
         left: Box<Expression>,
@@ -125,6 +159,10 @@ pub enum Expression {
     Lambda {
         params: Vec<String>,
         body: Box<Statement>,
+    },
+    Index {
+        array: Box<Expression>,
+        index: Box<Expression>,
     },
 }
 

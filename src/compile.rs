@@ -20,6 +20,7 @@ enum Value {
     String(String),
     Lambda(Function),
     Boolean(bool),
+    Array(Vec<Value>),
 }
 
 impl Value {
@@ -30,6 +31,12 @@ impl Value {
             Value::String(s) => s.clone(),
             Value::Lambda(_) => "<lambda>".to_string(),
             Value::Boolean(b) => b.to_string(),
+            Value::Array(elements) => {
+                let elements_str: Vec<String> = elements.iter()
+                    .map(|e| e.to_string())
+                    .collect();
+                format!("[{}]", elements_str.join(", "))
+            }
         }
     }
 
@@ -50,6 +57,23 @@ impl Value {
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
             _ => false,
+        }
+    }
+
+    fn get_index(&self, index: i64) -> Result<Value, CrabbyError> {
+        match self {
+            Value::Array(elements) => {
+                if index < 0 || index >= elements.len() as i64 {
+                    Err(CrabbyError::CompileError(format!(
+                        "Array index out of bounds: {}", index
+                    )))
+                } else {
+                    Ok(elements[index as usize].clone())
+                }
+            }
+            _ => Err(CrabbyError::CompileError(
+                "Cannot index non-array value".to_string()
+            )),
         }
     }
 }
@@ -117,6 +141,25 @@ impl Compiler {
     }
 
     fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+        let is_public = name.starts_with("pub ");
+        let var_name = if is_public {
+            name.trim_start_matches("pub ").to_string()
+        } else {
+            name.to_string()
+        };
+
+        let compiled_value = self.compile_expression(value)?;
+
+        if is_public {
+            self.module.public_items.insert(var_name, compiled_value);
+        } else {
+            self.module.private_items.insert(var_name, compiled_value);
+        }
+
+        Ok(())
+    }
+
+    fn compile_var_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
@@ -337,6 +380,45 @@ impl Compiler {
 
                 Ok(None)
             }
+            Statement::ArrayAssign { array, index, value } => {
+                let array_val = self.compile_expression(array)?;
+                let index_val = self.compile_expression(index)?;
+                let new_val = self.compile_expression(value)?;
+
+                if let (Value::Array(mut elements), Value::Integer(i)) = (array_val, index_val) {
+                    if i < 0 || i >= elements.len() as i64 {
+                        return Err(CrabbyError::CompileError(
+                            "Array index out of bounds".to_string()
+                        ));
+                    }
+                    elements[i as usize] = new_val;
+                    Ok(None)
+                } else {
+                    Err(CrabbyError::CompileError(
+                        "Invalid array assignment".to_string()
+                    ))
+                }
+            }
+            Statement::Var { name, value } => {
+                let is_public = name.starts_with("pub ");
+                let var_name = if is_public {
+                    name.trim_start_matches("pub ").to_string()
+                } else {
+                    name.to_string()
+                };
+
+                let compiled_value = self.compile_expression(value)?;
+
+                if is_public {
+                    self.module.public_items.insert(var_name.clone(), compiled_value.clone());
+                } else {
+                    self.module.private_items.insert(var_name.clone(), compiled_value.clone());
+                }
+
+                self.variables.insert(var_name, compiled_value);
+
+                Ok(None)
+            }
             Statement::Match { value, arms } => self.compile_match(value, arms),
             Statement::Return(expr) => {
                 let value = self.compile_expression(expr)?;
@@ -480,6 +562,51 @@ impl Compiler {
                 } else {
                     Err(CrabbyError::CompileError("Range argument must be an integer".to_string()))
                 }
+            },
+            Expression::Array(elements) => {
+                let mut values = Vec::new();
+                for elem in elements {
+                    values.push(self.compile_expression(elem)?);
+                }
+                Ok(Value::Array(values))
+            },
+            Expression::Index { array, index } => {
+                let array_value = self.compile_expression(array)?;
+                let index_value = self.compile_expression(index)?;
+
+                match index_value {
+                    Value::Integer(i) => array_value.get_index(i),
+                    _ => Err(CrabbyError::CompileError(
+                        "Array index must be an integer".to_string()
+                    )),
+                }
+            },
+            Expression::FString { template, expressions } => {
+                let mut result = template.clone();
+                let mut expr_values = Vec::new();
+
+                // Evaluate all expressions
+                for expr in expressions {
+                    let value = self.compile_expression(expr)?;
+                    expr_values.push(value);
+                }
+
+                // Replace placeholders with values
+                let mut curr_pos = 0;
+                let mut final_string = String::new();
+
+                for (i, value) in expr_values.iter().enumerate() {
+                    if let Some(start) = result[curr_pos..].find('{') {
+                        if let Some(end) = result[curr_pos + start..].find('}') {
+                            final_string.push_str(&result[curr_pos..curr_pos + start]);
+                            final_string.push_str(&value.to_string());
+                            curr_pos = curr_pos + start + end + 1;
+                        }
+                    }
+                }
+
+                final_string.push_str(&result[curr_pos..]);
+                Ok(Value::String(final_string))
             },
             Expression::Pattern(pattern_kind) => match &**pattern_kind {
                 PatternKind::Literal(expr) => self.compile_expression(expr),

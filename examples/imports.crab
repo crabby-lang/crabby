@@ -9,3 +9,5 @@ import helper from "export."    // Error - helper is private
 
 foo()
 greet()
+
+// Got any problem? You can create an issue for this file!

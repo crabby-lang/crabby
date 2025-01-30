@@ -5,6 +5,7 @@ let y = 3.14
 let message = "Hello, Crabby!"
 let h = "hello"
 let w = " world"
+var two = 2 // var functions exactly like 'let' because Crabby is multi-paradigm
 
 def foo() {
     print("bar")
@@ -14,4 +15,5 @@ print(x)
 print(y)
 print(message)
 print(h + w)
+print(two)
 foo()

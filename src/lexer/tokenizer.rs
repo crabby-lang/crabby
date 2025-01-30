@@ -26,6 +26,8 @@ pub enum Token {
     As,
     #[token("and")]
     And,
+    #[token("with")]
+    With,
     #[token("in")]
     In,
     #[token("where")]
@@ -58,27 +60,35 @@ pub enum Token {
     Constant,
     #[token("class")]
     Class,
-    #[token("self")]
-    Self,
+    #[token("extends")]
+    Extends,
+    #[token("except")]
+    Except,
+    #[token("expect")]
+    Expect,
+    #[token("throw")]
+    Throw,
+    // #[token("self")]
+    // Self,
     #[token("new")]
     New,
     #[token("impl")]
     Implement,
-    #[token("extends")]
-    Extends,
     #[token("trait")]
     Trait,
     #[token("override")]
     Override,
     #[token("module")]
     Module,
-    #[token("global")] // Acts like 'pub', you can just 2 options depending on your needs
+    #[token("global")] // Acts like 'pub', you can just use 2 options depending on your needs
     Global,
+    #[token("namespace")]
+    Namespace,
     #[token("static")]
     Static,
     #[token("var")]
     Variable,
-    #[token("do")] // Does looping (procedural way)
+    #[token("do")] // Does looping (now there are 3 options)
     Do,
 
     // Imports
@@ -96,6 +106,10 @@ pub enum Token {
 
     #[regex(r#""[^"]*""#, |lex| Some(lex.slice().trim_matches('"').to_string()))]
     String(String),
+
+    #[regex(r#"f'[^']*'"#, |lex| Some(lex.slice()[2..lex.slice().len()-1].to_string()))]
+    #[regex(r#"f"[^"]*""#, |lex| Some(lex.slice()[2..lex.slice().len()-1].to_string()))]
+    FString(String),
 
     #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*", |lex| Some(lex.slice().to_string()))]
     Identifier(String),

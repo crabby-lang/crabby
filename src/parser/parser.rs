@@ -51,6 +51,7 @@ impl<'a> Parser<'a> {
             Token::Import => self.parse_import_statement(),
             Token::Def => self.parse_function_definition(),
             Token::Let => self.parse_let_statement(),
+            Token::Variable => self.parse_var_statement(),
             Token::Return => {
                 self.advance(); // consume 'return'
                 let expr = self.parse_expression()?;
@@ -64,6 +65,30 @@ impl<'a> Parser<'a> {
             Token::While => self.parse_while_statement(),
             Token::Async => self.parse_async_statement(),
             Token::Await => self.parse_await_statement(),
+            Token::Identifier(_) => {
+                let expr = self.parse_expression()?;
+
+                if matches!(self.peek().token, Token::LBracket) {
+                    self.advance(); // consume '['
+                    let index = self.parse_expression()?;
+                    self.consume(&Token::RBracket, "Expected ']' after array index")?;
+
+                    if matches!(self.peek().token, Token::Equals) {
+                        self.advance(); // consume '='
+                        let value = self.parse_expression()?;
+
+                        Ok(Statement::ArrayAssign {
+                            array: expr,
+                            index: Box::new(index),
+                            value: Box::new(value),
+                        })
+                    } else {
+                        Ok(Statement::Expression(expr))
+                    }
+                } else {
+                    Ok(Statement::Expression(expr))
+                }
+            },
             _ => {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Expression(expr))
@@ -352,18 +377,92 @@ impl<'a> Parser<'a> {
                     body: Box::new(body),
                 })
             }
+            Token::FString(template) => {
+                let template = template.clone();
+                self.advance();
+                
+                // Parse expressions within {}
+                let mut expressions = Vec::new();
+                let mut curr_pos = 0;
+                
+                while let Some(start) = template[curr_pos..].find('{') {
+                    if let Some(end) = template[curr_pos + start + 1..].find('}') {
+                        let expr_str = &template[curr_pos + start + 1..curr_pos + start + 1 + end];
+                        let expr = self.parse_expression()?;
+                        expressions.push(expr);
+                        curr_pos = curr_pos + start + 2 + end;
+                    }
+                }
+                
+                Ok(Expression::FString {
+                    template,
+                    expressions,
+                })
+            }
             Token::LParen => {
                 self.advance();
                 let expr = self.parse_expression()?;
                 self.consume(&Token::RParen, "Expected ')' after expression")?;
                 Ok(expr)
             }
-            _ => Err(self.error("Expected expression")),
+            Token::LBracket => {
+                self.advance(); // consume '['
+                let mut elements = Vec::new();
+
+                if !matches!(self.peek().token, Token::RBracket) {
+                    loop {
+                        elements.push(self.parse_expression()?);
+
+                        if !matches!(self.peek().token, Token::Comma) {
+                            break;
+                        }
+                        self.advance(); // consume ','
+                    }
+                }
+
+                self.consume(&Token::RBracket, "Expected ']' after array elements")?;
+                Ok(Expression::Array(elements))
+            }
+            _ => {
+                let expr = self.parse_expression()?;
+
+                if matches!(self.peek().token, Token::LBracket) {
+                    self.advance(); // consume '['
+                    let index = self.parse_expression()?;
+                    self.consume(&Token::RBracket, "Expected ']' after array index")?;
+
+                    Ok(Expression::Index {
+                        array: Box::new(expr),
+                        index: Box::new(index),
+                    })
+                } else {
+                    Ok(expr)
+                }
+            },
         }
     }
 
     fn parse_let_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'let'
+
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected variable name"));
+        };
+        self.advance();
+
+        self.consume(&Token::Equals, "Expected '=' after variable name")?;
+        let value = self.parse_expression()?;
+
+        Ok(Statement::Let {
+            name,
+            value: Box::new(value),
+        })
+    }
+
+    fn parse_var_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'var'
 
         let name = if let Token::Identifier(name) = &self.peek().token {
             name.clone()

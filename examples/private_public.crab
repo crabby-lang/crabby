@@ -1,0 +1,28 @@
+// How Private and Public functions in Crabby works
+// A Guide!
+
+// First, we have the keyword 'private':
+private def foo() {
+    print("This is a private function!")
+}
+
+// This is also a private function even without the keyword 'private'
+def bar() {
+    print("This is also a private function!")
+}
+
+global def foo1() {
+    print("I'm global!... But private?!") // Explanation: This is global BUT private, (since it has no 'pub'), it's available everywhere in the program but NOT automatically public to other modules.
+}
+
+// Second, global/pub keywords
+
+global pub def foo2() {
+    print("This is a public function!")
+}
+
+pub def bar1() {
+    print("This is also a public function!")
+}
+
+// Got any problem? You can create an issue for this file!
