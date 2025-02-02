@@ -68,8 +68,6 @@ pub enum Token {
     Expect,
     #[token("throw")]
     Throw,
-    // #[token("self")]
-    // Self,
     #[token("new")]
     New,
     #[token("impl")]
@@ -147,8 +145,6 @@ pub enum Token {
     LessThanOrEqual,
     #[token(">=")]
     GreaterThanOrEqual,
-    // #[token("&&")]
-    //And,
     #[token("|>")]
     Pipe,
     #[token("||")]
@@ -175,8 +171,6 @@ pub enum Token {
     LBracket,
     #[token("]")]
     RBracket,
-    // #[token("<>")]
-    // AngleBracket,
     #[token(":")]
     Colon,
     #[token(",")]

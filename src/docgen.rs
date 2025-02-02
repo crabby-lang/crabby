@@ -1,64 +1,65 @@
-use crate::parser::ast::Statement;
+use crate::parser::Statement;
 
 pub struct Documentation {
     pub name: String,
     pub description: String,
-    pub params: Vec<(String, String)>,
+    pub params: Vec<String>,
+    pub body: Box<Statement>,
     pub return_type: String,
 }
 
-pub fn generate_docs(statement: &Vec<Statement>) -> Vec<Documentation> {
-    let mut docs = Vec::new();
+impl Documentation {
+    pub fn generate_docs(statement: &Vec<Statement>) -> Vec<Documentation> {
+        let mut docs = Vec::new();
 
-    for node in statement {
-        match node {
-            Statement::FunctionDef { name, params, return_type, docstring } => {
-                docs.push(Documentation {
-                    name: name.clone(),
-                    description: docstring.clone().unwrap_or_else(|| "No description provided.".to_string()),
-                    params: params.clone(),
-                    return_type: return_type.clone(),
-                });
+        for node in statement {
+            match node {
+                Statement::FunctionDef { name, params, body, return_type, docstring } => {
+                    docs.push(Documentation {
+                        name: name.clone(),
+                        body: body.clone(),
+                        description: docstring.clone(),
+                        params: params.clone(),
+                        return_type: return_type.clone(),
+                    });
+                }
+                _ => {}
             }
-            _ => {}
+        }
+
+        docs
+    }
+
+    pub fn export_docs(docs: Vec<Documentation>, format: &str) {
+        match format {
+            "markdown" => Self::export_to_markdown(docs),
+            "doublequotes" => Self::export_to_double_quotes(docs),
+            _ => println!("Unsupported format"),
         }
     }
 
-    docs
-}
-
-pub fn export_docs(docs: Vec<Documentation>, format: &str) {
-    match format {
-        "markdown" => export_to_markdown(docs),
-        "doublequotes" => export_to_double_quotes(docs),
-        _ => eprintln!("Unsupported format!"),
-    }
-}
-
-fn export_to_markdown(docs: Vec<Documentation>) {
-    for doc in docs {
-        println!("### {}", doc.name);
-        println!("\n{}", doc.description);
-        println!("\n### Parameters:");
-        for (name, typ) in doc.params {
-            println!("- {}: {}", name, typ);
+    fn export_to_markdown(docs: Vec<Documentation>) {
+        for doc in docs {
+            println!("# {}", doc.name);
+            println!("\n{}\n", doc.description);
+            println!("## Parameters");
+            for param in doc.params {
+                println!("- `{}`", param);
+            }
+            println!("\n## Returns\n{}\n", doc.return_type);
+            println!("---\n");
         }
-        println!("\n### Returns: {}", doc.return_type);
-        println!("\n---\n")
     }
-}
 
-fn export_to_double_quotes(docs: Vec<Documentation>) {
-    for doc in docs {
-        println!("\"\"\"");
-        println!("function: {}", doc.name);
-        println!("\n{}", doc.description);
-        println!("\nParameters:");
-        for (name, typ) in doc.params {
-            println!("    {}: {}", name, typ);
+    fn export_to_double_quotes(docs: Vec<Documentation>) {
+        for doc in docs {
+            println!("\"{}\"", doc.name);
+            println!("\"{}\"", doc.description);
+            println!("Parameters:");
+            for param in doc.params {
+                println!("\"{}\"", param);
+            }
+            println!("Returns: \"{}\"\n", doc.return_type);
         }
-        println!("\nReturns: {}", doc.return_type);
-        println!("\"\"\"");
-        println!();
     }
 }

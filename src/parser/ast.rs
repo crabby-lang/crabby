@@ -17,25 +17,27 @@ pub enum Statement {
         name: String,
         params: Vec<String>,
         body: Box<Statement>,
+        return_type: String,
+        docstring: String,
     },
     Let {
         name: String,
         value: Box<Expression>,
     },
-    Const {
-        name: String,
-        value: Box<Expression>,
-    },
+    // Const {
+    //    name: String,
+    //    value: Box<Expression>,
+    // },
     Var {
         name: String,
         value: Box<Expression>,
     },
-    Trait {
-    
-    },
-    Impl {
-        
-    }
+    // Trait {
+
+    // },
+    // Impl {
+
+    // },
     Return(Box<Expression>),
     If {
         condition: Box<Expression>,
@@ -90,24 +92,39 @@ pub enum Statement {
         name: String,
         source: Option<String>,
     },
-    Static {
-        name: String,
-        value: Option<Box<Expression>>,
-    },
-    Class {
-        name: String,
-        fields: Vec<StructField>,
-        methods: Vec<Statement>,
-        parent: Option<String>,
-        implements: Vec<String>,
-    },
+    // Static {
+    //    name: String,
+    //    value: Option<Box<Expression>>,
+    // },
+    // Class {
+    //    name: String,
+    //    fields: Vec<StructField>,
+    //    methods: Vec<Statement>,
+    //    parent: Option<String>,
+    //    implements: Vec<String>,
+    // },
     ArrayAssign {
         array: Expression,
         index: Box<Expression>,
         value: Box<Expression>,
     },
+    Network {
+        kind: NetworkOperation,
+        address: Box<Expression>,
+        port: Box<Expression>,
+        body: Option<Box<Statement>>,
+    },
     Block(Vec<Statement>),
     Expression(Expression),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum NetworkOperation {
+    Listen,
+    Connect,
+    Send(Box<Expression>),
+    Receive,
+    Bind,
 }
 
 #[derive(Debug, Clone, PartialEq)]

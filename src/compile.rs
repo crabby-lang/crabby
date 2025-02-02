@@ -1,10 +1,14 @@
-use crate::utils::CrabbyError;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use crate::fs;
-pub use crate::parser::ast::*;
-pub use crate::parser::parser::*;
-use crate::lexer::*;
+
+use crate::utils::CrabbyError;
+use crate::core::memory::MemoryChecker;
+use crate::core::network::NetworkHandler;
+use crate::core::network::NetworkEvent;
+use crate::parser::{Parser, parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm, NetworkOperation};
+use crate::lexer::tokenize;
+use crate::docgen::Documentation;
 
 pub struct Compiler {
     variables: HashMap<String, Value>,
@@ -21,6 +25,8 @@ enum Value {
     Lambda(Function),
     Boolean(bool),
     Array(Vec<Value>),
+    NetworkHandler(NetworkHandler),
+    Void,
 }
 
 impl Value {
@@ -36,7 +42,9 @@ impl Value {
                     .map(|e| e.to_string())
                     .collect();
                 format!("[{}]", elements_str.join(", "))
-            }
+            },
+            Value::NetworkHandler(_) => "<network handler>".to_string(),
+            Value::Void => "void".to_string()
         }
     }
 
@@ -116,6 +124,46 @@ impl Compiler {
             public_items: HashMap::new(),
             private_items: HashMap::new(),
         }
+    }
+
+    fn compile_network_call(&mut self, object: &Expression, method: &str, args: &[Expression]) -> Result<Value, CrabbyError> {
+        let mut handler = NetworkHandler::new();
+
+        match method {
+            "listen" => {
+                let address = self.compile_expression(&args[0])?;
+                let port = self.compile_expression(&args[1])?;
+                if let (Value::String(addr), Value::Integer(p)) = (address, port) {
+                    handler.listen(&addr)?;
+                }
+            },
+            "connect" => {
+                let address = self.compile_expression(&args[0])?;
+                let port = self.compile_expression(&args[1])?;
+                if let (Value::String(addr), Value::Integer(p)) = (address, port) {
+                    handler.connect(&addr, p as u16)?;
+                }
+            },
+            "send" => {
+                let data = self.compile_expression(&args[0])?;
+                if let Value::String(s) = data {
+                    handler.send(s.as_bytes(), 0)?;
+                }
+            },
+            "receive" => {
+                match handler.receive()? {
+                    NetworkEvent::Received(data) => {
+                        if let Ok(s) = String::from_utf8(data) {
+                            return Ok(Value::String(s));
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => return Err(CrabbyError::CompileError(format!("Unknown network method: {}", method)))
+        }
+
+        Ok(Value::Integer(0))
     }
 
     fn compile_function_def(&mut self, name: &str, params: &[String], body: &Statement) -> Result<(), CrabbyError> {
@@ -315,7 +363,7 @@ impl Compiler {
 
     fn compile_statement(&mut self, statement: &Statement) -> Result<Option<Value>, CrabbyError> {
         match statement {
-            Statement::FunctionDef { name, params, body } => {
+            Statement::FunctionDef { name, params, body, return_type, docstring } => {
                 let is_public = name.starts_with("pub ");
                 let func_name = if is_public {
                     name.trim_start_matches("pub ").to_string()
@@ -356,6 +404,73 @@ impl Compiler {
                     params: vec![params.clone()],
                     body: Box::new(Statement::Expression(*(*body).clone())),
                 }));
+                Ok(None)
+            }
+            Statement::Network { kind, address, port, body } => {
+                let addr = self.compile_expression(address)?;
+                let port_val = self.compile_expression(port)?;
+
+                let mut handler = NetworkHandler::new();
+
+                match kind {
+                    NetworkOperation::Listen => {
+                        if let (Value::String(addr_str), Value::Integer(port_num)) = (addr, port_val) {
+                            handler.listen(&addr_str)?;
+                            if let Some(body) = body {
+                                self.compile_statement(body)?;
+                            }
+                        } else {
+                            return Err(CrabbyError::CompileError(
+                                "Listen expects string address and integer port".to_string()
+                            ));
+                        }
+                    },
+                    NetworkOperation::Connect => {
+                        if let (Value::String(addr_str), Value::Integer(port_num)) = (addr, port_val) {
+                            handler.connect(&addr_str, port_num as u16)?;
+                            if let Some(body) = body {
+                                self.compile_statement(body)?;
+                            }
+                        } else {
+                            return Err(CrabbyError::CompileError(
+                                "Connect expects string address and integer port".to_string()
+                            ));
+                        }
+                    },
+                    NetworkOperation::Send(data) => {
+                        let data_val = self.compile_expression(data)?;
+                        if let Value::String(data_str) = data_val {
+                            handler.send(data_str.as_bytes(), 0)?;
+                        } else {
+                            return Err(CrabbyError::CompileError(
+                                "Send expects string data".to_string()
+                            ));
+                        }
+                    },
+                    NetworkOperation::Receive => {
+                        match handler.receive()? {
+                            NetworkEvent::Received(data) => {
+                                if let Ok(s) = String::from_utf8(data) {
+                                    return Ok(Some(Value::String(s)));
+                                }
+                            },
+                            _ => return Ok(None),
+                        }
+                    },
+                    NetworkOperation::Bind => {
+                        if let (Value::String(addr_str), Value::Integer(port_num)) = (addr, port_val) {
+                            handler.bind(&addr_str, port_num as u16)?;
+                            if let Some(body) = body {
+                                self.compile_statement(body)?;
+                            }
+                        } else {
+                            return Err(CrabbyError::CompileError(
+                                "Bind expects string address and integer port".to_string()
+                            ));
+                        }
+                    },
+                }
+
                 Ok(None)
             }
             Statement::Let { name, value } => {
@@ -582,7 +697,7 @@ impl Compiler {
                 }
             },
             Expression::FString { template, expressions } => {
-                let mut result = template.clone();
+                let result = template.clone();
                 let mut expr_values = Vec::new();
 
                 // Evaluate all expressions
@@ -595,7 +710,7 @@ impl Compiler {
                 let mut curr_pos = 0;
                 let mut final_string = String::new();
 
-                for (i, value) in expr_values.iter().enumerate() {
+                for (_i, value) in expr_values.iter().enumerate() {
                     if let Some(start) = result[curr_pos..].find('{') {
                         if let Some(end) = result[curr_pos + start..].find('}') {
                             final_string.push_str(&result[curr_pos..curr_pos + start]);
@@ -653,6 +768,62 @@ impl Compiler {
                     params: params.clone(),
                     body: body.clone(),
                 }))
+            },
+            Expression::Call { function, arguments } => {
+                match function.as_str() {
+                    "network.listen" => {
+                        let address = self.compile_expression(&arguments[0])?;
+                        let port = self.compile_expression(&arguments[1])?;
+                        if let (Value::String(addr), Value::Integer(p)) = (address, port) {
+                            let mut handler = NetworkHandler::new();
+                            handler.listen(&addr)?;
+                            Ok(Value::NetworkHandler(handler))
+                        } else {
+                            Err(CrabbyError::CompileError("Invalid arguments for network.listen".into()))
+                        }
+                    },
+                    "network.connect" => {
+                        let address = self.compile_expression(&arguments[0])?;
+                        let port = self.compile_expression(&arguments[1])?;
+                        if let (Value::String(addr), Value::Integer(p)) = (address, port) {
+                            let mut handler = NetworkHandler::new();
+                            handler.connect(&addr, p as u16)?;
+                            Ok(Value::NetworkHandler(handler))
+                        } else {
+                            Err(CrabbyError::CompileError("Invalid arguments for network.connect".into()))
+                        }
+                    },
+                    "network.send" => {
+                        let data = self.compile_expression(&arguments[0])?;
+                        if let Value::String(s) = data {
+                            if let Value::NetworkHandler(mut handler) = self.compile_expression(&arguments[1])? {
+                                handler.send(s.as_bytes(), 0)?;
+                                Ok(Value::Void)
+                            } else {
+                                Err(CrabbyError::CompileError("Invalid network handler".into()))
+                            }
+                        } else {
+                            Err(CrabbyError::CompileError("Invalid arguments for network.send".into()))
+                        }
+                    },
+                    "network.receive" => {
+                        if let Value::NetworkHandler(handler) = self.compile_expression(&arguments[0])? {
+                            match handler.receive()? {
+                                NetworkEvent::Received(data) => {
+                                    if let Ok(s) = String::from_utf8(data) {
+                                        Ok(Value::String(s))
+                                    } else {
+                                        Err(CrabbyError::CompileError("Failed to decode received data".into()))
+                                    }
+                                },
+                                _ => Err(CrabbyError::CompileError("No data received".into())),
+                            }
+                        } else {
+                            Err(CrabbyError::CompileError("Invalid network handler".into()))
+                        }
+                    },
+                    _ => Err(CrabbyError::CompileError("Unknown network function".into())),
+                }
             },
             Expression::Binary { left, operator, right } => {
                 let left_val = self.compile_expression(left)?;

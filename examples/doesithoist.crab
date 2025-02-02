@@ -1,0 +1,5 @@
+// Does it Hoist in Crabby? Let's find out by running this file!
+
+print(x)
+
+let x = "Hello!"

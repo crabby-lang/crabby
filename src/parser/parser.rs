@@ -46,6 +46,7 @@ impl<'a> Parser<'a> {
 
     fn parse_statement(&mut self) -> Result<Statement, CrabbyError> {
         match &self.peek().token {
+            Token::Identifier(name) if name == "network" => self.parse_network_statement(),
             Token::Loop => self.parse_loop_statement(),
             Token::For => self.parse_for_statement(),
             Token::Import => self.parse_import_statement(),
@@ -133,6 +134,8 @@ impl<'a> Parser<'a> {
             name,
             params,
             body: Box::new(body),
+            return_type: String::new(),
+            docstring: String::new(),
         })
     }
 
@@ -245,6 +248,35 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_network_statement(&mut self) -> Result<Statement, CrabbyError> {
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected network function name"));
+        };
+        self.advance();
+
+        self.consume(&Token::LParen, "Expected '(' after network function name")?;
+
+        let mut arguments = Vec::new();
+        if !matches!(self.peek().token, Token::RParen) {
+            loop {
+                arguments.push(self.parse_expression()?);
+                if !matches!(self.peek().token, Token::Comma) {
+                    break;
+                }
+                self.advance(); // consume ','
+            }
+        }
+
+        self.consume(&Token::RParen, "Expected ')' after arguments")?;
+
+        Ok(Statement::Expression(Expression::Call {
+            function: format!("network.{}", name),
+            arguments,
+        }))
+    }
+
     fn parse_while_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'while'
         let condition = self.parse_expression()?;
@@ -258,7 +290,31 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, CrabbyError> {
-        self.parse_addition()
+        let expr = self.parse_primary()?;
+        
+        while matches!(self.peek().token, Token::Dot) {
+            self.advance(); // consume dot
+            
+            let method = if let Token::Identifier(name) = &self.peek().token {
+                name.clone()
+            } else {
+                return Err(self.error("Expected method name after dot"));
+            };
+            self.advance();
+
+            let mut arguments = Vec::new();
+            if matches!(self.peek().token, Token::LParen) {
+                self.advance();
+                while !matches!(self.peek().token, Token::RParen) {
+                    arguments.push(self.parse_expression()?);
+                    if matches!(self.peek().token, Token::Comma) {
+                        self.advance();
+                    }
+                }
+                self.advance();
+            }
+        }
+        Ok(expr)
     }
 
     fn parse_addition(&mut self) -> Result<Expression, CrabbyError> {

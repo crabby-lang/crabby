@@ -1,7 +1,6 @@
 use std::fmt;
-use crate::parser::ast::BinaryOp;
-use crate::parser::ast::Expression;
-use crate::parser::ast::Statement;
+
+use crate::parser::{BinaryOp, Expression, Statement};
 
 #[derive(Debug)]
 pub struct Span {
@@ -41,6 +40,9 @@ pub enum CrabbyError {
     #[error("Invalid match pattern: {0}")]
     InvalidMatchPattern(String),
 
+    #[error("Network error: {0}")]
+    NetworkError(String),
+
     #[error("Match operation error: {0}")]
     MatchError(String),
 
@@ -52,6 +54,12 @@ pub enum CrabbyError {
 
     #[error("Compilation error: {0}")]
     CompileError(String),
+}
+
+impl From<std::io::Error> for CrabbyError {
+    fn from(error: std::io::Error) -> Self {
+        CrabbyError::NetworkError(error.to_string())
+    }
 }
 
 impl fmt::Display for Span {
@@ -102,6 +110,9 @@ impl fmt::Display for Expression {
             },
             Expression::Binary { left, operator, right } => {
                 write!(f, "({} {} {})", left, operator, right)
+            },
+            Expression::FString { template, expressions: _ } => {
+                write!(f, "f\"{}\"", template)
             },
             Expression::Call { function, arguments } => {
                 write!(f, "{}({})", function,

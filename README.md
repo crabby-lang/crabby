@@ -69,10 +69,12 @@ example.crab:
 ```js
 let x = 42
 let y = 314
+var z = 10 // You can use the 'var' keyword too!
 let message = "Hello, Crabby!"
 
 print(x)
 print(y)
+print(z)
 print(message)
 ```
 
@@ -138,13 +140,13 @@ loops.crab:
 ```py
 let x = range(10)
 
-for i in x: {
+for i in x {
     print(i) // Prints it 10 times
 }
 
 let y = 10
 
-for i in range(y): {
+for i in range(y) {
     print(i)
 }
 ```

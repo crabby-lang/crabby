@@ -1,14 +1,17 @@
 use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
-use crate::compile::parse;
 use crate::deadcode::DeadCodeAnalyzer;
+use crate::parser::parse;
 
 mod utils;
 mod lexer;
 mod parser;
 mod compile;
 mod deadcode;
+mod core;
+mod docgen;
+// mod graphics;
 
 #[derive(Parser)]
 #[command(name = "crabby")]

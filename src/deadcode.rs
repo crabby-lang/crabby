@@ -1,6 +1,6 @@
 // Crabby scans crab code then checks if it's a dead/unused code or not
 
-use crate::parser::ast::{Program, Statement, Expression};
+use crate::parser::{Program, Statement, Expression};
 use crate::utils::CrabbyError;
 use std::collections::{HashMap, HashSet};
 
@@ -62,7 +62,7 @@ impl DeadCodeAnalyzer {
     fn collect_definitions(&mut self, program: &Program) -> Result<(), CrabbyError> {
         for stmt in &program.statements {
             match stmt {
-                Statement::FunctionDef { name, params: _, body: _ } => {
+                Statement::FunctionDef { name, params: _, body: _, return_type: _, docstring: _ } => {
                     if name.starts_with("pub ") {
                         let clean_name = name.trim_start_matches("pub ").to_string();
                         self.pub_exports.insert(clean_name.clone());
