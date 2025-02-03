@@ -7,7 +7,6 @@ def network_example() {
 
     let client = network.connect("127.0.0.1", 8080)
     client.send("Hello server!")
-    print("Running...")
 }
 
 network_example()

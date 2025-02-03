@@ -88,12 +88,30 @@ pub enum Token {
     Variable,
     #[token("do")] // Does looping (now there are 3 options)
     Do,
+    #[token("try")]
+    Try,
+    #[token("catch")]
+    Catch,
 
     // Imports
     #[token("import")]
     Import,
     #[token("from")]
     From,
+
+    // Networking
+    #[token("network")]
+    Network,
+    #[token("listen")]
+    Listen,
+    #[token("connect")]
+    Connect,
+    #[token("send")]
+    Send,
+    #[token("receive")] 
+    Receive,
+    #[token("bind")]
+    Bind,
 
     // Literals
     #[regex(r"-?[0-9]+\.[0-9]+", |lex| lex.slice().parse::<f64>().ok())]

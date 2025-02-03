@@ -16,7 +16,7 @@ impl Clone for NetworkHandler {
         let (tx, rx) = channel();
         NetworkHandler {
             listeners: Vec::new(),
-            connections: Vec::new(),
+            connections: Vec::new(), 
             event_sender: tx,
             event_receiver: rx,
         }
@@ -41,36 +41,30 @@ impl NetworkHandler {
         }
     }
 
-    pub fn listen(&mut self, addr: &str) -> Result<(), CrabbyError> {
-        let listener = TcpListener::bind(&addr)
-            .map_err(|e| CrabbyError::NetworkError(format!("Failed to bind: {}", e)))?;
-
-        self.listeners.push(listener.try_clone()?);
+    pub fn listen(&mut self, addr: &str, port: u16) -> Result<(), CrabbyError> {
+        let addr = format!("{}:{}", addr, port);
+        let listener = TcpListener::bind(&addr)?;
+        let listener_clone = listener.try_clone()?;
+        self.listeners.push(listener);
 
         let tx = self.event_sender.clone();
-        let addr = addr.to_string();
-
         thread::spawn(move || {
-            for stream in listener.incoming() {
+            for stream in listener_clone.incoming() {
                 match stream {
-                    Ok(stream) => {
-                        tx.send(NetworkEvent::Connected(addr.clone())).unwrap();
+                    Ok(s) => {
+                        let _ = tx.send(NetworkEvent::Connected(s.peer_addr().unwrap().to_string()));
                     }
                     Err(e) => {
-                        tx.send(NetworkEvent::Error(e.to_string())).unwrap();
+                        let _ = tx.send(NetworkEvent::Error(e.to_string()));
                     }
                 }
             }
         });
-
         Ok(())
     }
 
-    pub fn connect(&mut self, address: &str, port: u16) -> Result<(), CrabbyError> {
-        let addr = format!("{}:{}", address, port);
-        let stream = TcpStream::connect(&addr)
-            .map_err(|e| CrabbyError::NetworkError(format!("Failed to connect: {}", e)))?;
-
+    pub fn connect(&mut self, addr: &str, port: u16) -> Result<(), CrabbyError> {
+        let stream = TcpStream::connect(format!("{}:{}", addr, port))?;
         self.connections.push(stream);
         Ok(())
     }

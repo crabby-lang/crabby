@@ -291,10 +291,10 @@ impl<'a> Parser<'a> {
 
     fn parse_expression(&mut self) -> Result<Expression, CrabbyError> {
         let expr = self.parse_primary()?;
-        
+
         while matches!(self.peek().token, Token::Dot) {
             self.advance(); // consume dot
-            
+
             let method = if let Token::Identifier(name) = &self.peek().token {
                 name.clone()
             } else {
@@ -436,11 +436,11 @@ impl<'a> Parser<'a> {
             Token::FString(template) => {
                 let template = template.clone();
                 self.advance();
-                
+
                 // Parse expressions within {}
                 let mut expressions = Vec::new();
                 let mut curr_pos = 0;
-                
+
                 while let Some(start) = template[curr_pos..].find('{') {
                     if let Some(end) = template[curr_pos + start + 1..].find('}') {
                         let expr_str = &template[curr_pos + start + 1..curr_pos + start + 1 + end];
@@ -449,7 +449,7 @@ impl<'a> Parser<'a> {
                         curr_pos = curr_pos + start + 2 + end;
                     }
                 }
-                
+
                 Ok(Expression::FString {
                     template,
                     expressions,
