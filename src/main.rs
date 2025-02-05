@@ -29,44 +29,28 @@ struct Cli {
     analyze_deadcode: bool,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     if let Some(input) = cli.input {
-        if !input.exists() {
-            return Err("Input file does not exist".into());
-        }
-
-        let ext = input.extension().unwrap_or_default();
-        if ext != "crab" && ext != "cb" {
-            return Err("Input file must have .crab or .cb extension".into());
-        }
-
-        // Get the absolute path of the input file
         let absolute_path = input.canonicalize()?;
         let source = fs::read_to_string(&absolute_path)?;
-        let tokens = lexer::tokenize(&source)?;
-        let ast = parse(tokens)?;
+        let tokens = lexer::tokenize(&source).await?;
+        let ast = parse(tokens).await?;
         let mut compiler = compile::Compiler::new(Some(absolute_path));
-        compiler.compile(&ast)?;
+        compiler.compile(&ast).await?;
 
         if cli.analyze_deadcode {
             let mut analyzer = DeadCodeAnalyzer::new();
             let warnings = analyzer.analyze(&ast)?;
-
             if !warnings.is_empty() {
                 println!("\nDead code warnings:");
                 for warning in warnings {
-                    println!("Warning: Unused {} '{}' at line {}, column {}",
-                        warning.kind,
-                        warning.symbol,
-                        warning.line,
-                        warning.column
-                    );
+                    println!("Warning: {:?}", warning);
                 }
             }
         }
     }
-
     Ok(())
 }

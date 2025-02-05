@@ -1,8 +1,8 @@
 [package]
 name = "crabby"
-description = "A modern Programming Language with Python like syntax but has a functional language feature."
+description = "A modern multi-paradigm versatile Programming Language with Python like syntax."
 authors = ["Kazooki123"]
-keywords = ["language", "python", "programming-language", "modern"]
+keywords = ["compiler", "paradigm" ,"python", "programming-language", "modern", "interpreter"]
 version = "1.2.1"
 repository = "https://github.com/crabby-lang/crabby"
 edition = "2024"
@@ -11,10 +11,11 @@ license = "GPL-3.0-only"
 [dependencies]
 logos = "0.13"
 thiserror = "1.0"
-tokio = { version = "1.43.0", features = ["full"] }
+tokio = { version = "1.0", features = ["full"] }
 codespan-reporting = "0.11"
 clap = { version = "4.4", features = ["derive"] }
 libc = "0.2.169"
+futures = "0.3"
 nix = "0.29.0"
 rayon = "1.10.0"
 mimalloc = "0.1.43"

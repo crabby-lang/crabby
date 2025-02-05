@@ -92,6 +92,8 @@ pub enum Token {
     Try,
     #[token("catch")]
     Catch,
+    #[token("ref")]
+    Reference,
 
     // Imports
     #[token("import")]
@@ -108,10 +110,8 @@ pub enum Token {
     Connect,
     #[token("send")]
     Send,
-    #[token("receive")] 
+    #[token("receive")]
     Receive,
-    #[token("bind")]
-    Bind,
 
     // Literals
     #[regex(r"-?[0-9]+\.[0-9]+", |lex| lex.slice().parse::<f64>().ok())]
@@ -173,6 +173,8 @@ pub enum Token {
     CoolerArrow,
     #[token("!")]
     Not,
+    #[token("&")] // For borrowing, not to be confused with the 'and' keyword or '&&' operator.
+    Ampersand,
     #[token("@")]
     Decorator,
     #[token("==")]
@@ -207,7 +209,7 @@ pub struct TokenStream<'source> {
     pub slice: &'source str,
 }
 
-pub fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
+pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
     let mut tokens = Vec::new();
     let mut lex = Token::lexer(source);
     let mut line = 1;

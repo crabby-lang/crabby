@@ -1,22 +1,26 @@
 // crabby can do math!!
 
-// addition
-let x = 1
-let y = 2
+def math() {
+    // addition
+    let x = 1
+    let y = 2
 
-// multiplication
-let a = 4
-let b = 7
+    // multiplication
+    let a = 4
+    let b = 7
 
-// subtraction
-let c = 10
-let s = 3
+    // subtraction
+    let c = 10
+    let s = 3
 
-// division
-let d = 10
-let z = 3
+    // division
+    let d = 10
+    let z = 3
 
-print(x + y)
-print(a * b)
-print(c - s)
-print(d / z)
+    print(x + y)
+    print(a * b)
+    print(c - s)
+    print(d / z)
+}
+
+math()

@@ -1,6 +1,9 @@
 use std::fmt;
 
-use crate::parser::{BinaryOp, Expression, Statement};
+use crate::parser::{BinaryOp, Expression, Statement, NetworkOperation};
+use crate::deadcode::DeadCodeWarning;
+// use periphery::sys::gpio::Value;
+use crate::compile::Value;
 
 #[derive(Debug)]
 pub struct Span {
@@ -21,7 +24,7 @@ impl Span {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum CrabbyError {
     #[error("Lexer error at line {line}, column {column}: {message}")]
     LexerError {
@@ -72,6 +75,12 @@ impl fmt::Display for Span {
     }
 }
 
+impl std::fmt::Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
+
 impl Expression {
     pub fn matches(&self, other: &Self) -> bool {
         match (self, other) {
@@ -95,6 +104,12 @@ impl Expression {
     }
 }
 
+impl fmt::Display for DeadCodeWarning {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -113,6 +128,9 @@ impl fmt::Display for Expression {
             },
             Expression::FString { template, expressions: _ } => {
                 write!(f, "f\"{}\"", template)
+            },
+            Expression::Network { operation, handler } => {
+                write!(f, "Network({}, {:?})", operation, handler)
             },
             Expression::Call { function, arguments } => {
                 write!(f, "{}({})", function,
@@ -139,6 +157,21 @@ impl fmt::Display for Expression {
             Expression::Index { array, index } => {
                 write!(f, "{}[{}]", array, index)
             },
+        }
+    }
+}
+
+impl std::fmt::Display for NetworkOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NetworkOperation::Listen { addr, port } =>
+                write!(f, "Listen({}:{})", addr, port),
+            NetworkOperation::Connect { addr, port } =>
+                write!(f, "Connect({}:{})", addr, port),
+            NetworkOperation::Send { data, conn_index } =>
+                write!(f, "Send({:?}, {})", data, conn_index),
+            NetworkOperation::Receive { conn_index } =>
+                write!(f, "Receive({})", conn_index),
         }
     }
 }

@@ -108,12 +108,12 @@ pub enum Statement {
         index: Box<Expression>,
         value: Box<Expression>,
     },
-    // Network {
-    //    kind: NetworkOperation,
-    //    address: Box<Expression>,
-    //    port: Box<Expression>,
-    //    body: Option<Box<Statement>>,
-    // },
+    Network {
+        kind: NetworkOperation,
+        address: Box<Expression>,
+        port: Box<Expression>,
+        body: Option<Box<Statement>>,
+    },
     Block(Vec<Statement>),
     Expression(Expression),
 }
@@ -132,11 +132,9 @@ pub enum NetworkOperation {
         data: Box<Expression>,
         conn_index: usize
     },
-    Receive,
-    Bind {
-        addr: String,
-        port: u16
-    }
+    Receive {
+        conn_index: usize
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -799,7 +799,7 @@ impl<'a> Parser<'a> {
     }
 }
 
-pub fn parse(tokens: Vec<TokenStream>) -> Result<Program, CrabbyError> {
+pub async fn parse(tokens: Vec<TokenStream<'_>>) -> Result<Program, CrabbyError> {
     let mut parser = Parser::new(&tokens);
     parser.parse()
 }
