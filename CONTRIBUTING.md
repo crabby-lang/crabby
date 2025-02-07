@@ -8,7 +8,7 @@ Here, you can learn how to contribute to the `development` of Crabby.
 Crabby is built in **Rust**, using crates like `logos`, `clap`, and more. Rust memory safety and
 security, not to mention its *speed*, is appropriate to build languages like **Crabby**.
 
-You also make sure to have the Rust **nightly toolchain** installed, if not yet you can run:
+You also need to make sure to have the Rust **nightly toolchain** installed, if not yet you can run:
 
 ```bash
 rustup toolchain install nightly

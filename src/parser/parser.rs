@@ -295,7 +295,7 @@ impl<'a> Parser<'a> {
         while matches!(self.peek().token, Token::Dot) {
             self.advance(); // consume dot
 
-            let method = if let Token::Identifier(name) = &self.peek().token {
+            let _method = if let Token::Identifier(name) = &self.peek().token {
                 name.clone()
             } else {
                 return Err(self.error("Expected method name after dot"));
@@ -443,7 +443,7 @@ impl<'a> Parser<'a> {
 
                 while let Some(start) = template[curr_pos..].find('{') {
                     if let Some(end) = template[curr_pos + start + 1..].find('}') {
-                        let expr_str = &template[curr_pos + start + 1..curr_pos + start + 1 + end];
+                        let _expr_str = &template[curr_pos + start + 1..curr_pos + start + 1 + end];
                         let expr = self.parse_expression()?;
                         expressions.push(expr);
                         curr_pos = curr_pos + start + 2 + end;

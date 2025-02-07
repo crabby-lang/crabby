@@ -40,16 +40,17 @@ Here's what changed:
 
 `Note`: **We highly recommend to use the nightly toolchain edition of rust**
 
-Step 1: Git clone
+Step 1: Make sure to have `git` and `rust/cargo` installed
+
+```bash
+git --version
+cargo --version
+```
+
+Step 2: Git clone
 
 ```bash
 git clone https://github.com/Kazooki123/crabby.git
-```
-
-Step 2: Make sure to have `rust` and `cargo` installed
-
-```bash
-cargo --version
 ```
 
 Step 3: Build it and Test it for yourself

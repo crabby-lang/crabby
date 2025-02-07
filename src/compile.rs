@@ -3,10 +3,8 @@ use std::path::{Path, PathBuf};
 use crate::fs;
 
 use crate::utils::CrabbyError;
-use crate::core::memory::MemoryChecker;
 use crate::core::network::NetworkHandler;
-use crate::core::network::NetworkEvent;
-use crate::parser::{Parser, parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm, NetworkOperation};
+use crate::parser::{parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm, NetworkOperation};
 use crate::lexer::tokenize;
 use crate::docgen::Documentation;
 
@@ -45,8 +43,17 @@ pub struct Function {
 
 #[derive(Clone)]
 pub struct Module {
-    public_items: HashMap<String, Value>,
-    private_items: HashMap<String, Value>,
+    pub public_items: HashMap<String, Value>,
+    pub private_items: HashMap<String, Value>,
+}
+
+impl Module {
+    pub fn new() -> Self {
+        Self {
+            public_items: HashMap::new(),
+            private_items: HashMap::new(),
+        }
+    }
 }
 
 impl PartialEq for Value {
@@ -138,7 +145,7 @@ impl Compiler {
             functions: HashMap::new(),
             module: Module {
                 public_items: HashMap::new(),
-                private_items: HashMap::new(),
+                private_items: HashMap::new()
             },
             current_file: file_path,
             network_state: None,
@@ -223,15 +230,14 @@ impl Compiler {
         Ok(())
     }
 
-    fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+    pub fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+        let compiled_value = self.compile_expression(value);
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
         } else {
             name.to_string()
         };
-
-        let compiled_value = self.compile_expression(value);
 
         if is_public {
             self.module.public_items.insert(var_name, compiled_value);
@@ -242,15 +248,14 @@ impl Compiler {
         Ok(())
     }
 
-    fn compile_var_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+    pub fn compile_var_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+        let compiled_value = self.compile_expression(value);
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
         } else {
             name.to_string()
         };
-
-        let compiled_value = self.compile_expression(value);
 
         if is_public {
             self.module.public_items.insert(var_name, compiled_value);
@@ -371,8 +376,8 @@ impl Compiler {
         }
     }
 
-    pub async fn compile_statement(&mut self, statement: &Statement) -> Result<Option<Value>, CrabbyError> {
-        match statement {
+    pub async fn compile_statement(&mut self, stmt: &Statement) -> Result<Option<Value>, CrabbyError> {
+        match stmt {
             Statement::FunctionDef { name, params, body, return_type, docstring } => {
                 let is_public = name.starts_with("pub ");
                 let func_name = if is_public {
@@ -572,8 +577,8 @@ impl Compiler {
                         CrabbyError::CompileError(format!("Failed to read module '{}': {}", source_path, e))
                     })?;
 
-                    let tokens = tokenize(&source_code);
-                    let ast = parse(tokens);
+                    let tokens = tokenize(&source_code).await?;
+                    let ast = parse(tokens).await?;
                     module_compiler.compile(&ast);
 
                     // Try to import the requested item
@@ -636,8 +641,8 @@ impl Compiler {
         }
     }
 
-    pub async fn compile_expression(&mut self, expression: &Expression) -> Result<Value, CrabbyError> {
-        match expression {
+    pub async fn compile_expression(&mut self, expr: &Expression) -> Result<Value, CrabbyError> {
+        match expr {
             Expression::Integer(n) => Ok(Value::Integer(*n)),
             Expression::Float(f) => Ok(Value::Float(*f)),
             Expression::String(s) => Ok(Value::String(s.clone())),
@@ -652,7 +657,7 @@ impl Compiler {
                 match cond_value {
                     Value::Boolean(true) => {
                         self.compile_statement(body).await?;
-                        self.compile_expression(expr)
+                        self.compile_expression(expr).await?;
                     },
                     _ => Ok(Value::Boolean(false)),
                 }
@@ -749,6 +754,10 @@ impl Compiler {
                 }
             },
             Expression::Call { function, arguments } => {
+                let compiled_args = futures::future::join_all(
+                    arguments.iter().map(|arg| self.compile_expression(arg))
+                ).await;
+
                 if function == "print" {
                     return self.handle_print(arguments).await;
                 }

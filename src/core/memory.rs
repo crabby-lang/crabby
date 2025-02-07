@@ -1,4 +1,6 @@
 // Crabby's Memory Management and Safety
+// By using lifetimes, Ownership and Borrowings. It makes Crabby memory safety as possible.
+// However, Memory safeties aren't always perfect, and Crabby is still in early development.
 
 use std::collections::HashMap;
 use crate::utils::CrabbyError;
