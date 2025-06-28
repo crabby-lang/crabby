@@ -1,0 +1,27 @@
+// Crabby's BETA Inheritance and Polymorphism feature
+
+class Person extend Human {
+    def constructor(name: String) {
+        this.name = name
+    }
+
+    def greet() {
+        print(f"Hello, my name is {this.name}")
+    }
+}
+
+// USING TRAITS & IMPL:
+
+trait Human {
+    def greet() {
+        print("Hello, I'm a human!")
+    }
+}
+
+impl Human {
+    def greet() {
+        print("Hello, I'm a human!")
+    }
+}
+
+// Got any problem? You can create an issue for this file!

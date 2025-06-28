@@ -1,0 +1,21 @@
+// (BETA) Recursion in Crabby
+
+def fib(n) {
+    if n < 2 {
+        return n
+    } else {
+        return fib(n - 1) + fib(n - 2)
+    }
+}
+
+def factorial(n: Int) -> Int {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+print(fib())
+print(factorial(5))
+
+// Got any problem? You can create an issue for this file!
