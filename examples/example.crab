@@ -14,6 +14,6 @@ def foo() {
 print(x)
 print(y)
 print(message)
-print(h + w)
+print(h)
 print(two)
 foo()

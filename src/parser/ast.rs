@@ -24,33 +24,25 @@ pub enum Statement {
         name: String,
         value: Box<Expression>,
     },
-    // Const {
-    //    name: String,
-    //    value: Box<Expression>,
-    // },
+    Const {
+        name: String,
+        value: Box<Expression>,
+    },
     Var {
         name: String,
         value: Box<Expression>,
     },
-    // Trait {
-
-    // },
-    // Impl {
-
-    // },
     Return(Box<Expression>),
     If {
         condition: Box<Expression>,
         then_branch: Box<Statement>,
         else_branch: Option<Box<Statement>>,
     },
-    Async {
-        condition: Box<Expression>,
+    AsyncFunction {
+        name: String,
+        params: Vec<String>,
         body: Box<Statement>,
-    },
-    Await {
-        condition: Box<Expression>,
-        body: Box<Statement>,
+        return_type: Option<String>,
     },
     And {
         left: String,
@@ -92,17 +84,30 @@ pub enum Statement {
         name: String,
         source: Option<String>,
     },
-    // Static {
-    //    name: String,
-    //    value: Option<Box<Expression>>,
-    // },
-    // Class {
-    //    name: String,
-    //    fields: Vec<StructField>,
-    //    methods: Vec<Statement>,
-    //    parent: Option<String>,
-    //    implements: Vec<String>,
-    // },
+    Static {
+        name: String,
+        value: Option<Box<Expression>>,
+    },
+    Class {
+        name: String,
+        parent: Option<String>,
+        methods: Vec<Statement>,
+        fields: Vec<String>,
+    },
+    Extend {
+        class: String,
+        parent: String,
+        methods: Vec<Statement>,
+    },
+    Trait {
+        name: String,
+        methods: Vec<MethodDefinition>,
+    },
+    Impl {
+        target: String,
+        trait_name: Option<String>,
+        methods: Vec<MethodDefinition>,
+    },
     ArrayAssign {
         array: Expression,
         index: Box<Expression>,
@@ -135,6 +140,19 @@ pub enum NetworkOperation {
     Receive {
         conn_index: usize
     },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Visibility {
+    Public,
+    Private,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MethodDefinition {
+    pub name: String,
+    pub params: Vec<String>,
+    pub body: Box<Statement>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -177,6 +195,9 @@ pub enum Expression {
     FString {
         template: String,
         expressions: Vec<Expression>,
+    },
+    Await {
+        expr: Box<Expression>,
     },
     Binary {
         left: Box<Expression>,

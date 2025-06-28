@@ -17,11 +17,11 @@ global def foo1() {
 
 // Second, global/pub keywords
 
-global pub def foo2() {
+global pub def bar1() {
     print("This is a public function!")
 }
 
-pub def bar1() {
+pub def foo2() {
     print("This is also a public function!")
 }
 

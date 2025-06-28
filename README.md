@@ -16,16 +16,14 @@ Crabby is a **Modern High-level**, **Versatile**, **Multi-paradigm**, **general-
 It is designed to be *readable*, *ease-to-use* for beginners, and *powerful* enough for advanced users.
 
 Crabby is leaning into *multi-paradigm*, supporting paradigms like **OOP** and **Procedural** style of programming.
-But if you want the functional nature of Crabby, It is still a **Functional** programming language by default.
-
-It syntactically resembles **Python**, But it's a Functional programming language by default.
+But if you want the functional nature of Crabby, It is still a **Functional** programming language!
 
 ## What Change?
 
 As you may notice, Crabby has been through phases of rewrite, and if you're thinking that
 **Crabby** is abounded, well... You're Wrong!
 
-Crabby has been officially and well be written in **Rust** due to it's memory safety and type checking compared to *C*.
+Crabby has been officially and well be written in **Rust** due to its memory safety and type checking compared to *C*.
 
 Here's what changed:
 
@@ -50,7 +48,7 @@ cargo --version
 Step 2: Git clone
 
 ```bash
-git clone https://github.com/Kazooki123/crabby.git
+git clone https://github.com/crabby-lang/crabby.git
 ```
 
 Step 3: Build it and Test it for yourself
@@ -62,7 +60,7 @@ cargo run examples/example.crab
 
 ## Syntax
 
-In **Crabby🦀**, its' syntax mostly resembles **Python** in general BUT there are `hints` of Functional Programming syntax since Crabby aims to be versatile, functional and powerful to use not just for advanced programmers but for beginners also!
+In **Crabby🦀**, its syntax mostly resembles **Python** in general BUT there are `hints` of Functional Programming syntax since Crabby aims to be versatile, functional and powerful to use not just for advanced programmers but for beginners also!
 
 It's default file format is a `.crab` or `.cb`
 But for now it's `.crab`
@@ -154,14 +152,14 @@ for i in range(y) {
 }
 ```
 
-Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly ahh message :3
+Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly message :3
 
 Speaking of comments, **Crabby** also support `Docstrings`!
 
 ## Package Manager📦
 
 The closest package manager `Crabby` can have is [crab](https://github.com/crabby-lang/crab/)🦀 (which is still in development),
-it functions likely the same as Rust `cargo` but for **Crabby**
+it functions likely the same as Rust **cargo** but for **Crabby**
 
 ## Contributing
 

@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::pin::Pin;
+use std::future::Future;
 use crate::fs;
 
 use crate::utils::CrabbyError;
 use crate::core::network::NetworkHandler;
 use crate::parser::{parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm, NetworkOperation};
 use crate::lexer::tokenize;
-use crate::docgen::Documentation;
 
 #[derive(Clone)]
 pub struct NetworkState {
@@ -21,6 +22,7 @@ pub struct Compiler {
     current_file: Option<PathBuf>,
     network_state: Option<NetworkState>,
     handler: NetworkHandler,
+    awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
 }
 
 #[derive(Clone)]
@@ -150,9 +152,9 @@ impl Compiler {
             current_file: file_path,
             network_state: None,
             handler: NetworkHandler::new(),
+            awaiting: Vec::new(),
         };
 
-        // Add built-in print function
         compiler.functions.insert("print".to_string(), Function {
             params: vec!["value".to_string()],
             body: Box::new(Statement::Expression(Expression::Variable("value".to_string()))),
@@ -184,10 +186,10 @@ impl Compiler {
                 match (&evaluated_args[0], &evaluated_args[1]) {
                     (Value::String(addr), Value::Integer(port)) => {
                         network_state.handler.listen(addr, *port as u16).await?;
-                        return Ok(Value::NetworkHandler(network_state.handler.clone()));
+                        Ok(Value::NetworkHandler(network_state.handler.clone()))
                     }
-                    _ => return Err(CrabbyError::CompileError("Invalid arguments for listen()".into()))
-                };
+                    _ => Err(CrabbyError::CompileError("Invalid arguments for listen()".into()))
+                }
             },
             "send" => {
                 if evaluated_args.len() != 1 {
@@ -196,15 +198,15 @@ impl Compiler {
                 match &evaluated_args[0] {
                     Value::String(data) => {
                         network_state.handler.send(data.as_bytes(), 0).await?;
-                        return Ok(Value::Void)
+                        Ok(Value::Void)
                     }
-                    _ => return Err(CrabbyError::CompileError("send() requires string data".into()))
+                    _ => Err(CrabbyError::CompileError("send() requires string data".into()))
                 }
             },
             "receive" => {
-                return Ok(Value::NetworkHandler(network_state.handler.clone()))
+                Ok(Value::NetworkHandler(network_state.handler.clone()))
             },
-            _ => return Err(CrabbyError::CompileError(format!("Unknown network method: {}", method))),
+            _ => Err(CrabbyError::CompileError(format!("Unknown network method: {}", method))),
         }
     }
 
@@ -230,8 +232,18 @@ impl Compiler {
         Ok(())
     }
 
-    pub fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
-        let compiled_value = self.compile_expression(value);
+    fn ensure_network(&mut self) -> Result<&mut NetworkState, CrabbyError> {
+        if self.network_state.is_none() {
+            self.network_state = Some(NetworkState {
+                handler: NetworkHandler::new(),
+                connections: HashMap::new(),
+            });
+        }
+        Ok(self.network_state.as_mut().unwrap())
+    }
+
+    pub async fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+        let compiled_value = self.compile_expression(value).await?;
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
@@ -248,8 +260,8 @@ impl Compiler {
         Ok(())
     }
 
-    pub fn compile_var_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
-        let compiled_value = self.compile_expression(value);
+    pub async fn compile_var_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
+        let compiled_value = self.compile_expression(value).await;
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
@@ -258,9 +270,9 @@ impl Compiler {
         };
 
         if is_public {
-            self.module.public_items.insert(var_name, compiled_value);
+            self.module.public_items.insert(var_name, compiled_value?);
         } else {
-            self.module.private_items.insert(var_name, compiled_value);
+            self.module.private_items.insert(var_name, compiled_value?);
         }
 
         Ok(())
@@ -378,7 +390,7 @@ impl Compiler {
 
     pub async fn compile_statement(&mut self, stmt: &Statement) -> Result<Option<Value>, CrabbyError> {
         match stmt {
-            Statement::FunctionDef { name, params, body, return_type, docstring } => {
+            Statement::FunctionDef { name, params, body, return_type: _, docstring: _ } => {
                 let is_public = name.starts_with("pub ");
                 let func_name = if is_public {
                     name.trim_start_matches("pub ").to_string()
@@ -400,27 +412,22 @@ impl Compiler {
                 self.functions.insert(func_name, function);
 
                 Ok(None)
-            }
-            Statement::Async { condition, body } => {
-                let _condition = self.compile_expression(condition).await?;
-                self.compile_statement(body)
-            }
-            Statement::Await { condition, body } => {
-                let _condition = self.compile_expression(condition).await?;
-                self.compile_statement(body)
-            }
+            },
+            Statement::AsyncFunction { name, params, body, return_type: _ } => {
+
+            },
             Statement::And { left, right } => {
                 let left_val = Value::String(left.clone());
                 let right_val = Value::String(right.clone());
                 Ok(Some(Value::Boolean(left_val == right_val)))
-            }
+            },
             Statement::Macro { name, params, body } => {
                 self.variables.insert(name.clone(), Value::Lambda(Function {
                     params: vec![params.clone()],
                     body: Box::new(Statement::Expression(*(*body).clone())),
                 }));
                 Ok(None)
-            }
+            },
             Statement::Network { kind, address, port, body } => {
                 let addr = self.compile_expression(address).await;
                 let port_val = self.compile_expression(port).await;
@@ -445,7 +452,7 @@ impl Compiler {
                             NetworkOperation::Connect { .. } => {
                                 net_state.handler.connect(&addr_str, port_num as u16).await?;
                             },
-                            NetworkOperation::Send { ref data, conn_index } => {
+                            &NetworkOperation::Send { ref data, ref conn_index } => {
                                 let data_val = self.compile_expression(data).await?;
                                 if let Value::String(s) = data_val {
                                     net_state.handler.send(s.as_bytes(), *conn_index).await?;
@@ -453,10 +460,10 @@ impl Compiler {
                             },
                             NetworkOperation::Receive { conn_index } => {
                                 let data = self.handler.receive(*conn_index).await?;
-                                if let Ok(s) = String::from_utf8(data) {
-                                    return Ok(Some(Value::String(s)));
+                                return if let Ok(s) = String::from_utf8(data) {
+                                    Ok(Some(Value::String(s)))
                                 } else {
-                                    return Err(CrabbyError::CompileError("Invalid UTF-8 data".into()));
+                                    Err(CrabbyError::CompileError("Invalid UTF-8 data".into()))
                                 };
                             },
                         }
@@ -486,7 +493,7 @@ impl Compiler {
 
                 self.variables.insert(var_name, compiled_value);
                 Ok(None)
-            }
+            },
             Statement::ArrayAssign { array, index, value } => {
                 let array_val = self.compile_expression(array).await?;
                 let index_val = self.compile_expression(index).await?;
@@ -505,7 +512,7 @@ impl Compiler {
                         "Invalid array assignment".to_string()
                     ))
                 }
-            }
+            },
             Statement::Var { name, value } => {
                 let is_public = name.starts_with("pub ");
                 let var_name = if is_public {
@@ -523,14 +530,13 @@ impl Compiler {
                 }
 
                 self.variables.insert(var_name, compiled_value);
-
                 Ok(None)
-            }
+            },
             Statement::Match { value, arms } => self.compile_match(value, arms).await,
             Statement::Return(expr) => {
                 let value = self.compile_expression(expr).await?;
                 Ok(Some(value))
-            }
+            },
             Statement::Loop { count, body } => {
                 let count_value = self.compile_expression(count).await?;
                 if let Value::Integer(n) = count_value {
@@ -541,7 +547,7 @@ impl Compiler {
                 } else {
                     Err(CrabbyError::CompileError("Loop count must be an integer".to_string()))
                 }
-            }
+            },
             Statement::ForIn { variable, iterator, body } => {
                 let iter_value = self.compile_expression(iterator).await?;
                 if let Value::Integer(n) = iter_value {
@@ -553,25 +559,21 @@ impl Compiler {
                 } else {
                     Err(CrabbyError::CompileError("Iterator must be a range".to_string()))
                 }
-            }
-            Statement::Enum { name, variants, where_clause } => {
-                // For now, just store enum definition in variables
+            },
+            Statement::Enum { name, variants: _variants, where_clause } => {
                 let value = Value::String(format!("enum {}", name));
                 self.variables.insert(name.clone(), value);
                 Ok(None)
-            }
-            Statement::Struct { name, fields, where_clause } => {
-                // For now, just store struct definition in variables
+            },
+            Statement::Struct { name, fields: _fields, where_clause: _where_clause } => {
                 let value = Value::String(format!("struct {}", name));
                 self.variables.insert(name.clone(), value);
                 Ok(None)
-            }
+            },
             Statement::Import { name, source } => {
                 if let Some(source_path) = source {
-                    // Create a new compiler instance for the imported module
                     let mut module_compiler = Compiler::new(Some(PathBuf::from(source_path)));
 
-                    // Load and compile the module
                     let path = Path::new(source_path);
                     let source_code = fs::read_to_string(path).map_err(|e| {
                         CrabbyError::CompileError(format!("Failed to read module '{}': {}", source_path, e))
@@ -579,9 +581,8 @@ impl Compiler {
 
                     let tokens = tokenize(&source_code).await?;
                     let ast = parse(tokens).await?;
-                    module_compiler.compile(&ast);
+                    module_compiler.compile(&ast).await?;
 
-                    // Try to import the requested item
                     if let Some(value) = module_compiler.module.public_items.get(name) {
                         self.variables.insert(name.clone(), value.clone());
                         Ok(None)
@@ -599,7 +600,7 @@ impl Compiler {
                 } else {
                     Err(CrabbyError::CompileError("Standard library imports not yet implemented".to_string()))
                 }
-            }
+            },
             Statement::If { condition, then_branch, else_branch } => {
                 let cond_value = self.compile_expression(condition).await?;
                 match cond_value {
@@ -613,7 +614,7 @@ impl Compiler {
                     },
                     _ => Err(CrabbyError::CompileError("Condition must be boolean".into()))
                 }
-            }
+            },
             Statement::While { condition, body } => {
                 loop {
                     let condition_value = self.compile_expression(condition).await?;
@@ -627,17 +628,18 @@ impl Compiler {
                     }
                 }
                 Ok(None)
-            }
+            },
             Statement::Block(statements) => {
                 for stmt in statements {
                     self.compile_statement(stmt).await?;
                 }
                 Ok(None)
-            }
+            },
             Statement::Expression(expr) => {
                 let value = self.compile_expression(expr).await?;
                 Ok(Some(value))
-            }
+            },
+            _ => Ok(None)
         }
     }
 
@@ -657,7 +659,7 @@ impl Compiler {
                 match cond_value {
                     Value::Boolean(true) => {
                         self.compile_statement(body).await?;
-                        self.compile_expression(expr).await?;
+                        Ok(self.compile_expression(expr).await?)
                     },
                     _ => Ok(Value::Boolean(false)),
                 }
@@ -715,6 +717,11 @@ impl Compiler {
                 final_string.push_str(&result[curr_pos..]);
                 Ok(Value::String(final_string))
             },
+            Expression::Await { expr } => {
+                let value = self.compile_expression(expr).await?;
+                self.awaiting.push(value);
+                Ok(Value::Void)
+            },
             Expression::Pattern(pattern_kind) => match &**pattern_kind {
                 PatternKind::Literal(expr) => {
                     self.compile_expression(expr).await
@@ -724,24 +731,24 @@ impl Compiler {
             },
             Expression::Network { operation, handler } => {
                 let network_state = self.ensure_network()?;
-                Ok(Value::NetworkHandler(network_state.handler.clone()));
+                Ok(Value::NetworkHandler(network_state.handler.clone())).unwrap();
 
                 match operation {
                     NetworkOperation::Listen { addr, port } => {
                         let handler = self.ensure_network();
-                        handler.unwrap().handler.listen(addr, *port);
+                        handler.unwrap().handler.listen(addr, *port).await?;
                         Ok(Value::NetworkHandler(handler.unwrap().handler.clone()))
                     }
                     NetworkOperation::Connect { addr, port } => {
                         let handler = self.ensure_network();
-                        handler.unwrap().handler.connect(addr, *port);
+                        handler.unwrap().handler.connect(addr, *port).await?;
                         Ok(Value::NetworkHandler(handler.unwrap().handler.clone()))
                     }
                     NetworkOperation::Send { data, conn_index } => {
                         let handler = self.ensure_network();
                         let data_val = self.compile_expression(data).await?;
                         if let Value::String(s) = data_val {
-                            handler.unwrap().handler.send(s.as_bytes(), *conn_index);
+                            handler.unwrap().handler.send(s.as_bytes(), *conn_index).await?;
                             Ok(Value::Void)
                         } else {
                             Err(CrabbyError::CompileError("send() requires string data".into()))
@@ -754,9 +761,10 @@ impl Compiler {
                 }
             },
             Expression::Call { function, arguments } => {
-                let compiled_args = futures::future::join_all(
-                    arguments.iter().map(|arg| self.compile_expression(arg))
-                ).await;
+                let mut compiled_args = Vec::new();
+                for arg in arguments {
+                    compiled_args.push(self.compile_expression(arg).await?);
+                }
 
                 if function == "print" {
                     return self.handle_print(arguments).await;
@@ -794,7 +802,9 @@ impl Compiler {
                 match new_compiler.compile_statement(&func.body).await? {
                     Some(value) => Ok(value),
                     None => Ok(Value::Integer(0)),
-                }
+                }.unwrap();
+
+                Ok(Value::Void)
             },
             Expression::Lambda { params, body } => {
                 Ok(Value::Lambda(Function {
@@ -815,7 +825,7 @@ impl Compiler {
                         if r == 0 {
                             return Err(CrabbyError::CompileError("Division by zero".to_string()));
                         }
-                        Ok(Value::Integer(l / r))
+                        return Ok(Value::Integer(l / r));
                     }
 
                     // Float operations
@@ -826,7 +836,7 @@ impl Compiler {
                         if r == 0.0 {
                             return Err(CrabbyError::CompileError("Division by zero".to_string()));
                         }
-                        Ok(Value::Float(l / r))
+                        return Ok(Value::Float(l / r));
                     }
 
                     // Mixed Integer and Float operations
@@ -840,7 +850,7 @@ impl Compiler {
                                 if r == 0.0 {
                                     return Err(CrabbyError::CompileError("Division by zero".to_string()));
                                 }
-                                Ok(Value::Float(l / r))
+                                return Ok(Value::Float(l / r));
                             }
                             BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
                             BinaryOp::MatchOp => Ok(Value::Boolean((*left).matches(&*right))),
@@ -858,7 +868,7 @@ impl Compiler {
                                 if r == 0.0 {
                                     return Err(CrabbyError::CompileError("Division by zero".to_string()));
                                 }
-                                Ok(Value::Float(l / r))
+                                return Ok(Value::Float(l / r));
                             }
                             BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
                             BinaryOp::MatchOp => Err(CrabbyError::CompileError("Cannot use match operator with numbers".to_string())),
@@ -872,19 +882,11 @@ impl Compiler {
                     (Value::String(l), BinaryOp::Add, r) => Ok(Value::String(format!("{}{}", l, r.to_string()))),
                     (l, BinaryOp::Add, Value::String(r)) => Ok(Value::String(format!("{}{}", l.to_string(), r))),
 
-                    _ => Err(CrabbyError::CompileError("Invalid operation".to_string())),
-                }
+                    _ => return Err(CrabbyError::CompileError("Invalid operation".to_string())),
+                }?;
+                Ok(Value::Void)
             }
+            _ => Ok(Value::Void)
         }
-    }
-
-    fn ensure_network(&mut self) -> Result<&mut NetworkState, CrabbyError> {
-        if self.network_state.is_none() {
-            self.network_state = Some(NetworkState {
-                handler: NetworkHandler::new(),
-                connections: HashMap::new(),
-            });
-        }
-        Ok(self.network_state.as_mut().unwrap())
     }
 }

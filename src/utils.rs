@@ -55,6 +55,24 @@ pub enum CrabbyError {
     #[error("Missing case in match: {0}")]
     MissingCaseKeyword(String),
 
+    #[error("Class error: {0}")]
+    ClassError(String),
+
+    #[error("Trait error: {0}")]
+    TraitError(String),
+
+    #[error("Implementation error: {0}")]
+    ImplError(String),
+
+    #[error("Async/Await error: {0}")]
+    AsyncError(String),
+
+    #[error("Type error: {0}")]
+    TypeError(String),
+
+    #[error("Visibility error: {0}")]
+    VisibilityError(String),
+
     #[error("Compilation error: {0}")]
     CompileError(String),
 }
@@ -128,6 +146,9 @@ impl fmt::Display for Expression {
             },
             Expression::FString { template, expressions: _ } => {
                 write!(f, "f\"{}\"", template)
+            },
+            Expression::Await { expr } => {
+                write!(f, "await {}", expr)
             },
             Expression::Network { operation, handler } => {
                 write!(f, "Network({}, {:?})", operation, handler)

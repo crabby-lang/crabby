@@ -60,8 +60,8 @@ pub enum Token {
     Constant,
     #[token("class")]
     Class,
-    #[token("extends")]
-    Extends,
+    #[token("extend")]
+    Extend,
     #[token("except")]
     Except,
     #[token("expect")]

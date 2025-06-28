@@ -11,7 +11,7 @@ pub def create_person(name: String, age: Int) -> Person {
         age: age,
     }
 
-    print(f'Hi, my name is {person.name} and my age is {person.age}')
+    print(f"Hi, my name is {person.name} and my age is {person.age}")
     return person
 }
 
@@ -30,3 +30,4 @@ pub def main() {
 }
 
 // Got any problem? You can create an issue for this file!
+

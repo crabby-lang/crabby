@@ -58,6 +58,9 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Return(Box::new(expr)))
             },
+            Token::Class => self.parse_class_statement(),
+            Token::Trait => self.parse_trait_statement(),
+            Token::Implement => self.parse_impl_statement(),
             Token::Match => self.parse_match_statement(),
             Token::And => self.parse_and_statement(),
             Token::Enum => self.parse_enum_statement(),
@@ -97,6 +100,20 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_visibility(&mut self) -> Result<Visibility, CrabbyError> {
+        match self.peek().token {
+            Token::Public => {
+                self.advance();
+                Ok(Visibility::Public)
+            },
+            Token::Private => {
+                self.advance();
+                Ok(Visibility::Private)
+            },
+            _ => Ok(Visibility::Private),
+        }
+    }
+
     fn parse_function_definition(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'def'
 
@@ -127,7 +144,6 @@ impl<'a> Parser<'a> {
         }
         self.advance(); // consume ')'
 
-        // self.consume(&Token::Colon, "Expected ':' after parameters")?;
         let body = self.parse_block()?;
 
         Ok(Statement::FunctionDef {
@@ -185,34 +201,71 @@ impl<'a> Parser<'a> {
 
         Ok(Statement::Macro {
             name,
-            params: params.join(","), // Join params into single string
+            params: params.join(","),
             body: Box::new(Expression::Lambda {
-                params: params,
+                params,
                 body: Box::new(body),
             }),
         })
     }
 
-    fn parse_async_statement(&mut self) -> Result<Statement, CrabbyError> {
+    pub fn parse_async_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'async'
-        let condition = self.parse_expression()?;
-        let body = self.parse_block()?;
 
-        Ok(Statement::Async {
-            condition: Box::new(condition),
-            body: Box::new(body),
-        })
+        if matches!(self.peek().token, Token::Def) {
+            self.advance(); // consume 'def'
+
+            let name = if let Token::Identifier(name) = &self.peek().token {
+                name.clone()
+            } else {
+                return Err(self.error("Expected function name after 'async def'"));
+            };
+            self.advance();
+
+            let params = self.parse_params()?;
+
+            let return_type = if matches!(self.peek().token, Token::CoolerArrow) {
+                self.advance(); // consume '->'
+                if let Token::Identifier(type_name) = &self.peek().token {
+                    Some(type_name.clone())
+                } else {
+                    return Err(self.error("Expected return type after '->'"));
+                }
+            } else {
+                None
+            };
+
+            let body = self.parse_block()?;
+
+            Ok(Statement::AsyncFunction {
+                name,
+                params,
+                body: Box::new(body),
+                return_type,
+            })
+        } else {
+            let expr = self.parse_expression()?;
+            Ok(Statement::Expression(expr))
+        }
     }
 
-    fn parse_await_statement(&mut self) -> Result<Statement,    CrabbyError> {
+    pub fn parse_await_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'await'
-        let condition = self.parse_expression()?;
-        let body = self.parse_block()?;
 
-        Ok(Statement::Await {
-            condition: Box::new(condition),
-            body: Box::new(body),
-        })
+        let expr = self.parse_expression()?;
+        Ok(Expression::Await { expr: Box::new(expr)});
+    }
+
+    fn parse_class_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'class'
+    }
+
+    fn parse_trait_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'trait'
+    }
+
+    fn parse_impl_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'impl'
     }
 
     fn parse_and_statement(&mut self) -> Result<Statement, CrabbyError> {
@@ -230,7 +283,6 @@ impl<'a> Parser<'a> {
     fn parse_if_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'if'
         let condition = self.parse_expression()?;
-        // self.consume(&Token::Colon, "Expected ':' after if condition")?;
 
         let then_branch = self.parse_block()?;
 
@@ -291,6 +343,11 @@ impl<'a> Parser<'a> {
 
     fn parse_expression(&mut self) -> Result<Expression, CrabbyError> {
         let expr = self.parse_primary()?;
+
+        match &self.peek().token {
+            Token::Await => self.parse_expression(),
+            _ => self.parse_primary(),
+        };
 
         while matches!(self.peek().token, Token::Dot) {
             self.advance(); // consume dot

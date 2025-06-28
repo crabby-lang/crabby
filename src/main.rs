@@ -11,6 +11,7 @@ mod compile;
 mod deadcode;
 mod core;
 mod docgen;
+
 // mod graphics;
 
 #[derive(Parser)]
