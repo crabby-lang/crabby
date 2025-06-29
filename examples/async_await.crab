@@ -1,6 +1,6 @@
 // Asynchronous and Await in Crabby
 
-import "http"
+import http from "http"
 
 async def fetch_data(url: String) -> String {
     let response = await http.get(url)

@@ -1,4 +1,4 @@
-// Crabby's 'Struct' and 'Where' statements
+// Crabby's 'Struct' and 'Where' statements - EXPERIMENTAL
 
 struct Point where x >= 0 {
     x: Int,

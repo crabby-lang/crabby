@@ -1,4 +1,4 @@
-// Crabby's Example network usage
+// Crabby's Example network usage - EXPERIMENTAL
 
 def network_example() {
     let server = network.listen("127.0.0.1", 8080)

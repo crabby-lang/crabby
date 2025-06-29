@@ -1,4 +1,4 @@
-// Crabby's Array Implementation
+// Crabby's Array Implementation - EXPERIMENTAL
 
 let numbers: [Int; 5] = [1, 2, 3, 4, 5]
 

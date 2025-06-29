@@ -1,4 +1,4 @@
-// Consts in Crabby
+// Consts in Crabby - EXPERIMENTAL
 
 const PI: Float = 3.14159
 const MAX_USERS: Int = 100

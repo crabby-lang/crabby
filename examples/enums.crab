@@ -1,4 +1,4 @@
-// Crabby's 'Enum' Statements
+// Crabby's 'Enum' Statements - EXPERIMENTAL
 
 enum Color where size > 0 {
     Red,

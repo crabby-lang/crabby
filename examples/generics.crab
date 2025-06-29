@@ -1,4 +1,4 @@
-// Crabby's Generic implementation
+// Crabby's Generic implementation - EXPERIMENTAL
 
 pub def add<T:Num>(a: T, b: T) -> T {
     return a + but

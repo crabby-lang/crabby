@@ -1,4 +1,4 @@
-// Macro scripting in Crabby
+// Macro scripting in Crabby - EXPERIMENTAL
 
 macro repeat {
     (value, count) => {
