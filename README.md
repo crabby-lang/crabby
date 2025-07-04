@@ -10,13 +10,13 @@
 
 ![Logo](https://github.com/Kazooki123/crabby/blob/main/crabbylogo.jpg)
 
-**NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault `(boohoo)` and we're still *fixing* it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
+**NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
 
 Crabby is a **Modern High-level**, **Versatile**, **Multi-paradigm**, **general-purpose**, and a **hybrid approach** programming language.
 It is designed to be *readable*, *ease-to-use* for beginners, and *powerful* enough for advanced users.
 
 Crabby is leaning into *multi-paradigm*, supporting paradigms like **OOP** and **Procedural** style of programming.
-But if you want the functional nature of Crabby, It is still a **Functional** programming language!
+But if you want the functional nature of Crabby, It is still a **Functional** programming language by default!
 
 ## What Change?
 

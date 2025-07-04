@@ -1,0 +1,10 @@
+// Crabby's Pipeline feature
+
+let numbers = [1, 2, 3, 4, 5]
+
+let squared = numbers
+    |> map(x => x * x)
+    |> filter(x => x % 2 == 0)
+    |> sum()
+
+print(f"Output: {squared}")

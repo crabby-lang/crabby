@@ -8,11 +8,12 @@ mod utils;
 mod lexer;
 mod parser;
 mod compile;
+mod runtime;
+mod value;
+// mod repl;
 mod deadcode;
 mod core;
 mod docgen;
-
-// mod graphics;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
@@ -27,7 +28,7 @@ struct Cli {
     version: bool,
 
     #[arg(long, help = "Analyze code for unused declarations")]
-    analyze_deadcode: bool,
+    deadcode_warn: bool,
 }
 
 #[tokio::main]
@@ -42,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut compiler = compile::Compiler::new(Some(absolute_path));
         compiler.compile(&ast).await?;
 
-        if cli.analyze_deadcode {
+        if cli.deadcode_warn {
             let mut analyzer = DeadCodeAnalyzer::new();
             let warnings = analyzer.analyze(&ast)?;
             if !warnings.is_empty() {

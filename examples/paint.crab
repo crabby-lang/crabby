@@ -1,4 +1,6 @@
-// (BETA) Crabby Supports Graphics and Rendering for Modeling, Visualization and more!
+// (EXPERIMENTAL) Crabby Supports Graphics and Rendering for Modeling, Visualization and more!
+// Note: This is very experimental! We do not recommend trying this file until we added a
+// fully functional graphics library for Crabby.
 
 def paint() {
     canvas(800, 600)

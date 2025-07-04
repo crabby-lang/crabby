@@ -1,8 +1,16 @@
 // Crabby's match & case statements - EXPERIMENTAL
 
-match value: {
-    case 1 => "one",
-    case _ => "default",
+match value {
+    case 1 => print("one"),
+    case _ => print("default"),
+}
+
+// Match multiple values:
+
+let number = 5
+match number {
+    case 1 | 3 | 5 | 7  => print("This is a odd number")
+    case _ => print("Not an odd number")
 }
 
 // Got any problem? You can create an issue for this file!

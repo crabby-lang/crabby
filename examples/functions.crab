@@ -1,4 +1,4 @@
-// Functions coding in Crabby
+// Functions coding in Crabby - EXPERIMENTAL
 
 pub struct Person {
     name: String,
@@ -14,6 +14,8 @@ pub def create_person(name: String, age: Int) -> Person {
     print(f"Hi, my name is {person.name} and my age is {person.age}")
     return person
 }
+
+// WHAT'S HAPPENING?
 
 // (name: String, age: Int)
 // ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -8,6 +8,6 @@ RUN apk add --no-cache \
 WORKDIR /usr/src/crabby
 COPY . .
 
-RUN cargo build
+RUN cargo build --release
 
 CMD ["cargo", "run", "./examples/example.crab"]

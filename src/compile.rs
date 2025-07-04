@@ -5,24 +5,16 @@ use std::future::Future;
 use crate::fs;
 
 use crate::utils::CrabbyError;
-use crate::core::network::NetworkHandler;
-use crate::parser::{parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm, NetworkOperation};
+use crate::parser::{parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
 use crate::lexer::tokenize;
-
-#[derive(Clone)]
-pub struct NetworkState {
-    pub handler: NetworkHandler,
-    pub connections: HashMap<String, usize>,
-}
 
 pub struct Compiler {
     variables: HashMap<String, Value>,
     functions: HashMap<String, Function>,
     module: Module,
     current_file: Option<PathBuf>,
-    network_state: Option<NetworkState>,
-    handler: NetworkHandler,
     awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
+    call_stack: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -33,7 +25,6 @@ pub enum Value {
     Lambda(Function),
     Boolean(bool),
     Array(Vec<Value>),
-    NetworkHandler(NetworkHandler),
     Void,
 }
 
@@ -67,18 +58,8 @@ impl PartialEq for Value {
             (Value::Lambda(_), Value::Lambda(_)) => false,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
             (Value::Array(a), Value::Array(b)) => a == b,
-            (Value::NetworkHandler(_), Value::NetworkHandler(_)) => false,
             (Value::Void, Value::Void) => true,
             _ => false,
-        }
-    }
-}
-
-impl NetworkState {
-    pub fn new() -> Self {
-        Self {
-            handler: NetworkHandler::new(),
-            connections: HashMap::new(),
         }
     }
 }
@@ -97,7 +78,6 @@ impl Value {
                     .collect();
                 format!("[{}]", elements_str.join(", "))
             },
-            Value::NetworkHandler(_) => "<network handler>".to_string(),
             Value::Void => "void".to_string()
         }
     }
@@ -150,9 +130,8 @@ impl Compiler {
                 private_items: HashMap::new()
             },
             current_file: file_path,
-            network_state: None,
-            handler: NetworkHandler::new(),
             awaiting: Vec::new(),
+            call_stack: Vec::new()
         };
 
         compiler.functions.insert("print".to_string(), Function {
@@ -167,46 +146,6 @@ impl Compiler {
         Module {
             public_items: HashMap::new(),
             private_items: HashMap::new(),
-        }
-    }
-
-    pub async fn compile_network_call(&mut self, _object: &Expression, method: &str, args: &[Expression]) -> Result<Value, CrabbyError> {
-        let mut evaluated_args = Vec::new();
-        for arg in args {
-            evaluated_args.push(self.compile_expression(arg).await?);
-        }
-
-        let network_state = self.ensure_network()?;
-
-        match method {
-            "listen" => {
-                if evaluated_args.len() != 2 {
-                    return Err(CrabbyError::CompileError("listen() requires address and port".into()));
-                }
-                match (&evaluated_args[0], &evaluated_args[1]) {
-                    (Value::String(addr), Value::Integer(port)) => {
-                        network_state.handler.listen(addr, *port as u16).await?;
-                        Ok(Value::NetworkHandler(network_state.handler.clone()))
-                    }
-                    _ => Err(CrabbyError::CompileError("Invalid arguments for listen()".into()))
-                }
-            },
-            "send" => {
-                if evaluated_args.len() != 1 {
-                    return Err(CrabbyError::CompileError("send() requires data argument".into()));
-                }
-                match &evaluated_args[0] {
-                    Value::String(data) => {
-                        network_state.handler.send(data.as_bytes(), 0).await?;
-                        Ok(Value::Void)
-                    }
-                    _ => Err(CrabbyError::CompileError("send() requires string data".into()))
-                }
-            },
-            "receive" => {
-                Ok(Value::NetworkHandler(network_state.handler.clone()))
-            },
-            _ => Err(CrabbyError::CompileError(format!("Unknown network method: {}", method))),
         }
     }
 
@@ -230,16 +169,6 @@ impl Compiler {
         }
 
         Ok(())
-    }
-
-    fn ensure_network(&mut self) -> Result<&mut NetworkState, CrabbyError> {
-        if self.network_state.is_none() {
-            self.network_state = Some(NetworkState {
-                handler: NetworkHandler::new(),
-                connections: HashMap::new(),
-            });
-        }
-        Ok(self.network_state.as_mut().unwrap())
     }
 
     pub async fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
@@ -428,53 +357,6 @@ impl Compiler {
                 }));
                 Ok(None)
             },
-            Statement::Network { kind, address, port, body } => {
-                let addr = self.compile_expression(address).await;
-                let port_val = self.compile_expression(port).await;
-
-                let addr = match addr {
-                    Ok(value) => value,
-                    Err(e) => return Err(e),
-                };
-
-                let port_val = match port_val {
-                    Ok(value) => value,
-                    Err(e) => return Err(e),
-                };
-
-                match (addr, port_val) {
-                    (Value::String(addr_str), Value::Integer(port_num)) => {
-                        let mut net_state = self.ensure_network()?.clone();
-                        match kind {
-                            NetworkOperation::Listen { .. } => {
-                                net_state.handler.listen(&addr_str, port_num as u16).await?;
-                            },
-                            NetworkOperation::Connect { .. } => {
-                                net_state.handler.connect(&addr_str, port_num as u16).await?;
-                            },
-                            &NetworkOperation::Send { ref data, ref conn_index } => {
-                                let data_val = self.compile_expression(data).await?;
-                                if let Value::String(s) = data_val {
-                                    net_state.handler.send(s.as_bytes(), *conn_index).await?;
-                                }
-                            },
-                            NetworkOperation::Receive { conn_index } => {
-                                let data = self.handler.receive(*conn_index).await?;
-                                return if let Ok(s) = String::from_utf8(data) {
-                                    Ok(Some(Value::String(s)))
-                                } else {
-                                    Err(CrabbyError::CompileError("Invalid UTF-8 data".into()))
-                                };
-                            },
-                        }
-                        if let Some(body) = body {
-                            self.compile_statement(body).await?;
-                        }
-                        Ok(None)
-                    },
-                    _ => Err(CrabbyError::CompileError("Invalid network operation arguments".into()))
-                }
-            },
             Statement::Let { name, value } => {
                 let is_public = name.starts_with("pub ");
                 let var_name = if is_public {
@@ -514,6 +396,25 @@ impl Compiler {
                 }
             },
             Statement::Var { name, value } => {
+                let is_public = name.starts_with("pub ");
+                let var_name = if is_public {
+                    name.trim_start_matches("pub ").to_string()
+                } else {
+                    name.to_string()
+                };
+
+                let compiled_value = self.compile_expression(value).await?;
+
+                if is_public {
+                    self.module.public_items.insert(var_name.clone(), compiled_value.clone());
+                } else {
+                    self.module.private_items.insert(var_name.clone(), compiled_value.clone());
+                }
+
+                self.variables.insert(var_name, compiled_value);
+                Ok(None)
+            },
+            Statement::Const { name, value } => {
                 let is_public = name.starts_with("pub ");
                 let var_name = if is_public {
                     name.trim_start_matches("pub ").to_string()
@@ -729,51 +630,22 @@ impl Compiler {
                 PatternKind::Variable(name) => Ok(Value::String(name.clone())),
                 PatternKind::Wildcard => Ok(Value::Void),
             },
-            Expression::Network { operation, handler } => {
-                let network_state = self.ensure_network()?;
-                Ok(Value::NetworkHandler(network_state.handler.clone())).unwrap();
-
-                match operation {
-                    NetworkOperation::Listen { addr, port } => {
-                        let handler = self.ensure_network();
-                        handler.unwrap().handler.listen(addr, *port).await?;
-                        Ok(Value::NetworkHandler(handler.unwrap().handler.clone()))
-                    }
-                    NetworkOperation::Connect { addr, port } => {
-                        let handler = self.ensure_network();
-                        handler.unwrap().handler.connect(addr, *port).await?;
-                        Ok(Value::NetworkHandler(handler.unwrap().handler.clone()))
-                    }
-                    NetworkOperation::Send { data, conn_index } => {
-                        let handler = self.ensure_network();
-                        let data_val = self.compile_expression(data).await?;
-                        if let Value::String(s) = data_val {
-                            handler.unwrap().handler.send(s.as_bytes(), *conn_index).await?;
-                            Ok(Value::Void)
-                        } else {
-                            Err(CrabbyError::CompileError("send() requires string data".into()))
-                        }
-                    }
-                    NetworkOperation::Receive { conn_index: _ } => {
-                        let handler = self.ensure_network();
-                        Ok(Value::NetworkHandler(handler.unwrap().handler.clone()))
-                    }
-                }
-            },
             Expression::Call { function, arguments } => {
                 let mut compiled_args = Vec::new();
+
+                if self.call_stack.contains(function) {
+                    return Err(CrabbyError::CompileError(format!(
+                        "Recursion is not allowed: function '{}' calls itself", function
+                    )));
+                }
+                self.call_stack.push(function.clone());
+
                 for arg in arguments {
                     compiled_args.push(self.compile_expression(arg).await?);
                 }
 
                 if function == "print" {
                     return self.handle_print(arguments).await;
-                }
-
-                if function == "network" {
-                    if let Some(Expression::Call { function: method, arguments: args }) = arguments.get(0) {
-                        return self.compile_network_call(&Expression::Variable(function.clone()), method, args).await;
-                    }
                 }
 
                 if let Some(Value::Lambda(lambda)) = self.variables.get(function) {
@@ -793,16 +665,32 @@ impl Compiler {
                     )));
                 }
 
-                let mut new_compiler = Compiler::new(None);
-                for (param, arg) in func.params.iter().zip(arguments) {
-                    let arg_value = self.compile_expression(arg).await?;
-                    new_compiler.variables.insert(param.clone(), arg_value);
-                }
-
-                match new_compiler.compile_statement(&func.body).await? {
-                    Some(value) => Ok(value),
-                    None => Ok(Value::Integer(0)),
-                }.unwrap();
+                let result = if let Some(Value::Lambda(lambda)) = self.variables.get(function) {
+                    self.handle_lambda_call(lambda.clone(), arguments).await
+                } else {
+                    let func = self.functions.get(function).cloned().ok_or_else(|| {
+                        CrabbyError::CompileError(format!("Undefined function: {}", function))
+                    })?;
+                    if arguments.len() != func.params.len() {
+                        return Err(CrabbyError::CompileError(format!(
+                            "Function {} expects {} arguments, got {}",
+                            function,
+                            func.params.len(),
+                            arguments.len()
+                        )));
+                    }
+                    let mut new_compiler = Compiler::new(None);
+                    for (param, arg) in func.params.iter().zip(arguments) {
+                        let arg_value = self.compile_expression(arg).await?;
+                        new_compiler.variables.insert(param.clone(), arg_value);
+                    }
+                    match new_compiler.compile_statement(&func.body).await? {
+                        Some(value) => Ok(value),
+                        None => Ok(Value::Integer(0)),
+                    }
+                };
+                self.call_stack.pop();
+                result;
 
                 Ok(Value::Void)
             },

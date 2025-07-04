@@ -1,0 +1,25 @@
+pub def map(func, arr) {
+    let out = []
+    for item in arr {
+        out.push(func(item))
+    }
+    return out
+}
+
+pub def filter(func, arr) {
+    let out = []
+    for item in arr {
+        if func(item) {
+            out.push(item)
+        }
+    }
+    return out
+}
+
+pub def sum(arr) {
+    let total = 0
+    for x in arr {
+        total += x
+    }
+    return total
+}

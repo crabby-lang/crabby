@@ -1,0 +1,9 @@
+// Testing if Crabby can run Assembly-like code natively
+// - Note: Just a concept, and changes will occur in updates.
+// Also very experimental
+
+unsafe {
+    asm!(
+        
+    )
+}

@@ -1,4 +1,7 @@
-// Crabby's BETA Inheritance and Polymorphism feature
+// Crabby's Inheritance and Polymorphism feature
+// 2 options to use Inheritance - EXPERIMENTAL
+
+// USING CLASS & EXTEND:
 
 class Person extend Human {
     def constructor(name: String) {

@@ -46,7 +46,6 @@ impl<'a> Parser<'a> {
 
     fn parse_statement(&mut self) -> Result<Statement, CrabbyError> {
         match &self.peek().token {
-            Token::Identifier(name) if name == "network" => self.parse_network_statement(),
             Token::Loop => self.parse_loop_statement(),
             Token::For => self.parse_for_statement(),
             Token::Import => self.parse_import_statement(),
@@ -268,6 +267,10 @@ impl<'a> Parser<'a> {
         self.advance(); // consume 'impl'
     }
 
+    fn parse_mutable_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'mut'
+    }
+
     fn parse_and_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'and'
         let left = self.parse_expression()?;
@@ -298,35 +301,6 @@ impl<'a> Parser<'a> {
             then_branch: Box::new(then_branch),
             else_branch,
         })
-    }
-
-    fn parse_network_statement(&mut self) -> Result<Statement, CrabbyError> {
-        let name = if let Token::Identifier(name) = &self.peek().token {
-            name.clone()
-        } else {
-            return Err(self.error("Expected network function name"));
-        };
-        self.advance();
-
-        self.consume(&Token::LParen, "Expected '(' after network function name")?;
-
-        let mut arguments = Vec::new();
-        if !matches!(self.peek().token, Token::RParen) {
-            loop {
-                arguments.push(self.parse_expression()?);
-                if !matches!(self.peek().token, Token::Comma) {
-                    break;
-                }
-                self.advance(); // consume ','
-            }
-        }
-
-        self.consume(&Token::RParen, "Expected ')' after arguments")?;
-
-        Ok(Statement::Expression(Expression::Call {
-            function: format!("network.{}", name),
-            arguments,
-        }))
     }
 
     fn parse_while_statement(&mut self) -> Result<Statement, CrabbyError> {
@@ -587,7 +561,26 @@ impl<'a> Parser<'a> {
         self.consume(&Token::Equals, "Expected '=' after variable name")?;
         let value = self.parse_expression()?;
 
-        Ok(Statement::Let {
+        Ok(Statement::Var {
+            name,
+            value: Box::new(value),
+        })
+    }
+
+    fn parse_constant_statement(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'const'
+
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected variable name"));
+        };
+        self.advance();
+
+        self.consume(&Token::Equals, "Expected '=' after variable name")?;
+        let value = self.parse_expression()?;
+
+        Ok(Statement::Const {
             name,
             value: Box::new(value),
         })

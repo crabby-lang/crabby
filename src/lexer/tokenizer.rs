@@ -44,7 +44,7 @@ pub enum Token {
     Elseif,
     #[token("pub")]
     Public,
-    #[token("private")] // You can have a function have private or not, if not it'll still treat it private
+    #[token("private")] // You can make a function have private or not, if not it'll still treat it as private
     Private,
     #[token("enum")]
     Enum,
@@ -94,24 +94,18 @@ pub enum Token {
     Catch,
     #[token("ref")]
     Reference,
+    #[token("own")] // Ownership keywords for memory safety
+    Ownership,
+    #[token("move")] // Move keyboard for borrowing
+    Move,
+    #[token("unsafe")] // Introduces for C & C++ FFI feature
+    Unsafe,
 
     // Imports
     #[token("import")]
     Import,
     #[token("from")]
     From,
-
-    // Networking
-    #[token("network")]
-    Network,
-    #[token("listen")]
-    Listen,
-    #[token("connect")]
-    Connect,
-    #[token("send")]
-    Send,
-    #[token("receive")]
-    Receive,
 
     // Literals
     #[regex(r"-?[0-9]+\.[0-9]+", |lex| lex.slice().parse::<f64>().ok())]
@@ -151,7 +145,7 @@ pub enum Token {
     DollarSign,
     #[token("?")]
     QuestionMark,
-    #[token("_")]
+    #[token("_", priority = 3)]
     Underscore,
     #[token("!=")]
     NotEquals,

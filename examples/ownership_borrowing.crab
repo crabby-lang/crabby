@@ -1,0 +1,24 @@
+// Crabby's Ownership && Borrowing for Memory safety - EXPERIMENTAL
+
+let a = "hello"
+let b = a
+
+print(a) // Error! Value moved to 'b'
+
+// Here's what we can do:
+
+let a1 = "hello"
+let b1 = &a1 // <- Borrowed
+
+print(a) // Valid!
+print(b) // Still valid!
+
+// Mutable borrowing (mut)
+
+let mut a = "hello"
+let b = &mut a
+
+b.append("world") // <- Allowed!
+print(a) // - prints hello world
+
+// Got any problem? You can create an issue for this file!

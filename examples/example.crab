@@ -5,9 +5,14 @@ let y = 3.14
 let message = "Hello, Crabby!"
 let h = "hello"
 let w = " world"
+let result = "example"
 var two = 2 // var functions exactly like 'let' because Crabby is multi-paradigm
+const three = 3 // const acts like var and let too, see constants.crab for more info
 
 def foo() {
+    """
+    DOCSTRING
+    """
     print("bar")
 }
 
@@ -16,4 +21,6 @@ print(y)
 print(message)
 print(h)
 print(two)
+print(three)
+print(f"Result: {example}")
 foo()

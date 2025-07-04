@@ -11,9 +11,9 @@ if x {
 
 let a = 0.1
 let b = 0.2
-let c = a + b
+// let c = a + b
 
-if c {
+if b {
     print("True!")
 } else {
     print("False!")

@@ -1,8 +1,7 @@
 use std::fmt;
 
-use crate::parser::{BinaryOp, Expression, Statement, NetworkOperation};
+use crate::parser::{BinaryOp, Expression, Statement};
 use crate::deadcode::DeadCodeWarning;
-// use periphery::sys::gpio::Value;
 use crate::compile::Value;
 
 #[derive(Debug)]
@@ -43,9 +42,6 @@ pub enum CrabbyError {
     #[error("Invalid match pattern: {0}")]
     InvalidMatchPattern(String),
 
-    #[error("Network error: {0}")]
-    NetworkError(String),
-
     #[error("Match operation error: {0}")]
     MatchError(String),
 
@@ -75,12 +71,6 @@ pub enum CrabbyError {
 
     #[error("Compilation error: {0}")]
     CompileError(String),
-}
-
-impl From<std::io::Error> for CrabbyError {
-    fn from(error: std::io::Error) -> Self {
-        CrabbyError::NetworkError(error.to_string())
-    }
 }
 
 impl fmt::Display for Span {
@@ -150,9 +140,6 @@ impl fmt::Display for Expression {
             Expression::Await { expr } => {
                 write!(f, "await {}", expr)
             },
-            Expression::Network { operation, handler } => {
-                write!(f, "Network({}, {:?})", operation, handler)
-            },
             Expression::Call { function, arguments } => {
                 write!(f, "{}({})", function,
                     arguments.iter()
@@ -178,21 +165,6 @@ impl fmt::Display for Expression {
             Expression::Index { array, index } => {
                 write!(f, "{}[{}]", array, index)
             },
-        }
-    }
-}
-
-impl std::fmt::Display for NetworkOperation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            NetworkOperation::Listen { addr, port } =>
-                write!(f, "Listen({}:{})", addr, port),
-            NetworkOperation::Connect { addr, port } =>
-                write!(f, "Connect({}:{})", addr, port),
-            NetworkOperation::Send { data, conn_index } =>
-                write!(f, "Send({:?}, {})", data, conn_index),
-            NetworkOperation::Receive { conn_index } =>
-                write!(f, "Receive({})", conn_index),
         }
     }
 }

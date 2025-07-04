@@ -75,6 +75,9 @@ pub enum Statement {
         params: String,
         body: Box<Expression>,
     },
+    Mutable {
+        name: String,
+    },
     ForIn {
         variable: String,
         iterator: Box<Expression>,
@@ -113,33 +116,8 @@ pub enum Statement {
         index: Box<Expression>,
         value: Box<Expression>,
     },
-    Network {
-        kind: NetworkOperation,
-        address: Box<Expression>,
-        port: Box<Expression>,
-        body: Option<Box<Statement>>,
-    },
     Block(Vec<Statement>),
     Expression(Expression),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum NetworkOperation {
-    Listen {
-        addr: String,
-        port: u16
-    },
-    Connect {
-        addr: String,
-        port: u16
-    },
-    Send {
-        data: Box<Expression>,
-        conn_index: usize
-    },
-    Receive {
-        conn_index: usize
-    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -187,10 +165,6 @@ pub enum Expression {
         expr: Box<Expression>,
         condition: Box<Expression>,
         body: Box<Statement>,
-    },
-    Network {
-        operation: NetworkOperation,
-        handler: Option<Box<Expression>>,
     },
     FString {
         template: String,
