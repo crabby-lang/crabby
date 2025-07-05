@@ -1,14 +1,18 @@
 // Crabby's Example network usage - EXPERIMENTAL
 
+import net from "net"
+
 def network_example() {
-    let server = network.listen("127.0.0.1", 8080)
+    let server = net.listen("127.0.0.1", 8080)
     server.send("Hello!")
     let response = server.receive()
 
-    let client = network.connect("127.0.0.1", 8080)
+    let client = net.connect("127.0.0.1", 8080)
     client.send("Hello server!")
 }
 
-network_example()
+def main() {
+    network_example()
+}
 
 // Got any problem? You can create an issue for this file!

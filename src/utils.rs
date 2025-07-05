@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::parser::{BinaryOp, Expression, Statement};
 use crate::deadcode::DeadCodeWarning;
-use crate::compile::Value;
+use crate::value::Value;
 
 #[derive(Debug)]
 pub struct Span {

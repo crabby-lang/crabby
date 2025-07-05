@@ -1,6 +1,6 @@
 // Crabby's Array Implementation - EXPERIMENTAL
 
-let numbers: [Int; 5] = [1, 2, 3, 4, 5]
+let numbers: Int = [1, 2, 3, 4, 5]
 
 print(numbers[0])
 print(numbers[4])

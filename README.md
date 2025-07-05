@@ -4,11 +4,11 @@
 
 ![GitHub contributors](https://img.shields.io/github/contributors/crabby-lang/crabby?style=for-the-badge&color=blue)
 
-![GitHub License](https://img.shields.io/github/license/Kazooki123/crabby?style=for-the-badge&logo=gnu&logoColor=%23A42E2B)
+![GitHub License](https://img.shields.io/github/license/crabby-lang/crabby?style=for-the-badge&logo=gnu&logoColor=%23A42E2B)
 
 ## Introduction
 
-![Logo](https://github.com/Kazooki123/crabby/blob/main/crabbylogo.jpg)
+![Logo](https://github.com/crabby-lang/crabby/blob/main/crabbylogo.jpg)
 
 **NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
 
@@ -56,6 +56,13 @@ Step 3: Build it and Test it for yourself
 ```bash
 cargo build
 cargo run examples/example.crab
+```
+
+OR
+
+```bash
+cd bin
+./crabby ../examples/example.crab
 ```
 
 ## Syntax
@@ -155,6 +162,26 @@ for i in range(y) {
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly message :3
 
 Speaking of comments, **Crabby** also support `Docstrings`!
+
+## FAQs
+
+> `Q`: Is Crabby going to be the new Python or Rust?
+
+Not really! This is just a hobby and fun project of mine, doesn't mean it's going to be the next big thing. But i build crabby because i love learning and experimenting how programming languages are made.
+
+> `Q:` What problems Crabby will fix?
+
+I'm going to very honest and be humble on this one, but Crabby will try to fix the problems that
+languages face like complexity in their syntax and slow runtime/compile time.
+
+Will it happen right now? Not yet, but could be, maybe one day you as the developer reading this
+could contribute the future of Crabby 😎
+
+> `Q`: Why does it have brackets and other non-Pythonic syntaxes if it aims to be one?
+
+Well i didn't say it's going to be FULLY pythonic, there are hints of pythonic style syntaxes
+but **Crabby** is multi-paradigm meaning you don't alway expect everything to be fully pythonic.
+It is great for python users that wants a functional approach language.
 
 ## Package Manager📦
 

@@ -4,3 +4,11 @@
 
 // compile.rs - Handles executing a '.crab' file
 // runtime.rs - manages functions, stacks, etc
+
+pub struct Runtime {
+
+}
+
+impl Runtime {
+    
+}
