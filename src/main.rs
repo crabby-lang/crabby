@@ -10,6 +10,7 @@ mod parser;
 mod compile;
 mod runtime;
 mod value;
+mod modules;
 // mod repl;
 mod deadcode;
 mod core;
@@ -20,7 +21,7 @@ mod docgen;
 #[command(about = "Crabby programming language compiler")]
 #[command(version = include_str!(".././version.txt"))]
 #[command(disable_version_flag = true)]
-struct Cli {
+pub struct Cli {
     #[arg(help = "Input .crab or .cb file")]
     input: Option<PathBuf>,
 
@@ -29,6 +30,9 @@ struct Cli {
 
     #[arg(long, help = "Analyze code for unused declarations")]
     deadcode_warn: bool,
+
+    // #[arg(help = "REPL playground to test Crabby")]
+    // repl: String,
 }
 
 #[tokio::main]

@@ -8,7 +8,7 @@
 
 ## Introduction
 
-![Logo](https://github.com/crabby-lang/crabby/blob/main/crabbylogo.jpg)
+![Logo](https://github.com/crabby-lang/crabby/blob/main/crabbylogo.png)
 
 **NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
 

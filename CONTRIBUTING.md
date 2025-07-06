@@ -72,7 +72,7 @@ code is written to the language, it may take up to a couple of minutes to hours,
 You can **contribute** to Crabby🦀 by:
 
 - Fixing bugs
-- Adding new features (e.g Crabby's Syntax, Improvements, Optimization, the Compiler)
+- Adding new features (e.g Crabby's Syntax, Improvements, Optimization, the Interpreter/Compiler)
 - Issuing a change of Crabby's syntax
 - Library/Package making
 - Expanding the documentation

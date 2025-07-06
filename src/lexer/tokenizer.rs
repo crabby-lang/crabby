@@ -76,8 +76,6 @@ pub enum Token {
     Trait,
     #[token("override")]
     Override,
-    #[token("module")]
-    Module,
     #[token("global")] // Acts like 'pub', you can just use 2 options depending on your needs
     Global,
     #[token("namespace")]
