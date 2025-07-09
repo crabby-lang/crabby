@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
-use crate::deadcode::DeadCodeAnalyzer;
+use crate::etc::deadcode::DeadCodeAnalyzer;
 use crate::parser::parse;
 
 mod utils;
@@ -12,9 +12,8 @@ mod runtime;
 mod value;
 mod modules;
 // mod repl;
-mod deadcode;
 mod core;
-mod docgen;
+mod etc;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
@@ -45,7 +44,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let tokens = lexer::tokenize(&source).await?;
         let ast = parse(tokens).await?;
         let mut compiler = compile::Compiler::new(Some(absolute_path));
+        // let mut runtime = runtime::Runtime::new(Some(absolute_path));
         compiler.compile(&ast).await?;
+        // runtime.runtime(&ast).await?;
 
         if cli.deadcode_warn {
             let mut analyzer = DeadCodeAnalyzer::new();

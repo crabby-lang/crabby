@@ -1,40 +1,28 @@
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-use std::pin::Pin;
-use std::future::Future;
-use crate::fs;
+use std::path::PathBuf;
 
 use crate::utils::CrabbyError;
-use crate::parser::{parse, Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
-use crate::lexer::tokenize;
+use crate::parser::{Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
 use crate::value::{Value, Function};
 use crate::modules::Module;
 
 pub struct Compiler {
-    variables: HashMap<String, Value>,
-    functions: HashMap<String, Function>,
+    function_definitions: HashMap<String, Function>,
     module: Module,
-    current_file: Option<PathBuf>,
-    awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
-    call_stack: Vec<String>,
 }
 
 impl Compiler {
-    pub fn new(file_path: Option<PathBuf>) -> Self {
+    pub fn new(_file_path: Option<PathBuf>) -> Self {
         let mut compiler = Self {
-            variables: HashMap::new(),
-            functions: HashMap::new(),
+            function_definitions: HashMap::new(),
             module: Module {
                 public_items: HashMap::new(),
                 private_items: HashMap::new(),
                 variable: HashMap::new()
-            },
-            current_file: file_path,
-            awaiting: Vec::new(),
-            call_stack: Vec::new()
+            }
         };
 
-        compiler.functions.insert("print".to_string(), Function {
+        compiler.function_definitions.insert("print".to_string(), Function {
             params: vec!["value".to_string()],
             body: Box::new(Statement::Expression(Expression::Variable("value".to_string()))),
         });
@@ -73,7 +61,7 @@ impl Compiler {
     }
 
     pub async fn compile_let_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
-        let compiled_value = self.compile_expression(value).await?;
+        let compiled_value = self.compile_expression(value)?;
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
@@ -91,7 +79,7 @@ impl Compiler {
     }
 
     pub async fn compile_var_statement(&mut self, name: &str, value: &Expression) -> Result<(), CrabbyError> {
-        let compiled_value = self.compile_expression(value).await;
+        let compiled_value = self.compile_expression(value);
         let is_public = name.starts_with("pub ");
         let var_name = if is_public {
             name.trim_start_matches("pub ").to_string()
@@ -108,42 +96,29 @@ impl Compiler {
         Ok(())
     }
 
-    async fn handle_lambda_call(&mut self, lambda: Function, arguments: &[Expression]) -> Result<Value, CrabbyError> {
-        for (param, arg) in lambda.params.iter().zip(arguments) {
-            let arg_value = self.compile_expression(arg).await?;
-            self.variables.insert(param.clone(), arg_value);
-        }
-
-        if let Some(value) = self.compile_statement(&lambda.body).await? {
-            Ok(value)
-        } else {
-            Ok(Value::Void)
-        }
-    }
-
     async fn handle_print(&mut self, args: &[Expression]) -> Result<Value, CrabbyError> {
         if args.len() != 1 {
             return Err(CrabbyError::CompileError("print takes exactly one argument".to_string()));
         }
 
-        let value = self.compile_expression(&args[0]).await?; // Add await here
+        let value = self.compile_expression(&args[0])?;
         println!("{}", value.to_string());
         Ok(Value::Integer(0))
     }
 
     pub async fn compile(&mut self, program: &Program) -> Result<(), CrabbyError> {
         for statement in &program.statements {
-            self.compile_statement(statement).await?;
+            self.compile_statement(statement)?;
         }
         Ok(())
     }
 
-    async fn compile_match(&mut self, value: &Expression, arms: &[MatchArm]) -> Result<Option<Value>, CrabbyError> {
-        let match_value = self.compile_expression(value).await?;
+    pub fn compile_match(&mut self, value: &Expression, arms: &[MatchArm]) -> Result<Option<Value>, CrabbyError> {
+        let match_value = self.compile_expression(value)?;
 
         for arm in arms {
-            if self.pattern_matches(&match_value, &arm.pattern).await? {
-                return Ok(Some(self.compile_expression(&arm.body).await?));
+            if self.pattern_matches(&match_value, &arm.pattern)? {
+                return Ok(Some(self.compile_expression(&arm.body)?));
             }
         }
 
@@ -154,7 +129,7 @@ impl Compiler {
         match pattern {
             Expression::Pattern(pattern_kind) => match &**pattern_kind {
                 PatternKind::Literal(expr) => {
-                    let compiled = self.compile_expression(expr).await?;
+                    let compiled = self.compile_expression(expr)?;
                     Ok(value == &compiled)
                 },
                 PatternKind::Variable(_) => Ok(true),
@@ -165,15 +140,28 @@ impl Compiler {
     }
 
     pub async fn compile_where(&mut self, expr: &Expression, condition: &Expression, _body: &Statement) -> Result<Value, CrabbyError> {
-        let cond_value = self.compile_expression(condition).await?;
+        let cond_value = self.compile_expression(condition)?;
         if let Value::Boolean(true) = cond_value {
-            self.compile_expression(expr).await
+            self.compile_expression(expr)
         } else {
             Ok(Value::Void)
         }
     }
 
-    pub async fn compile_statement(&mut self, stmt: &Statement) -> Result<Option<Value>, CrabbyError> {
+    pub async fn load_and_import_module(&self, _import_name: &str, import_path: &str) -> Result<Module, CrabbyError> {
+        let current_file = std::path::Path::new(".");
+        let resolved_path = Module::resolve_path(current_file, import_path);
+        let source_code = crate::fs::read_to_string(&resolved_path).map_err(|e| {
+            CrabbyError::CompileError(format!("Failed to read module '{}': {}", resolved_path.display(), e))
+        })?;
+        let tokens = crate::lexer::tokenize(&source_code).await?;
+        let ast = crate::parser::parse(tokens).await?;
+        let mut module_compiler = Compiler::new(Some(resolved_path.clone()));
+        module_compiler.compile(&ast).await?;
+        Ok(module_compiler.module)
+    }
+
+    pub fn compile_statement(&mut self, stmt: &Statement) -> Result<Option<Value>, CrabbyError> {
         match stmt {
             Statement::FunctionDef { name, params, body, return_type: _, docstring: _ } => {
                 let is_public = name.starts_with("pub ");
@@ -194,48 +182,20 @@ impl Compiler {
                     self.module.private_items.insert(func_name.clone(), Value::Lambda(function.clone()));
                 }
 
-                self.functions.insert(func_name, function);
+                self.function_definitions.insert(func_name, function);
 
                 Ok(None)
             },
-            Statement::AsyncFunction { name, params, body, return_type: _ } => {
-
-            },
+            Statement::AsyncFunction { .. } => Ok(None),
             Statement::And { left, right } => {
                 let left_val = Value::String(left.clone());
                 let right_val = Value::String(right.clone());
                 Ok(Some(Value::Boolean(left_val == right_val)))
             },
-            Statement::Macro { name, params, body } => {
-                self.variables.insert(name.clone(), Value::Lambda(Function {
-                    params: vec![params.clone()],
-                    body: Box::new(Statement::Expression(*(*body).clone())),
-                }));
-                Ok(None)
-            },
-            Statement::Let { name, value } => {
-                let is_public = name.starts_with("pub ");
-                let var_name = if is_public {
-                    name.trim_start_matches("pub ").to_string()
-                } else {
-                    name.to_string()
-                };
-
-                let compiled_value = self.compile_expression(value).await?;
-
-                if is_public {
-                    self.module.public_items.insert(var_name.clone(), compiled_value.clone());
-                } else {
-                    self.module.private_items.insert(var_name.clone(), compiled_value.clone());
-                }
-
-                self.variables.insert(var_name, compiled_value);
-                Ok(None)
-            },
             Statement::ArrayAssign { array, index, value } => {
-                let array_val = self.compile_expression(array).await?;
-                let index_val = self.compile_expression(index).await?;
-                let new_val = self.compile_expression(value).await?;
+                let array_val = self.compile_expression(array)?;
+                let index_val = self.compile_expression(index)?;
+                let new_val = self.compile_expression(value)?;
 
                 if let (Value::Array(mut elements), Value::Integer(i)) = (array_val, index_val) {
                     if i < 0 || i >= elements.len() as i64 {
@@ -251,99 +211,67 @@ impl Compiler {
                     ))
                 }
             },
-            Statement::Var { name, value } => {
-                let is_public = name.starts_with("pub ");
-                let var_name = if is_public {
-                    name.trim_start_matches("pub ").to_string()
-                } else {
-                    name.to_string()
-                };
-
-                let compiled_value = self.compile_expression(value).await?;
-
-                if is_public {
-                    self.module.public_items.insert(var_name.clone(), compiled_value.clone());
-                } else {
-                    self.module.private_items.insert(var_name.clone(), compiled_value.clone());
-                }
-
-                self.variables.insert(var_name, compiled_value);
-                Ok(None)
-            },
-            Statement::Const { name, value } => {
-                let is_public = name.starts_with("pub ");
-                let var_name = if is_public {
-                    name.trim_start_matches("pub ").to_string()
-                } else {
-                    name.to_string()
-                };
-
-                let compiled_value = self.compile_expression(value).await?;
-
-                if is_public {
-                    self.module.public_items.insert(var_name.clone(), compiled_value.clone());
-                } else {
-                    self.module.private_items.insert(var_name.clone(), compiled_value.clone());
-                }
-
-                self.variables.insert(var_name, compiled_value);
-                Ok(None)
-            },
-            Statement::Match { value, arms } => self.compile_match(value, arms).await,
+            Statement::Match { value, arms } => self.compile_match(value, arms),
             Statement::Return(expr) => {
-                let value = self.compile_expression(expr).await?;
+                let value = self.compile_expression(expr)?;
                 Ok(Some(value))
             },
             Statement::Loop { count, body } => {
-                let count_value = self.compile_expression(count).await?;
+                let count_value = self.compile_expression(count)?;
                 if let Value::Integer(n) = count_value {
                     for _ in 0..n {
-                        self.compile_statement(body).await?;
+                        self.compile_statement(body)?;
                     }
                     Ok(None)
                 } else {
                     Err(CrabbyError::CompileError("Loop count must be an integer".to_string()))
                 }
             },
-            Statement::ForIn { variable, iterator, body } => {
-                let iter_value = self.compile_expression(iterator).await?;
-                if let Value::Integer(n) = iter_value {
-                    for i in 0..n {
-                        self.variables.insert(variable.clone(), Value::Integer(i));
-                        self.compile_statement(body).await?;
-                    }
-                    Ok(None)
-                } else {
-                    Err(CrabbyError::CompileError("Iterator must be a range".to_string()))
+            Statement::If { condition, then_branch, else_branch } => {
+                let cond_value = self.compile_expression(condition)?;
+                match cond_value {
+                    Value::Boolean(true) => self.compile_statement(then_branch),
+                    Value::Boolean(false) => {
+                        if let Some(else_branch) = else_branch {
+                            self.compile_statement(else_branch)
+                        } else {
+                            Ok(None)
+                        }
+                    },
+                    _ => Err(CrabbyError::CompileError("Condition must be boolean".into()))
                 }
             },
-            Statement::Enum { name, variants: _variants, where_clause } => {
-                let value = Value::String(format!("enum {}", name));
-                self.variables.insert(name.clone(), value);
+            Statement::While { condition, body } => {
+                loop {
+                    let condition_value = self.compile_expression(condition)?;
+                    match condition_value {
+                        Value::Integer(0) => break,
+                        _ => {
+                            if let Some(Value::Integer(-1)) = self.compile_statement(body)? {
+                                break;
+                            }
+                        }
+                    }
+                }
                 Ok(None)
             },
-            Statement::Struct { name, fields: _fields, where_clause: _where_clause } => {
-                let value = Value::String(format!("struct {}", name));
-                self.variables.insert(name.clone(), value);
+            Statement::Block(statements) => {
+                for stmt in statements {
+                    self.compile_statement(stmt)?;
+                }
                 Ok(None)
+            },
+            Statement::Expression(expr) => {
+                let value = self.compile_expression(expr)?;
+                Ok(Some(value))
             },
             Statement::Import { name, source } => {
                 if let Some(source_path) = source {
-                    let mut module_compiler = Compiler::new(Some(PathBuf::from(source_path)));
-
-                    let path = Path::new(source_path);
-                    let source_code = fs::read_to_string(path).map_err(|e| {
-                        CrabbyError::CompileError(format!("Failed to read module '{}': {}", source_path, e))
-                    })?;
-
-                    let tokens = tokenize(&source_code).await?;
-                    let ast = parse(tokens).await?;
-                    module_compiler.compile(&ast).await?;
-
-                    if let Some(value) = module_compiler.module.public_items.get(name) {
-                        self.variables.insert(name.clone(), value.clone());
+                    let module = self.load_and_import_module(name, source_path);
+                    if let Some(value) = module.public_items.get(name) {
+                        self.module.variable.insert(name.clone(), value.clone());
                         Ok(None)
-                    } else if module_compiler.module.private_items.contains_key(name) {
+                    } else if module.private_items.contains_key(name) {
                         Err(CrabbyError::CompileError(format!(
                             "Cannot import private item '{}' from module",
                             name
@@ -358,71 +286,28 @@ impl Compiler {
                     Err(CrabbyError::CompileError("Standard library imports not yet implemented".to_string()))
                 }
             },
-            Statement::If { condition, then_branch, else_branch } => {
-                let cond_value = self.compile_expression(condition).await?;
-                match cond_value {
-                    Value::Boolean(true) => self.compile_statement(then_branch).await,
-                    Value::Boolean(false) => {
-                        if let Some(else_branch) = else_branch {
-                            self.compile_statement(else_branch).await
-                        } else {
-                            Ok(None)
-                        }
-                    },
-                    _ => Err(CrabbyError::CompileError("Condition must be boolean".into()))
-                }
-            },
-            Statement::While { condition, body } => {
-                loop {
-                    let condition_value = self.compile_expression(condition).await?;
-                    match condition_value {
-                        Value::Integer(0) => break,
-                        _ => {
-                            if let Some(Value::Integer(-1)) = self.compile_statement(body).await? {
-                                break;
-                            }
-                        }
-                    }
-                }
-                Ok(None)
-            },
-            Statement::Block(statements) => {
-                for stmt in statements {
-                    self.compile_statement(stmt).await?;
-                }
-                Ok(None)
-            },
-            Statement::Expression(expr) => {
-                let value = self.compile_expression(expr).await?;
-                Ok(Some(value))
-            },
             _ => Ok(None)
         }
     }
 
-    pub async fn compile_expression(&mut self, expr: &Expression) -> Result<Value, CrabbyError> {
+    pub fn compile_expression(&mut self, expr: &Expression) -> Result<Value, CrabbyError> {
         match expr {
             Expression::Integer(n) => Ok(Value::Integer(*n)),
             Expression::Float(f) => Ok(Value::Float(*f)),
             Expression::String(s) => Ok(Value::String(s.clone())),
-            Expression::Variable(name) => {
-                self.variables.get(name).cloned().ok_or_else(|| {
-                    CrabbyError::CompileError(format!("Undefined variable: {}", name))
-                })
-            },
             Expression::Boolean(value) => Ok(Value::Integer(if *value { 1 } else { 0 })),
             Expression::Where { expr, condition, body } => {
-                let cond_value = self.compile_expression(condition).await?;
+                let cond_value = self.compile_expression(condition)?;
                 match cond_value {
                     Value::Boolean(true) => {
-                        self.compile_statement(body).await?;
-                        Ok(self.compile_expression(expr).await?)
+                        self.compile_statement(body);
+                        Ok(self.compile_expression(expr)?)
                     },
                     _ => Ok(Value::Boolean(false)),
                 }
             },
             Expression::Range(count) => {
-                let count_value = self.compile_expression(count).await?;
+                let count_value = self.compile_expression(count)?;
                 if let Value::Integer(n) = count_value {
                     Ok(Value::Integer(n))
                 } else {
@@ -432,13 +317,13 @@ impl Compiler {
             Expression::Array(elements) => {
                 let mut values = Vec::new();
                 for elem in elements {
-                    values.push(self.compile_expression(elem).await?);
+                    values.push(self.compile_expression(elem)?);
                 }
                 Ok(Value::Array(values))
             },
             Expression::Index { array, index } => {
-                let array_value = self.compile_expression(array).await?;
-                let index_value = self.compile_expression(index).await?;
+                let array_value = self.compile_expression(array)?;
+                let index_value = self.compile_expression(index)?;
 
                 match index_value {
                     Value::Integer(i) => array_value.get_index(i),
@@ -453,7 +338,7 @@ impl Compiler {
 
                 // Evaluate all expressions
                 for expr in expressions {
-                    let value = self.compile_expression(expr).await?;
+                    let value = self.compile_expression(expr)?;
                     expr_values.push(value);
                 }
 
@@ -474,81 +359,12 @@ impl Compiler {
                 final_string.push_str(&result[curr_pos..]);
                 Ok(Value::String(final_string))
             },
-            Expression::Await { expr } => {
-                let value = self.compile_expression(expr).await?;
-                self.awaiting.push(value);
-                Ok(Value::Void)
-            },
             Expression::Pattern(pattern_kind) => match &**pattern_kind {
                 PatternKind::Literal(expr) => {
-                    self.compile_expression(expr).await
+                    self.compile_expression(expr)
                 },
                 PatternKind::Variable(name) => Ok(Value::String(name.clone())),
                 PatternKind::Wildcard => Ok(Value::Void),
-            },
-            Expression::Call { function, arguments } => {
-                let mut compiled_args = Vec::new();
-
-                if self.call_stack.contains(function) {
-                    return Err(CrabbyError::CompileError(format!(
-                        "Recursion is not allowed: function '{}' calls itself", function
-                    )));
-                }
-                self.call_stack.push(function.clone());
-
-                for arg in arguments {
-                    compiled_args.push(self.compile_expression(arg).await?);
-                }
-
-                if function == "print" {
-                    return self.handle_print(arguments).await;
-                }
-
-                if let Some(Value::Lambda(lambda)) = self.variables.get(function) {
-                    return self.handle_lambda_call(lambda.clone(), arguments).await;
-                }
-
-                let func = self.functions.get(function).cloned().ok_or_else(|| {
-                    CrabbyError::CompileError(format!("Undefined function: {}", function))
-                })?;
-
-                if arguments.len() != func.params.len() {
-                    return Err(CrabbyError::CompileError(format!(
-                        "Function {} expects {} arguments, got {}",
-                        function,
-                        func.params.len(),
-                        arguments.len()
-                    )));
-                }
-
-                let result = if let Some(Value::Lambda(lambda)) = self.variables.get(function) {
-                    self.handle_lambda_call(lambda.clone(), arguments).await
-                } else {
-                    let func = self.functions.get(function).cloned().ok_or_else(|| {
-                        CrabbyError::CompileError(format!("Undefined function: {}", function))
-                    })?;
-                    if arguments.len() != func.params.len() {
-                        return Err(CrabbyError::CompileError(format!(
-                            "Function {} expects {} arguments, got {}",
-                            function,
-                            func.params.len(),
-                            arguments.len()
-                        )));
-                    }
-                    let mut new_compiler = Compiler::new(None);
-                    for (param, arg) in func.params.iter().zip(arguments) {
-                        let arg_value = self.compile_expression(arg).await?;
-                        new_compiler.variables.insert(param.clone(), arg_value);
-                    }
-                    match new_compiler.compile_statement(&func.body).await? {
-                        Some(value) => Ok(value),
-                        None => Ok(Value::Integer(0)),
-                    }
-                };
-                self.call_stack.pop();
-                result;
-
-                Ok(Value::Void)
             },
             Expression::Lambda { params, body } => {
                 Ok(Value::Lambda(Function {
@@ -557,8 +373,8 @@ impl Compiler {
                 }))
             },
             Expression::Binary { left, operator, right } => {
-                let left_val = self.compile_expression(left).await?;
-                let right_val = self.compile_expression(right).await?;
+                let left_val = self.compile_expression(left)?;
+                let right_val = self.compile_expression(right)?;
 
                 match (left_val, operator, right_val) {
                     // Integer operations

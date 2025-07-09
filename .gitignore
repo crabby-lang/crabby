@@ -1,7 +1,7 @@
 /target/
 **/*.rs.bk
 **/*.swp
-Cargo.lock
+*.lock
 *.log
 /vscode-extension/
 .vscode/

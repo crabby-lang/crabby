@@ -46,6 +46,8 @@ pub enum Token {
     Public,
     #[token("private")] // You can make a function have private or not, if not it'll still treat it as private
     Private,
+    #[token("foreign")] // Runs language functions inside crabby (BETA)
+    Foreign,
     #[token("enum")]
     Enum,
     #[token("struct")]
@@ -77,7 +79,7 @@ pub enum Token {
     #[token("override")]
     Override,
     #[token("global")] // Acts like 'pub', you can just use 2 options depending on your needs
-    Global,
+    Global, 
     #[token("namespace")]
     Namespace,
     #[token("static")]

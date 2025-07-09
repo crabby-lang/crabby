@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::parser::{BinaryOp, Expression, Statement};
-use crate::deadcode::DeadCodeWarning;
+use crate::etc::deadcode::DeadCodeWarning;
 use crate::value::Value;
 
 #[derive(Debug)]

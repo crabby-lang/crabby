@@ -43,7 +43,7 @@ impl Module {
         }
     }
 
-    pub fn resolve_path(&self, current_file: &Path, import_path: &str) -> PathBuf {
+    pub fn resolve_path(current_file: &Path, import_path: &str) -> PathBuf {
         if let Some(current_dir) = current_file.parent() {
             if import_path.starts_with("./") {
                 // Handle explicit relative path
@@ -62,7 +62,7 @@ impl Module {
     }
 
     pub async fn load_module(&mut self, current_file: &Path, _name: &str, source: &str) -> Result<(), CrabbyError> {
-        let resolved_path = self.resolve_path(current_file, source);
+        let resolved_path = Module::resolve_path(current_file, source);
         let source_code = fs::read_to_string(&resolved_path)?;
         let tokens = tokenize(&source_code).await?;
         let ast = parse(tokens).await?;
