@@ -79,7 +79,7 @@ pub enum Token {
     #[token("override")]
     Override,
     #[token("global")] // Acts like 'pub', you can just use 2 options depending on your needs
-    Global, 
+    Global,
     #[token("namespace")]
     Namespace,
     #[token("static")]
@@ -98,7 +98,7 @@ pub enum Token {
     Ownership,
     #[token("move")] // Move keyboard for borrowing
     Move,
-    #[token("unsafe")] // Introduces for C & C++ FFI feature
+    #[token("unsafe")] // Introduces for C, C++ & Assembly FFI feature
     Unsafe,
 
     // Imports

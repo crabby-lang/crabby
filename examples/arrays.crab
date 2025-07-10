@@ -5,7 +5,7 @@ let numbers: Int = [1, 2, 3, 4, 5]
 print(numbers[0])
 print(numbers[4])
 
-let mut numbers = [1, 2, 3, 4, 5]
+let mut numbers: Int = [1, 2, 3, 4, 5]
 numbers[0] = 10
 
 // Got any problem? You can create an issue for this file!

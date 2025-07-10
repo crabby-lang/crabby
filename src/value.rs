@@ -77,14 +77,14 @@ impl Value {
         match self {
             Value::Array(elements) => {
                 if index < 0 || index >= elements.len() as i64 {
-                    Err(CrabbyError::CompileError(format!(
+                    Err(CrabbyError::InterpreterError(format!(
                         "Array index out of bounds: {}", index
                     )))
                 } else {
                     Ok(elements[index as usize].clone())
                 }
             }
-            _ => Err(CrabbyError::CompileError(
+            _ => Err(CrabbyError::InterpreterError(
                 "Cannot index non-array value".to_string()
             )),
         }

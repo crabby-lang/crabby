@@ -2,7 +2,7 @@
 name = "crabby"
 description = "A modern multi-paradigm versatile Programming Language with Python like syntax."
 authors = ["Kazooki123"]
-keywords = ["compiler", "paradigm", "programming-language", "modern", "interpreter"]
+keywords = ["paradigm", "programming-language", "modern", "interpreter"]
 version = "1.2.2"
 repository = "https://github.com/crabby-lang/crabby"
 edition = "2024"
@@ -24,6 +24,7 @@ bindgen = "0.70.0"
 serde = "1.0"
 ash = "0.38.0"
 libloading = "0.8.5"
+bevy = "0.16.1"
 
 [target.'cfg(unix)'.dependencies]
 nix = "0.29.0"

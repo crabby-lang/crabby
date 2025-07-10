@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use crate::value::Value;
 use crate::utils::CrabbyError;
 use crate::parse;
-use crate::compile::Compiler;
+use crate::interpreter::Interpreter;
 use crate::lexer::tokenize;
 
 #[derive(Clone)]
@@ -31,12 +31,12 @@ impl Module {
             self.variable.insert(item_name.to_string(), value.clone());
             Ok(())
         } else if module.private_items.contains_key(item_name) {
-            Err(CrabbyError::CompileError(format!(
+            Err(CrabbyError::InterpreterError(format!(
                 "Cannot import private item '{}' from module",
                 item_name
             )))
         } else {
-            Err(CrabbyError::CompileError(format!(
+            Err(CrabbyError::InterpreterError(format!(
                 "Item '{}' not found in module",
                 item_name
             )))
@@ -63,11 +63,11 @@ impl Module {
 
     pub async fn load_module(&mut self, current_file: &Path, _name: &str, source: &str) -> Result<(), CrabbyError> {
         let resolved_path = Module::resolve_path(current_file, source);
-        let source_code = fs::read_to_string(&resolved_path)?;
+        let source_code = fs::read_to_string(&resolved_path).map_err(|e| CrabbyError::InterpreterError(e.to_string()))?;
         let tokens = tokenize(&source_code).await?;
         let ast = parse(tokens).await?;
-        let mut module_compiler = Compiler::new(Some(resolved_path));
-        module_compiler.compile(&ast).await?;
+        let mut module_interpreter = Interpreter::new(Some(resolved_path));
+        module_interpreter.interpret(&ast).await?;
         Ok(())
     }
 }

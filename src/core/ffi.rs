@@ -6,7 +6,7 @@ use libloading::{Library, Symbol};
 use periphery::sys::gpio::Value;
 use std::collections::HashMap;
 use crate::utils::CrabbyError;
-use crate::compile::Compiler;
+use crate::interpreter::Interpreter;
 
 #[derive(Debug, Clone)]
 pub enum FFIType {
@@ -49,7 +49,7 @@ impl FFIManager<'_> {
     pub fn load_library(&mut self, path: &str) -> Result<(), CrabbyError> {
         unsafe {
             let lib = Library::new(path).map_err(|e| {
-                CrabbyError::CompileError(format!("Failed to load library {}: {}", path, e))
+                CrabbyError::InterpreterError(format!("Failed to load library {}: {}", path, e))
             })?;
             self.loaded_libs.insert(path.to_string(), lib);
             Ok(())
@@ -64,12 +64,12 @@ impl FFIManager<'_> {
         return_type: FFIType
     ) -> Result<(), CrabbyError> {
         let lib = self.loaded_libs.get(lib_path).ok_or_else(|| {
-            CrabbyError::CompileError(format!("Library {} not loaded", lib_path))
+            CrabbyError::InterpreterError(format!("Library {} not loaded", lib_path))
         })?;
 
         unsafe {
             let func: Symbol<unsafe extern "C" fn()> = lib.get(func_name.as_bytes())
-                .map_err(|e| CrabbyError::CompileError(
+                .map_err(|e| CrabbyError::InterpreterError(
                     format!("Failed to load function {}: {}", func_name, e)
                 ))?;
 
@@ -89,11 +89,11 @@ impl FFIManager<'_> {
 
     pub fn call_function(&self, name: &str, args: Vec<FFIValue>) -> Result<FFIValue, CrabbyError> {
         let func = self.functions.get(name).ok_or_else(|| {
-            CrabbyError::CompileError(format!("Function {} not registered", name))
+            CrabbyError::InterpreterError(format!("Function {} not registered", name))
         })?;
 
         if args.len() != func.arg_types.len() {
-            return Err(CrabbyError::CompileError(format!(
+            return Err(CrabbyError::InterpreterError(format!(
                 "Function {} expects {} arguments, got {}",
                 name,
                 func.arg_types.len(),
@@ -147,39 +147,39 @@ impl FFIManager<'_> {
             (FFIValue::String(s), FFIType::String) => Ok(FFIValue::String(s.clone())),
             (FFIValue::Pointer(p), FFIType::Pointer(_)) => Ok(FFIValue::Pointer(*p)),
             (FFIValue::Void, FFIType::Void) => Ok(FFIValue::Void),
-            _ => Err(CrabbyError::CompileError(
+            _ => Err(CrabbyError::InterpreterError(
                 format!("Type mismatch in FFI conversion")
             ))
         }
     }
 }
 
-pub fn register_ffi_builtins(compiler: &mut crate::compile::Compiler) {
-    compiler.add_builtin("load_library", |args| {
+pub fn register_ffi_builtins(interpreter: &mut crate::interpret::interpreter) {
+    interpreter.add_builtin("load_library", |args| {
         if args.len() != 1 {
-            return Err(CrabbyError::CompileError("load_library expects a library path".into()));
+            return Err(CrabbyError::InterpreterError("load_library expects a library path".into()));
         }
         let lib_path = match &args[0] {
             Value::String(s) => s.clone(),
-            _ => return Err(CrabbyError::CompileError("First argument must be library path".into())),
+            _ => return Err(CrabbyError::InterpreterError("First argument must be library path".into())),
         };
-        compiler.ffi_manager.load_library(&lib_path)?;
+        interpreter.ffi_manager.load_library(&lib_path)?;
         Ok(Value::Void)
     });
 
-    compiler.add_builtin("extern_function", |args| {
+    interpreter.add_builtin("extern_function", |args| {
         if args.len() != 3 {
-            return Err(CrabbyError::CompileError("extern_function expects library path, function name, and type signature".into()));
+            return Err(CrabbyError::InterpreterError("extern_function expects library path, function name, and type signature".into()));
         }
 
         let lib_path = match &args[0] {
             Value::String(s) => s.clone(),
-            _ => return Err(CrabbyError::CompileError("First argument must be library path".into())),
+            _ => return Err(CrabbyError::InterpreterError("First argument must be library path".into())),
         };
 
         let func_name = match &args[1] {
             Value::String(s) => s.clone(),
-            _ => return Err(CrabbyError::CompileError("Second argument must be function name".into())),
+            _ => return Err(CrabbyError::InterpreterError("Second argument must be function name".into())),
         };
 
         let type_sig = match &args[2] {
@@ -195,15 +195,15 @@ pub fn register_ffi_builtins(compiler: &mut crate::compile::Compiler) {
                             arg_types.push(parse_ffi_type(type_str)?);
                         }
                     } else {
-                        return Err(CrabbyError::CompileError("Type signature must be strings".into()));
+                        return Err(CrabbyError::InterpreterError("Type signature must be strings".into()));
                     }
                 }
                 (arg_types, return_type)
             }
-            _ => return Err(CrabbyError::CompileError("Third argument must be array of type signatures".into())),
+            _ => return Err(CrabbyError::InterpreterError("Third argument must be array of type signatures".into())),
         };
 
-        compiler.ffi_manager.register_function(&lib_path, &func_name, type_sig.0, type_sig.1)?;
+        interpreter.ffi_manager.register_function(&lib_path, &func_name, type_sig.0, type_sig.1)?;
         Ok(Value::Void)
     });
 }

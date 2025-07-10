@@ -70,7 +70,7 @@ pub enum CrabbyError {
     VisibilityError(String),
 
     #[error("Compilation error: {0}")]
-    CompileError(String),
+    InterpreterError(String),
 }
 
 impl fmt::Display for Span {

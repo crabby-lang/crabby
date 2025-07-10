@@ -7,8 +7,8 @@ use crate::parser::parse;
 mod utils;
 mod lexer;
 mod parser;
-mod compile;
-mod runtime;
+mod interpreter;
+// mod runtime;
 mod value;
 mod modules;
 // mod repl;
@@ -17,7 +17,7 @@ mod etc;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
-#[command(about = "Crabby programming language compiler")]
+#[command(about = "Crabby programming language interpreter")]
 #[command(version = include_str!(".././version.txt"))]
 #[command(disable_version_flag = true)]
 pub struct Cli {
@@ -43,9 +43,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let source = fs::read_to_string(&absolute_path)?;
         let tokens = lexer::tokenize(&source).await?;
         let ast = parse(tokens).await?;
-        let mut compiler = compile::Compiler::new(Some(absolute_path));
+        let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
         // let mut runtime = runtime::Runtime::new(Some(absolute_path));
-        compiler.compile(&ast).await?;
+        interpreter.interpret(&ast).await?;
         // runtime.runtime(&ast).await?;
 
         if cli.deadcode_warn {
