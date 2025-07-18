@@ -1,0 +1,18 @@
+{
+    "Print Statements": {
+        "prefix": "print",
+        "body": ["print(${1:\"Hello, World!\"})"],
+        "description": "Print a string to the console"
+    },
+    "If-Else Block": {
+        "prefix": "ifelse",
+        "body": [
+            "if ${1:condition} {",
+            "   ${2:# code here}",
+            "} else {",
+            "   ${3:# code here}",
+            "}"
+        ],
+        "description": "If-Else block"
+    }
+}

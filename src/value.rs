@@ -1,7 +1,7 @@
 // Value file that defines what value **exist** in Crabby.
 
 use crate::utils::CrabbyError;
-use crate::parser::Statement;
+use crate::ast::Statement;
 
 #[derive(Clone, PartialEq)]
 pub struct Function {

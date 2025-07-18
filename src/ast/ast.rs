@@ -121,37 +121,6 @@ pub enum Statement {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Visibility {
-    Public,
-    Private,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct MethodDefinition {
-    pub name: String,
-    pub params: Vec<String>,
-    pub body: Box<Statement>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct MatchArm {
-    pub pattern: Expression,
-    pub body: Expression,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct EnumVariant {
-    pub name: String,
-    pub fields: Option<Vec<Expression>>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct StructField {
-    pub name: String,
-    pub type_expr: Expression,
-}
-
-#[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
     Integer(i64),
     Float(f64),
@@ -190,6 +159,38 @@ pub enum Expression {
         array: Box<Expression>,
         index: Box<Expression>,
     },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Visibility {
+    Public,
+    Private,
+    Protect,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MethodDefinition {
+    pub name: String,
+    pub params: Vec<String>,
+    pub body: Box<Statement>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MatchArm {
+    pub pattern: Expression,
+    pub body: Expression,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct EnumVariant {
+    pub name: String,
+    pub fields: Option<Vec<Expression>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct StructField {
+    pub name: String,
+    pub type_expr: Expression,
 }
 
 #[derive(Debug, Clone, PartialEq)]

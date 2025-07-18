@@ -1,5 +1,5 @@
 use crate::lexer::{Token, TokenStream};
-use crate::parser::ast::*;
+use crate::ast::*;
 use crate::utils::CrabbyError;
 
 pub struct Parser<'a> {
@@ -57,9 +57,10 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Return(Box::new(expr)))
             },
-            Token::Class => self.parse_class_statement(),
-            Token::Trait => self.parse_trait_statement(),
-            Token::Implement => self.parse_impl_statement(),
+            // Token::Class => self.parse_class_statement(),
+            // Token::Trait => self.parse_trait_statement(),
+            // Token::Implement => self.parse_impl_statement(),
+            // Token::Mutable => parse_mutable_statement(),
             Token::Match => self.parse_match_statement(),
             Token::And => self.parse_and_statement(),
             Token::Enum => self.parse_enum_statement(),
@@ -104,6 +105,10 @@ impl<'a> Parser<'a> {
             Token::Public => {
                 self.advance();
                 Ok(Visibility::Public)
+            },
+            Token::Protect => {
+                self.advance();
+                Ok(Visibility::Protect)
             },
             Token::Private => {
                 self.advance();
@@ -255,21 +260,21 @@ impl<'a> Parser<'a> {
         Ok(Expression::Await { expr: Box::new(expr)});
     }
 
-    fn parse_class_statement(&mut self) -> Result<Statement, CrabbyError> {
-        self.advance(); // consume 'class'
-    }
+    // fn parse_class_statement(&mut self) -> Result<Statement, CrabbyError> {
+    //    self.advance(); // consume 'class'
+    // }
 
-    fn parse_trait_statement(&mut self) -> Result<Statement, CrabbyError> {
-        self.advance(); // consume 'trait'
-    }
+    // fn parse_trait_statement(&mut self) -> Result<Statement, CrabbyError> {
+    //    self.advance(); // consume 'trait'
+    // }
 
-    fn parse_impl_statement(&mut self) -> Result<Statement, CrabbyError> {
-        self.advance(); // consume 'impl'
-    }
+    // fn parse_impl_statement(&mut self) -> Result<Statement, CrabbyError> {
+    //     self.advance(); // consume 'impl'
+    // }
 
-    fn parse_mutable_statement(&mut self) -> Result<Statement, CrabbyError> {
-        self.advance(); // consume 'mut'
-    }
+    // fn parse_mutable_statement(&mut self) -> Result<Statement, CrabbyError> {
+    //     self.advance(); // consume 'mut'
+    // }
 
     fn parse_and_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'and'

@@ -1,0 +1,17 @@
+{
+    "iconDefinitions": {
+        "crabFile": {
+            "iconPath": "./crabby.svg"
+        }
+    },
+    "fileExtensions": {
+        "crab": "crabFile",
+        "cb": "crabFile"
+    },
+    "light": {
+        "fileExtensions": {
+            "crab": "crabFile",
+            "cb": "crabFile"
+        }
+    }
+}

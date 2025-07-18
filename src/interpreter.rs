@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::future::Future;
 
 use crate::utils::CrabbyError;
-use crate::parser::{Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
+use crate::ast::{Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
 use crate::value::{Value, Function};
 use crate::modules::Module;
 
@@ -48,7 +48,7 @@ impl Interpreter {
         }
     }
 
-    fn interpret_function_def(&mut self, name: &str, params: &[String], body: &Statement) -> Result<(), CrabbyError> {
+    pub fn interpret_function_def(&mut self, name: &str, params: &[String], body: &Statement) -> Result<(), CrabbyError> {
         let is_public = name.starts_with("pub ");
         let func_name = if is_public {
             name.trim_start_matches("pub ").to_string()
@@ -70,7 +70,7 @@ impl Interpreter {
         Ok(())
     }
 
-    async fn handle_lambda_call(&mut self, lambda: Function, arguments: &[Expression]) -> Result<Value, CrabbyError> {
+    pub async fn handle_lambda_call(&mut self, lambda: Function, arguments: &[Expression]) -> Result<Value, CrabbyError> {
         for (param, arg) in lambda.params.iter().zip(arguments) {
             let arg_value = self.interpret_expression(arg).await?;
             self.variables.insert(param.clone(), arg_value);
@@ -119,7 +119,7 @@ impl Interpreter {
         Ok(())
     }
 
-    async fn handle_print(&mut self, args: &[Expression]) -> Result<Value, CrabbyError> {
+    pub async fn handle_print(&mut self, args: &[Expression]) -> Result<Value, CrabbyError> {
         if args.len() != 1 {
             return Err(CrabbyError::InterpreterError("print takes exactly one argument".to_string()));
         }
@@ -465,12 +465,12 @@ impl Interpreter {
                                 arguments.len()
                             )));
                         }
-                        let mut new_runtime = Interpreter::new(None);
+                        let mut new_interpret = Interpreter::new(None);
                         for (param, arg) in func.params.iter().zip(arguments) {
                             let arg_value = self.interpret_expression(arg).await?;
-                            new_runtime.variables.insert(param.clone(), arg_value);
+                            new_interpret.variables.insert(param.clone(), arg_value);
                         }
-                        match new_runtime.interpret_statement(&func.body).await? {
+                        match new_interpret.interpret_statement(&func.body).await? {
                             Some(value) => Ok(value),
                             None => Ok(Value::Integer(0)),
                         }
@@ -504,7 +504,7 @@ impl Interpreter {
                         values.push(self.interpret_expression(elem).await?);
                     }
                     Ok(Value::Array(values))
-                }
+                },
                 Expression::Index { array, index } => {
                     let array_value = self.interpret_expression(array).await?;
                     let index_value = self.interpret_expression(index).await?;
@@ -629,7 +629,7 @@ impl Interpreter {
                         _ => return Err(CrabbyError::InterpreterError("Invalid operation".to_string())),
                     }?;
                     Ok(Value::Void)
-                }
+                },
                 _ => Ok(Value::Void)
             }
         })

@@ -7,6 +7,7 @@ use crate::parser::parse;
 mod utils;
 mod lexer;
 mod parser;
+mod ast;
 mod interpreter;
 // mod runtime;
 mod value;

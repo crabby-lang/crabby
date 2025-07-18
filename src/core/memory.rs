@@ -4,7 +4,7 @@
 
 use std::collections::HashMap;
 use crate::utils::CrabbyError;
-use crate::parser::{Expression, Statement, Program};
+use crate::ast::{Expression, Statement, Program};
 
 #[derive(Debug, Clone, PartialEq)]
 enum Lifetime {

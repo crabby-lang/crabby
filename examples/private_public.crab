@@ -6,7 +6,7 @@ private def foo() {
     print("This is a private function!")
 }
 
-// This is also a private function even without the keyword 'private'
+// This is also a private function even without the 'private' keyword
 def bar() {
     print("This is also a private function!")
 }

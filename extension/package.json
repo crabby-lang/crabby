@@ -1,0 +1,44 @@
+{
+  "name": "crabby",
+  "displayName": "Crabby",
+  "description": "Crabby language support for Vscode",
+  "version": "0.4.12",
+  "publisher": "Kazooki123",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "icon": "icons/crabby.png",
+  "contributes": {
+    "languages": [
+      {
+        "id": "crabby",
+        "aliases": [
+          "Crabby",
+          "crabby"
+        ],
+        "extensions": [
+          ".crab",
+          ".cb"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "crabby",
+        "scopeName": "source.crabby",
+        "path": "./syntaxes/crabby.tmLanguage.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "crabby-icons",
+        "label": "Crabby Icons",
+        "path": "./icons/crabby-icon.json"
+      }
+    ]
+  }
+}

@@ -3,7 +3,7 @@
 const PI: Float = 3.14159
 const MAX_USERS: Int = 100
 
-pub def area(radius: Float) -> {
+pub def area(radius: Float) -> Float {
     return PI * radius * radius
 }
 

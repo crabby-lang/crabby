@@ -1,0 +1,23 @@
+// Encapsulation feature for Crabby - EXPERIMENTAL
+
+class Animal {
+    private legs = 4
+    protect speak() {
+        print("Animal sound")
+    }
+
+    def get_legs() {
+        return self.legs
+    }
+}
+
+class Dog extend Animal {
+    def talk() {
+        self.speak() // ✔️ allowed in subclasses
+    }
+}
+
+let dog = Dog()
+dog.speak() // ❌ error: speak is protected
+
+// Got any problem? You can create an issue for this file!

@@ -1,6 +1,6 @@
 // Crabby scans crab code then checks if it's a dead/unused code or not
 
-use crate::parser::{Program, Statement, Expression};
+use crate::ast::{Program, Statement, Expression};
 use crate::utils::CrabbyError;
 use std::collections::{HashMap, HashSet};
 

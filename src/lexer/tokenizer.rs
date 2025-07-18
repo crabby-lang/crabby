@@ -40,14 +40,18 @@ pub enum Token {
     Match,
     #[token("case")]
     Case,
-    #[token("elseif")]
-    Elseif,
     #[token("pub")]
     Public,
     #[token("private")] // You can make a function have private or not, if not it'll still treat it as private
     Private,
+    #[token("protect")]
+    Protect,
     #[token("foreign")] // Runs language functions inside crabby (BETA)
     Foreign,
+    #[token("unless")]
+    Unless,
+    #[token("until")]
+    Until,
     #[token("enum")]
     Enum,
     #[token("struct")]
@@ -70,8 +74,6 @@ pub enum Token {
     Expect,
     #[token("throw")]
     Throw,
-    #[token("new")]
-    New,
     #[token("impl")]
     Implement,
     #[token("trait")]
@@ -94,12 +96,16 @@ pub enum Token {
     Catch,
     #[token("ref")]
     Reference,
-    #[token("own")] // Ownership keywords for memory safety
-    Ownership,
-    #[token("move")] // Move keyboard for borrowing
+    #[token("move")] // Move keyboard
     Move,
     #[token("unsafe")] // Introduces for C, C++ & Assembly FFI feature
     Unsafe,
+    #[token("del")]
+    Delete,
+    #[token("finally")]
+    Finally,
+    #[token("is")]
+    Is,
 
     // Imports
     #[token("import")]

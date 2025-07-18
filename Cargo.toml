@@ -25,6 +25,8 @@ serde = "1.0"
 ash = "0.38.0"
 libloading = "0.8.5"
 bevy = "0.16.1"
+pest = { version = "2", default-features = false }
+pest_derive = { version = "2", default-features = false}
 
 [target.'cfg(unix)'.dependencies]
 nix = "0.29.0"

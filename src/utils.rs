@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::parser::{BinaryOp, Expression, Statement};
+use crate::ast::{BinaryOp, Expression, Statement};
 use crate::etc::deadcode::DeadCodeWarning;
 use crate::value::Value;
 
@@ -176,7 +176,7 @@ impl fmt::Display for BinaryOp {
             BinaryOp::Sub => write!(f, "-"),
             BinaryOp::Mul => write!(f, "*"),
             BinaryOp::Div => write!(f, "/"),
-            BinaryOp::Eq => write!(f, "=="),
+            BinaryOp::Eq => write!(f, "="),
             BinaryOp::Dot => write!(f, "."),
             BinaryOp::MatchOp => write!(f, "=>"),
         }

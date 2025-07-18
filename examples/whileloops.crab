@@ -1,0 +1,12 @@
+// While Loops in Crabby - EXPERIMENTAL
+
+let count = 0
+
+while count < 5 {
+    print(f"The current count is: {count}")
+    count += 1
+}
+
+print("Loop Done!")
+
+// Got any problem? You can create an issue for this file!

@@ -1,0 +1,93 @@
+{
+    "name": "Crabby",
+    "scopeName": "source.crabby",
+    "fileTypes": [".crab", ".cb"],
+    "patterns": [
+        {
+            "name": "comment.line.double-slash.crabby",
+            "match": "//.*$"
+        },
+        {
+            "name": "keyword.control.crabby",
+            "match": "\\b(import|pub|global|private|protect|def|from|enum|struct|where|and|case|mut|if|else|while|for|as|in|let|return|loop|impl|unsafe|foreign|match|range|lambda|async|await|const|class|extend|trait|override|static|var|do)\\b"
+        },
+        {
+            "name": "string.quoted.double.f-string.crabby",
+            "match": "f([\"'])[^\\1]*?\\1"
+        },
+        {
+            "name": "constant.numeric.crabby",
+            "match": "\\b\\d+(\\.\\d+)?\\b"
+        },
+        {
+            "name": "support.function.crabby",
+            "match": "\\b(print|macro)\\b"
+        },
+        {
+            "name": "entity.name.function.crabby",
+            "match": "\\b[a-z_][a-z0-9_]*\\s*(?=\\()"
+        },
+        {
+            "name": "entity.name.function.decorator.crabby",
+            "match": "@\\w+$"
+        },
+        {
+            "name": "entity.name.type.crabby",
+            "match": "\\b[A-Z][a-zA-Z]*\\b"
+        },
+        {
+            "name": "keyword.operator.crabby",
+            "match": "[+\\-*/:=]"
+        },
+        {
+            "name": "constant.language.boolean.crabby",
+            "match": "\\b(true|false|bool)\\b"
+        },
+        {
+            "name": "variable.parameter.crabby",
+            "match": "\\b[a-z][a-zA-Z]*\\b(?=\\s*[,)])"
+        },
+        {
+            "name": "variable.other.crabby",
+            "match": "\\b[a-z][a-zA-Z]*\\b"
+        },
+        {
+            "name": "punctuation.bracket.crabby",
+            "match": "[{}()]"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#f-strings"
+        }
+    ],
+    "repository": {
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.crabby",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.crabby",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.single.crabby",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.crabby",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

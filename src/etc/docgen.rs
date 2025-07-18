@@ -1,4 +1,4 @@
-use crate::parser::Statement;
+use crate::ast::Statement;
 
 pub struct Documentation {
     pub name: String,
