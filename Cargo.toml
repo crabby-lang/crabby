@@ -3,10 +3,16 @@ name = "crabby"
 description = "A modern multi-paradigm, versatile, and functional Programming Language with a Python like syntax."
 authors = ["Kazooki123 <mgamerdinge146@gmail.com>"]
 keywords = ["paradigm", "programming-language", "modern", "interpreter"]
+categories = ["command-line-utilities", "development-tools"]
 version = "1.2.2"
 repository = "https://github.com/crabby-lang/crabby"
 edition = "2024"
 license = "GPL-3.0-only"
+exclude = [
+    "extension/*",
+    "examples/*",
+    "docs/*",
+]
 
 [[bin]]
 name = "crabby"
