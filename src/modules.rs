@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use crate::value::Value;
 use crate::utils::CrabbyError;
-use crate::parse;
+use crate::parser::*;
 use crate::interpreter::Interpreter;
 use crate::lexer::tokenize;
 

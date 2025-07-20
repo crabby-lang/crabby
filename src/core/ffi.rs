@@ -3,7 +3,7 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_double, c_int, c_void};
 use libloading::{Library, Symbol};
-use periphery::sys::gpio::Value;
+use crate::value::Value;
 use std::collections::HashMap;
 use crate::utils::CrabbyError;
 use crate::interpreter::Interpreter;
@@ -154,7 +154,7 @@ impl FFIManager<'_> {
     }
 }
 
-pub fn register_ffi_builtins(interpreter: &mut crate::interpret::interpreter) {
+pub fn register_ffi_builtins(interpreter: &mut interpreter::Interpreter) {
     interpreter.add_builtin("load_library", |args| {
         if args.len() != 1 {
             return Err(CrabbyError::InterpreterError("load_library expects a library path".into()));

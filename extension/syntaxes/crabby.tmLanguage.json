@@ -9,7 +9,7 @@
         },
         {
             "name": "keyword.control.crabby",
-            "match": "\\b(import|pub|global|private|protect|def|from|enum|struct|where|and|case|mut|if|else|while|for|as|in|let|return|loop|impl|unsafe|foreign|match|range|lambda|async|await|const|class|extend|trait|override|static|var|do)\\b"
+            "match": "\\b(import|pub|global|private|protect|def|throw|macro|from|enum|struct|where|and|case|mut|if|else|while|for|as|in|let|return|loop|impl|unsafe|unless|finally|del|is|with|foreign|match|range|lambda|async|await|const|class|extend|trait|override|static|var|do|try|catch)\\b"
         },
         {
             "name": "string.quoted.double.f-string.crabby",
@@ -21,7 +21,7 @@
         },
         {
             "name": "support.function.crabby",
-            "match": "\\b(print|macro)\\b"
+            "match": "\\b(print)\\b"
         },
         {
             "name": "entity.name.function.crabby",

@@ -1,0 +1,6 @@
+// Tokens of Crabby in Pest
+
+alpha = { 'a'..'z' | 'A'..'Z' }
+digit = { '0'..'9' }
+
+

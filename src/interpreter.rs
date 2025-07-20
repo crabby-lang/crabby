@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::fs;
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::future::Future;
@@ -6,6 +7,8 @@ use std::future::Future;
 use crate::utils::CrabbyError;
 use crate::ast::{Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
 use crate::value::{Value, Function};
+use crate::parser::*;
+use crate::lexer::*;
 use crate::modules::Module;
 
 pub struct Interpreter {
@@ -174,11 +177,11 @@ impl Interpreter {
     pub async fn load_and_import_module(&self, _import_name: &str, import_path: &str) -> Result<Module, CrabbyError> {
         let current_file = std::path::Path::new(".");
         let resolved_path = Module::resolve_path(current_file, import_path);
-        let source_code = crate::fs::read_to_string(&resolved_path).map_err(|e| {
+        let source_code = fs::read_to_string(&resolved_path).map_err(|e| {
             CrabbyError::InterpreterError(format!("Failed to read module '{}': {}", resolved_path.display(), e))
         })?;
-        let tokens = crate::lexer::tokenize(&source_code).await?;
-        let ast = crate::parser::parse(tokens).await?;
+        let tokens = tokenize(&source_code).await?;
+        let ast = parse(tokens).await?;
         let mut module_interpreter = Interpreter::new(Some(resolved_path.clone()));
         module_interpreter.interpret(&ast).await?;
         Ok(module_interpreter.module)

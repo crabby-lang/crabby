@@ -2,8 +2,12 @@
   "name": "crabby",
   "displayName": "Crabby",
   "description": "Crabby language support for Vscode",
-  "version": "0.4.12",
+  "version": "0.4.14",
   "publisher": "Kazooki123",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crabby-lang/crabby"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },

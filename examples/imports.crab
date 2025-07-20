@@ -5,7 +5,7 @@ import foo from "export"         // Works also because it's public
 // or vise versa like - from "export" import foo
 
 import greet from "export"    // Works - greet is public
-import helper from "export."    // Error - helper is private
+import helper from "export"    // Error - helper is private
 
 foo()
 greet()

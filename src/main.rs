@@ -2,7 +2,7 @@ use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
 use crate::etc::deadcode::DeadCodeAnalyzer;
-use crate::parser::parse;
+use crate::parser::*;
 
 mod utils;
 mod lexer;
@@ -18,8 +18,9 @@ mod etc;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
-#[command(about = "Crabby programming language interpreter")]
-#[command(version = include_str!(".././version.txt"))]
+#[command(author="Kazooki123")]
+#[command(about = "Crabby programming language interpreter", long_about=None)]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(disable_version_flag = true)]
 pub struct Cli {
     #[arg(help = "Input .crab or .cb file")]
@@ -29,7 +30,7 @@ pub struct Cli {
     version: bool,
 
     #[arg(long, help = "Analyze code for unused declarations")]
-    deadcode_warn: bool,
+    deadcodewarn: bool,
 
     // #[arg(help = "REPL playground to test Crabby")]
     // repl: String,
@@ -49,7 +50,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         interpreter.interpret(&ast).await?;
         // runtime.runtime(&ast).await?;
 
-        if cli.deadcode_warn {
+        // Shows version of Crabby
+        if cli.version {
+            println!("Crabby Version: {}", env!("CARGO_PKG_VERSION"));
+            return;
+        }
+
+        if cli.deadcodewarn {
             let mut analyzer = DeadCodeAnalyzer::new();
             let warnings = analyzer.analyze(&ast)?;
             if !warnings.is_empty() {

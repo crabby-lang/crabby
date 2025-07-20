@@ -69,8 +69,11 @@ pub enum CrabbyError {
     #[error("Visibility error: {0}")]
     VisibilityError(String),
 
-    #[error("Compilation error: {0}")]
+    #[error("Interpretation error: {0}")]
     InterpreterError(String),
+
+    #[error("Runtime error: {0}")]
+    RuntimeError(String),
 }
 
 impl fmt::Display for Span {

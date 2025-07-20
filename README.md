@@ -27,11 +27,11 @@ Crabby has been officially and well be written in **Rust** due to its memory saf
 
 Here's what changed:
 
-1. It has Pythonic-style of Syntax BUT with a functional approach
-2. It's purely functional (not yet for now)
-3. JIT compile time
+1. It has a Pythonic-style syntax BUT with a functional approach.
+2. It's purely functional (not yet for now).
+3. JIT interpret/runtime.
 4. Runtime & Type checking on the work.
-5. Error handling on the work
+5. Error handling on the work.
 6. More parsing and features!
 
 ## Installation
@@ -161,7 +161,7 @@ for i in range(y) {
 
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly message :3
 
-Speaking of comments, **Crabby** also support `Docstrings`!
+Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksforgeeks.org/python/python-docstrings/)!
 
 ## FAQs
 

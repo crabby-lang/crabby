@@ -64,6 +64,7 @@ impl<'a> Parser<'a> {
             Token::Match => self.parse_match_statement(),
             Token::And => self.parse_and_statement(),
             Token::Enum => self.parse_enum_statement(),
+            Token::Struct => self.parse_struct_statement(),
             Token::Where => self.parse_where_statement(),
             Token::If => self.parse_if_statement(),
             Token::While => self.parse_while_statement(),
