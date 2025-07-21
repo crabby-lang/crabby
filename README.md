@@ -36,7 +36,9 @@ Here's what changed:
 
 ## Installation
 
-`Note`: **We highly recommend to use the nightly toolchain edition of rust**
+`Note`: **We highly recommend to use the nightly toolchain edition of Rust.**
+
+`Note (again):` Due to compatibility errors and issues, Crabby is currently being supported/targeted in **Linux**, meaning for *Windows users* we highly recommend having a WSL distro with rust in it just in case.
 
 Step 1: Make sure to have `git` and `rust/cargo` installed
 

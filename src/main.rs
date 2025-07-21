@@ -41,10 +41,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     if let Some(input) = cli.input {
-        let absolute_path = input.canonicalize()?;
-        let source = fs::read_to_string(&absolute_path)?;
-        let tokens = lexer::tokenize(&source).await?;
-        let ast = parse(tokens).await?;
+        let absolute_path = input.canonicalize().expect("Failed to get absolute path");
+        let source = fs::read_to_string(&absolute_path).expect("Failed to read file");
+        let tokens = lexer::tokenize(&source).await;
+        let ast = parse(tokens.expect("Failed to parse token")).await.expect("Failed to parse AST");
         let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
         // let mut runtime = runtime::Runtime::new(Some(absolute_path));
         interpreter.interpret(&ast).await?;
@@ -53,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Shows version of Crabby
         if cli.version {
             println!("Crabby Version: {}", env!("CARGO_PKG_VERSION"));
-            return;
+            return Ok(());
         }
 
         if cli.deadcodewarn {
@@ -67,5 +67,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
+
     Ok(())
 }

@@ -12,7 +12,9 @@ exclude = [
     "extension/*",
     "examples/*",
     "docs/*",
+    "target/*",
 ]
+build = "build.rs"
 
 [[bin]]
 name = "crabby"
