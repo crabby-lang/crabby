@@ -3,9 +3,14 @@
 // Also very experimental
 
 unsafe {
-    asm!(
-
+    @asm(
+        "mov eax, 1",
+        "int 0x80",
     )
 }
+
+// OR
+
+@asm("mov eax, 1; int 0x80") // one-liner
 
 // Got any problem? You can create an issue for this file!

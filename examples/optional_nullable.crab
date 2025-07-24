@@ -6,4 +6,9 @@ if value.is_some() {
     print(value.unwrap())
 }
 
+let value2: String? = "hello"
+
+// String?
+//      ^^ this is optional
+
 // Got any problem? You can create an issue for this file!

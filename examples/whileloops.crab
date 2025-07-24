@@ -9,4 +9,15 @@ while count < 5 {
 
 print("Loop Done!")
 
+// while loop with the 'continue' && 'break' keyword
+
+while condition {
+    if something {
+        continue
+    }
+    if escape_now {
+        break
+    }
+}
+
 // Got any problem? You can create an issue for this file!

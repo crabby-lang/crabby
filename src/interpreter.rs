@@ -11,6 +11,8 @@ use crate::parser::*;
 use crate::lexer::*;
 use crate::modules::Module;
 
+use crate::core::ffi::{FFIManager, FFIValue, FFIType};
+
 pub struct Interpreter {
     variables: HashMap<String, Value>,
     awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
@@ -18,6 +20,8 @@ pub struct Interpreter {
     call_stack: Vec<String>,
     module: Module,
     current_file: Option<PathBuf>,
+    pub ffi_manager: FFIManager<'static>,
+    builtin_functions: HashMap<String, Box<dyn Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync>>,
 }
 
 impl Interpreter {
@@ -32,7 +36,9 @@ impl Interpreter {
                 private_items: HashMap::new(),
                 variable: HashMap::new()
             },
-            current_file: file_path
+            current_file: file_path,
+            ffi_manager: FFIManager::new(),
+            builtin_functions: HashMap::new(),
         };
 
         interpreter.function_definitions.insert("print".to_string(), Function {
@@ -49,6 +55,35 @@ impl Interpreter {
             private_items: HashMap::new(),
             variable: HashMap::new()
         }
+    }
+
+    pub fn add_builtin<F>(&mut self, name: &str, func: F)
+    where
+        F: Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync + 'static,
+    {
+        self.builtin_functions.insert(name.to_string(), Box::new(func));
+    }
+
+    pub fn call_ffi_function(&mut self, name: &str, args: Vec<Value>) -> Result<Value, CrabbyError> {
+        let ffi_args = args.into_iter()
+            .map(|arg| Ok(match arg {
+                Value::Integer(i) => FFIValue::Int(i as i32),
+                Value::Float(f) => FFIValue::Float(f),
+                Value::String(s) => FFIValue::String(std::ffi::CString::new(s)
+                    .map_err(|e| CrabbyError::InterpreterError(format!("Invalid string for FFI: {}", e)))?),
+                _ => return Err(CrabbyError::InterpreterError("Unsupported FFI argument type".into())),
+            }))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let result = self.ffi_manager.call_function(name, ffi_args)?;
+
+        Ok(match result {
+            FFIValue::Int(i) => Value::Integer(i as i64),
+            FFIValue::Float(f) => Value::Float(f),
+            FFIValue::String(s) => Value::String(s.to_string_lossy().into_owned()),
+            FFIValue::Void => Value::Void,
+            FFIValue::Pointer(_) => Value::Void, // Handle pointers appropriately
+        })
     }
 
     pub fn interpret_function_def(&mut self, name: &str, params: &[String], body: &Statement) -> Result<(), CrabbyError> {
@@ -191,6 +226,29 @@ impl Interpreter {
         Box::pin(async move {
             match stmt {
                 Statement::FunctionDef { name, params, body, return_type: _, docstring: _ } => {
+                    let is_public = name.starts_with("pub ");
+                    let func_name = if is_public {
+                        name.trim_start_matches("pub ").to_string()
+                    } else {
+                        name.to_string()
+                    };
+
+                    let function = Function {
+                        params: params.clone(),
+                        body: body.clone(),
+                    };
+
+                    if is_public {
+                        self.module.public_items.insert(func_name.clone(), Value::Lambda(function.clone()));
+                    } else {
+                        self.module.private_items.insert(func_name.clone(), Value::Lambda(function.clone()));
+                    }
+
+                    self.function_definitions.insert(func_name, function);
+
+                    Ok(None)
+                },
+                Statement::FunctionFun { name, params, body, return_type: _, docstring: _ } => {
                     let is_public = name.starts_with("pub ");
                     let func_name = if is_public {
                         name.trim_start_matches("pub ").to_string()

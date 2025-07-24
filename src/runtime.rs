@@ -5,10 +5,10 @@
 // interpret.rs - Handles executing a '.crab' file
 // runtime.rs - manages functions, stacks, etc
 
-pub struct Runtime {
+pub struct RuntimeCheck {
 
 }
 
-impl Runtime {
+impl RuntimeCheck {
 
 }

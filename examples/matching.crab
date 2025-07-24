@@ -13,4 +13,10 @@ match number {
     case _ => print("Not an odd number")
 }
 
+// Match pattern with 'ref'
+match someOption {
+    case Some(ref value) => print(value),
+    case None => pass
+}
+
 // Got any problem? You can create an issue for this file!

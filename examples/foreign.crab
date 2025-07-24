@@ -1,0 +1,16 @@
+// Foreign functions and module in Crabby - EXPERIMENTAL
+
+@ffi("graphics.dll")
+foreign Graphics {
+    fn init_window(width: Int, height: Int) -> Void
+    fn draw_triangle(x: Float, y: Float, size: Float)
+}
+
+// What's Happening?
+// We load the graphics DLL lib using the "@ffi" decorator
+// We then use the "foreign" keyword to load the "Graphics" function or struct
+// then run the function from the DLL inside foreign
+// It basically runs a non-crabby code inside Crabby
+// This also works when importing C or Rust made shared libraries with the help of APIs
+
+// Got any problem? You can create an issue for this file!

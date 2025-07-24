@@ -1,0 +1,25 @@
+// Types in Crabby - EXPERIMENTAL
+
+type Result<T> {
+    Ok(T),
+    Err(String)
+} 
+
+type Shape {
+    Circle {radius: Float},
+    Square { side: Float }
+}
+
+// You can also do interface-style types
+
+type Drawable {
+    def draw(self)
+}
+
+impl Drawable for Circle {
+    def draw(self) {
+        print("Drawing circle.")
+    }
+}
+
+// Got any problem? You can create an issue for this file!

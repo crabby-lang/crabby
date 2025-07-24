@@ -20,6 +20,12 @@ build = "build.rs"
 name = "crabby"
 path = "src/main.rs"
 
+[workspace]
+members = [
+    "src/compiler",
+    "src/vm"
+]
+
 [dependencies]
 logos = "0.14.1"
 thiserror = "1.0.63"
@@ -36,9 +42,12 @@ bindgen = "0.70.0"
 serde = "1.0"
 ash = "0.38.0"
 libloading = "0.8.5"
-bevy = "0.16.1"
 pest = { version = "2", default-features = false }
 pest_derive = { version = "2", default-features = false}
+typedef = "0.3"
+
+[features]
+nightly = ["typedef/nightly"]
 
 [target.'cfg(unix)'.dependencies]
 nix = "0.29.0"

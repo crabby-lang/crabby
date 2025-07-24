@@ -12,6 +12,16 @@
 
 **NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
 
+<h3><b>Shout out to this wonderful programmers helping:</b></h3>
+
+<table>
+  <tr>
+    <td>@grngxd</td>
+    <td>@aleksminecraft (discord)</td>
+    <td>@mesmerica / luci (discord)</td>
+  </tr>
+</table>
+
 Crabby is a **Modern High-level**, **Versatile**, **Multi-paradigm**, **general-purpose**, and a **hybrid approach** programming language.
 It is designed to be *readable*, *ease-to-use* for beginners, and *powerful* enough for advanced users.
 
@@ -37,8 +47,6 @@ Here's what changed:
 ## Installation
 
 `Note`: **We highly recommend to use the nightly toolchain edition of Rust.**
-
-`Note (again):` Due to compatibility errors and issues, Crabby is currently being supported/targeted in **Linux**, meaning for *Windows users* we highly recommend having a WSL distro with rust in it just in case.
 
 Step 1: Make sure to have `git` and `rust/cargo` installed
 
@@ -127,6 +135,24 @@ print(x1 + y1)
 print(x2 * y2)
 print(x3 - y3)
 print(x4 / y4)
+```
+
+**Data Types?**
+
+datatypes.crab:
+
+```js
+// Lists  of Data Types and Types in Crabby
+
+String
+
+Float
+
+Int
+
+bool
+
+null
 ```
 
 ifelse.crab:

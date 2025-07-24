@@ -6,6 +6,8 @@ pub enum Token {
     // Keywords
     #[token("def")]
     Def,
+    #[token("fun")]
+    Function,
     #[token("return")]
     Return,
     #[token("if")]
@@ -80,10 +82,10 @@ pub enum Token {
     Trait,
     #[token("override")]
     Override,
+    #[token("extern")]
+    Extern,
     #[token("global")] // Acts like 'pub', you can just use 2 options depending on your needs
     Global,
-    #[token("namespace")]
-    Namespace,
     #[token("static")]
     Static,
     #[token("var")]
@@ -106,6 +108,14 @@ pub enum Token {
     Finally,
     #[token("is")]
     Is,
+    #[token("typedef")]
+    TypeDef,
+    #[token("continue")]
+    Continue,
+    #[token("break")]
+    Break,
+    #[token("pass")]
+    Pass,
 
     // Imports
     #[token("import")]
@@ -135,6 +145,11 @@ pub enum Token {
 
     #[token("false")]
     False,
+
+    #[token("null")]
+    Null,
+    #[token("nil")]
+    Nil,
 
     // Operators and delimiters
     #[token("+")]

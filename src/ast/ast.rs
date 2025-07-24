@@ -20,6 +20,13 @@ pub enum Statement {
         return_type: String,
         docstring: String,
     },
+    FunctionFun {
+        name: String,
+        params: Vec<String>,
+        body: Box<Statement>,
+        return_type: String,
+        docstring: String,
+    },
     Let {
         name: String,
         value: Box<Expression>,

@@ -96,6 +96,23 @@ impl MemoryChecker {
                 self.current_scope -= 1;
             }
 
+            Statement::FunctionFun { name: _, params, body, return_type: _, docstring: _ } => {
+                self.current_scope += 1;
+
+                for param in params {
+                    self.ownership_map.insert(param.clone(), OwnershipInfo {
+                        lifetime: Lifetime::Local { scope_depth: self.current_scope },
+                        borrowed_count: 0,
+                        mut_borrowed: false,
+                        initialized: true,
+                    });
+                }
+
+                self.check_statement(body)?;
+                self.cleanup_scope(self.current_scope);
+                self.current_scope -= 1;
+            }
+
             Statement::Expression(expr) => {
                 self.check_expression(expr)?;
             }

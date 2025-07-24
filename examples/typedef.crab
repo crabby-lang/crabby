@@ -1,0 +1,12 @@
+// TypeDefs in Crabby for defining aliases - EXPERIMENTAL
+
+typedef Vector = List[float]
+
+typedef Point = struct {
+    x: Int,
+    y: Int
+}
+
+typedef c_int = i32
+
+// Got any problem? You can create an issue for this file!

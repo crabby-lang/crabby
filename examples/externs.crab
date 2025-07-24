@@ -1,0 +1,14 @@
+// Externals in Crabby - EXPERIMENTAL
+
+@ffi("something.dll") // <-- Windows DLL shared library
+extern def something(x: Int, y: Int) -> Int {
+    something(100, 100)
+}
+
+// For Linux
+@ffi("linuxlib.so")
+extern def somethinglinux(x: Int, y: Int) -> Int {
+    somethinglinux(200, 400)
+}
+
+// Got any problem? You can create an issue for this file!

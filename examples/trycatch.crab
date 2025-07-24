@@ -1,0 +1,12 @@
+// Try & Catch error handling in Crabby - EXPERIMENTAL
+
+try {
+    print("This is a try block")
+    throw("This is an error")
+} catch e {
+    print(f"This is a catch block: {e}")
+} finally {
+    print("Final block")
+}
+
+// Got any problem? You can create an issue for this file!

@@ -9,7 +9,7 @@
         },
         {
             "name": "keyword.control.crabby",
-            "match": "\\b(import|pub|global|private|protect|def|throw|macro|from|enum|struct|where|and|case|mut|if|else|while|for|as|in|let|return|loop|impl|unsafe|unless|finally|del|is|with|foreign|match|range|lambda|async|await|const|class|extend|trait|override|static|var|do|try|catch)\\b"
+            "match": "\\b(import|pub|global|private|protect|def|fun|throw|macro|from|enum|type|struct|where|and|case|mut|if|else|while|for|as|in|let|return|loop|impl|unsafe|unless|finally|del|is|with|foreign|match|range|lambda|async|await|const|class|extend|trait|override|static|var|do|try|catch|typedef|continue|break|extern|ref|move|pass)\\b"
         },
         {
             "name": "string.quoted.double.f-string.crabby",
@@ -41,7 +41,7 @@
         },
         {
             "name": "constant.language.boolean.crabby",
-            "match": "\\b(true|false|bool)\\b"
+            "match": "\\b(true|false|bool|null|nil)\\b"
         },
         {
             "name": "variable.parameter.crabby",

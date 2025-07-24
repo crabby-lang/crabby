@@ -9,6 +9,14 @@ pub struct Function {
     pub body: Box<Statement>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum ValueVM {
+    Number(f64),
+    String(String),
+    Boolean(bool),
+    Nil,
+}
+
 #[derive(Clone)]
 pub enum Value {
     Integer(i64),
@@ -87,6 +95,39 @@ impl Value {
             _ => Err(CrabbyError::InterpreterError(
                 "Cannot index non-array value".to_string()
             )),
+        }
+    }
+}
+
+impl ValueVM {
+    pub fn as_number(&self) -> Option<f64> {
+        match self {
+            Value::Number(n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    pub fn as_string(&self) -> Option<&str> {
+        match self {
+            Value::String(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            Value::Boolean(b) => *b,
+            Value::Nil => false,
+            _ => true,
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        match self {
+            Value::Number(n) => n.to_string(),
+            Value::String(s) => s.to_string(),
+            Value::Boolean(b) => b.to_string(),
+            Value::Nil => "nil".to_string(),
         }
     }
 }

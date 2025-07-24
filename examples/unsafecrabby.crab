@@ -1,0 +1,16 @@
+// Doing Unsafe code in Crabby - EXPERIMENTAL
+// Note: We DO NOT recommend doing unsafe code in crabby for general users
+// who are starting out and want to use crabby for memory safe programs,
+// this exists for crabby to bridge into C, Assembly and embedded hardware.
+
+unsafe {
+    // Unsafe code goes here
+}
+
+unsafe def {
+    // Unsafe functions
+}
+
+let x = unsafe deref(prt)
+
+// Got any problem? You can create an issue for this file!

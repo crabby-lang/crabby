@@ -21,4 +21,11 @@ let b = &mut a
 b.append("world") // <- Allowed!
 print(a) // - prints hello world
 
+// Using 'refs'
+
+let a = 5
+let b = ref a // <-- &a
+
+let mut c = ref mut a // does *&mut a*
+
 // Got any problem? You can create an issue for this file!

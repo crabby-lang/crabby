@@ -1,0 +1,14 @@
+[package]
+name = "crabc"
+description = "A compiler that translates crabby source code into machine code, comes with a VM."
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+bincode = "2.0.1"
+clap = "4.5.40"
+cranelift-codegen = "0.121.1"
+logos = "0.15.0"
+nom = "8.0.0"
+

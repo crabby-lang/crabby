@@ -49,7 +49,8 @@ impl<'a> Parser<'a> {
             Token::Loop => self.parse_loop_statement(),
             Token::For => self.parse_for_statement(),
             Token::Import => self.parse_import_statement(),
-            Token::Def => self.parse_function_definition(),
+            Token::Def => self.parse_definition(),
+            Token::Function => self.parse_function(),
             Token::Let => self.parse_let_statement(),
             Token::Variable => self.parse_var_statement(),
             Token::Return => {
@@ -119,7 +120,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_function_definition(&mut self) -> Result<Statement, CrabbyError> {
+    fn parse_definition(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'def'
 
         let name = if let Token::Identifier(name) = &self.peek().token {
@@ -152,6 +153,47 @@ impl<'a> Parser<'a> {
         let body = self.parse_block()?;
 
         Ok(Statement::FunctionDef {
+            name,
+            params,
+            body: Box::new(body),
+            return_type: String::new(),
+            docstring: String::new(),
+        })
+    }
+
+    fn parse_function(&mut self) -> Result<Statement, CrabbyError> {
+        self.advance(); // consume 'fun'
+
+        let name = if let Token::Identifier(name) = &self.peek().token {
+            name.clone()
+        } else {
+            return Err(self.error("Expected function name"));
+        };
+        self.advance();
+
+        self.consume(&Token::LParen, "Expected '(' after function name")?;
+
+        let mut params = Vec::new();
+        if !matches!(self.peek().token, Token::RParen) {
+            loop {
+                if let Token::Identifier(param) = &self.peek().token {
+                    params.push(param.clone());
+                    self.advance();
+                } else {
+                    return Err(self.error("Expected parameter name"));
+                }
+
+                if matches!(self.peek().token, Token::RParen) {
+                    break;
+                }
+                self.consume(&Token::Comma, "Expected ',' between parameters")?;
+            }
+        }
+        self.advance(); // consume ')'
+
+        let body = self.parse_block()?;
+
+        Ok(Statement::FunctionFun {
             name,
             params,
             body: Box::new(body),

@@ -15,6 +15,18 @@ pub def create_person(name: String, age: Int) -> Person {
     return person
 }
 
+// - NEW: 'fun' keyword, works like **def** too.
+
+pub fun create_person(name: String, age: Int) -> Person {
+    let person = Person {
+        name: name,
+        age: age,
+    }
+
+    print(f"Hi, my name is {person.name} and my age is {person.age}")
+    return person
+}
+
 // WHAT'S HAPPENING?
 
 // (name: String, age: Int)

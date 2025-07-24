@@ -1,4 +1,5 @@
 // C/C++ Interaction for Crabby
+// Used for loading shared libraries like DLLs and .so files
 
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_double, c_int, c_void};
@@ -6,7 +7,7 @@ use libloading::{Library, Symbol};
 use crate::value::Value;
 use std::collections::HashMap;
 use crate::utils::CrabbyError;
-use crate::interpreter::Interpreter;
+use crate::interpreter;
 
 #[derive(Debug, Clone)]
 pub enum FFIType {
@@ -76,7 +77,7 @@ impl FFIManager<'_> {
             self.functions.insert(
                 func_name.to_string(),
                 FFIFunction {
-                    lib: Library,
+                    lib: lib.clone(),
                     func,
                     arg_types,
                     return_type,
@@ -154,8 +155,22 @@ impl FFIManager<'_> {
     }
 }
 
+fn parse_ffi_type(type_str: &str) -> Result<FFIType, CrabbyError> {
+    match type_str {
+        "int" => Ok(FFIType::Int),
+        "float" => Ok(FFIType::Float),
+        "string" => Ok(FFIType::String),
+        "void" => Ok(FFIType::Void),
+        s if s.starts_with("ptr<") && s.ends_with(">") => {
+            let inner = &s[4..s.len()-1];
+            Ok(FFIType::Pointer(Box::new(parse_ffi_type(inner)?)))
+        }
+        _ => Err(CrabbyError::InterpreterError(format!("Unknown FFI type: {}", type_str)))
+    }
+}
+
 pub fn register_ffi_builtins(interpreter: &mut interpreter::Interpreter) {
-    interpreter.add_builtin("load_library", |args| {
+    interpreter.add_builtin("loadlib", |args| {
         if args.len() != 1 {
             return Err(CrabbyError::InterpreterError("load_library expects a library path".into()));
         }
@@ -167,7 +182,7 @@ pub fn register_ffi_builtins(interpreter: &mut interpreter::Interpreter) {
         Ok(Value::Void)
     });
 
-    interpreter.add_builtin("extern_function", |args| {
+    interpreter.add_builtin("extern", |args| {
         if args.len() != 3 {
             return Err(CrabbyError::InterpreterError("extern_function expects library path, function name, and type signature".into()));
         }

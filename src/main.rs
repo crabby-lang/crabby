@@ -9,19 +9,18 @@ mod lexer;
 mod parser;
 mod ast;
 mod interpreter;
-// mod runtime;
+mod runtime;
 mod value;
 mod modules;
-// mod repl;
+mod repl;
 mod core;
 mod etc;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
 #[command(author="Kazooki123")]
-#[command(about = "Crabby programming language interpreter", long_about=None)]
+#[command(about = "Crabby Programming Language Interpreter", long_about=None)]
 #[command(version = env!("CARGO_PKG_VERSION"))]
-#[command(disable_version_flag = true)]
 pub struct Cli {
     #[arg(help = "Input .crab or .cb file")]
     input: Option<PathBuf>,
@@ -46,9 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let tokens = lexer::tokenize(&source).await;
         let ast = parse(tokens.expect("Failed to parse token")).await.expect("Failed to parse AST");
         let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
-        // let mut runtime = runtime::Runtime::new(Some(absolute_path));
         interpreter.interpret(&ast).await?;
-        // runtime.runtime(&ast).await?;
 
         // Shows version of Crabby
         if cli.version {
@@ -56,6 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
 
+        // When used it analyzes any dead & unused code
         if cli.deadcodewarn {
             let mut analyzer = DeadCodeAnalyzer::new();
             let warnings = analyzer.analyze(&ast)?;

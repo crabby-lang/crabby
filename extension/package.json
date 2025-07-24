@@ -2,7 +2,7 @@
   "name": "crabby",
   "displayName": "Crabby",
   "description": "Crabby language support for Vscode",
-  "version": "0.4.14",
+  "version": "0.4.17",
   "publisher": "Kazooki123",
   "repository": {
     "type": "git",
