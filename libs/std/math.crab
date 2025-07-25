@@ -1,0 +1,19 @@
+pub const pi: Float = 3.141592653589793238
+
+pub def factorial(n: Float) -> Float {
+    if n == 0 {
+        return 1
+    }
+    let result = 1
+    let i = 0
+    loop n {
+        i += 1
+        result = result * i
+    }
+    return result
+}
+
+pub def sin(degrees: Float) -> Float {
+    let rads = degrees * (pi / 180)
+
+}
