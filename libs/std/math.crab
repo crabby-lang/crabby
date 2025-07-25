@@ -1,6 +1,10 @@
 pub const pi: Float = 3.141592653589793238
+pub const e: Float = 0.577215664901532860
 
 pub def factorial(n: Float) -> Float {
+    """
+    Returns n factorial, as a float.
+    """
     if n == 0 {
         return 1
     }
@@ -13,7 +17,24 @@ pub def factorial(n: Float) -> Float {
     return result
 }
 
+pub def log(x: Float, y: Float) -> Float {
+
+}
+
+pub def pow(x: Float, y: Float) -> Float {
+    """
+    Returns x to the power of y, as a Float.
+    """
+    if exponent == 0 {
+
+    }
+}
+
 pub def sin(degrees: Float) -> Float {
     let rads = degrees * (pi / 180)
+    let sum = 0
 
+    for i in 0..10 {
+
+    }
 }
