@@ -102,32 +102,32 @@ impl Value {
 impl ValueVM {
     pub fn as_number(&self) -> Option<f64> {
         match self {
-            Value::Number(n) => Some(*n),
+            ValueVM::Number(n) => Some(*n),
             _ => None,
         }
     }
 
     pub fn as_string(&self) -> Option<&str> {
         match self {
-            Value::String(s) => Some(s),
+            ValueVM::String(s) => Some(s),
             _ => None,
         }
     }
 
     pub fn is_truthy(&self) -> bool {
         match self {
-            Value::Boolean(b) => *b,
-            Value::Nil => false,
+            ValueVM::Boolean(b) => *b,
+            ValueVM::Nil => false,
             _ => true,
         }
     }
 
     pub fn to_string(&self) -> String {
         match self {
-            Value::Number(n) => n.to_string(),
-            Value::String(s) => s.to_string(),
-            Value::Boolean(b) => b.to_string(),
-            Value::Nil => "nil".to_string(),
+            ValueVM::Number(n) => n.to_string(),
+            ValueVM::String(s) => s.to_string(),
+            ValueVM::Boolean(b) => b.to_string(),
+            ValueVM::Nil => "nil".to_string(),
         }
     }
 }
