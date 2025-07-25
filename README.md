@@ -19,6 +19,7 @@
     <td><a href="https://github.com/grngxd">@grngxd</a></td>
     <td><a href="https://github.com/Aleksandere84">@Aleksandere84</a></td>
     <td>@mesmerica / luci (discord)</td>
+    <td><a href="https://github.com/jamiw1">@jamiw1</a></td>
   </tr>
 </table>
 
