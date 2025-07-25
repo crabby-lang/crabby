@@ -97,8 +97,138 @@ impl BytecodeFile {
             return Err(format!("Unsupported bytecode version: {}", version[0]).into());
         }
 
+        // Reads constants
+        let mut constants_count = [0u8; 4];
+        reader.read_exact(&mut constants_count)?;
+        let contants_count = u32::from_le_bytes(constants_count);
 
+        let mut constants = Vec::new();
+        for _ in 0..constants_count {
+            constants.push(self.read_value(&mut reader)?);
+        }
 
+        // Reads instructions
+        let mut instructions_count = [0u8; 4];
+        reader.read_exact(&mut instructions_count)?;
+        let instructions_count = u32::from_le_bytes(instructions_count);
+
+        let mut instructions = Vec::new();
+        for _ in 0..instructions_count {
+            intructions.push(self.read_instructions(&mut reader)?);
+        }
+
+        Ok(Self {
+            instructions,
+            constants,
+        })
+
+    }
+
+    fn write_value(&self, writer: &mut BufWriter<File>, value: &Value) -> Result<(), Box<dyn std::error::Error>> {
+        match value {
+            Value::Number(n) => {
+                writer.write_all(&[0x01])?;
+                writer.write_all(&n.to_le_bytes())?;
+            }
+            Value::String(s) => {
+                writer.write_all(&[0x02])?;
+                writer.write_all(&(s.len() as u32).to_le_bytes())?;
+                writer.write_all(s.as_bytes())?;
+            }
+            Value::Boolean(b) => {
+                writer.write_all(&[0x03])?;
+                writer.write_all(&[if *b { 1 } else { 0 }])?;
+            }
+            Value::Nil => {
+                writer.write_all(&[0x04])?; // returns nothing
+            }
+        }
+        Ok(())        
+    }
+
+    fn read_value(&self, reader: &mut BufReader<File>) -> Result<(), Box<dyn std::error::Error>> {
+        let mut type_tag = [0u8; 1];
+        reader.read_exact(&mut type_tag)?;
+
+        match type_tag[0] {
+            0x01 => {
+                let mut bytes = [0u8; 8];
+                reader.read_exact(&mut bytes)?;
+                Ok(Value::Number(f64::from_le_bytes(bytes)))
+            }
+            0x02 => {
+                let mut len_bytes = [0u8; 4];
+                reader.read_exact(&mut len_bytes)?;
+                let len = u32::from_le_bytes(len_bytes) as usize;
+
+                let mut string_bytes = vec![0u8; len];
+                reader.read_exact(&mut string_bytes)?;
+                Ok(Value::String(String::from_utf8(string_bytes)?))
+            }
+            0x03 => {
+                let mut bool_bytes = [0u8; 1];
+                reader.read_exact(&mut bool_bytes)?;
+                Ok(Value::Boolean(bool_bytes[0] != 0))
+            }
+            0x04 => Ok(Value::Nil),
+            _ => Err(format!("Unknown value type tag: {}", type_tag[0]).into()),
+        }
+    }
+
+    fn write_instruction(&self, writer: &mut BufWriter<File>, instruction: &Instruction) -> Result<(), Box<dyn std::error::Error>> {
+        writer.write_all(&[instruction.to_opcode()])?;
+
+        match instruction {
+            Instruction::LoadConstant(index) => {
+                writer.write_all(&(*index as u32).to_le_bytes())?;
+            }
+            Instruction::LoadVariable(name) | Instruction::StoreVariable(name) => {
+                writer.write_all(&(name.len() as u32).to_le_bytes())?;
+                writer.write_all(name.as_bytes())?;
+            }
+            _ => {} // No additional data
+        }
+        Ok(())
+    }
+
+    fn read_instruction(&self, reader: &mut BufReader<File>) -> Result<Instruction, Box<dyn std::error::Error>> {
+        let mut opcode = [0u8; 1];
+        reader.read_exact(&mut opcode)?;
+
+        match opcode[0] {
+            0x01 => {
+                let mut index_bytes = [0u8; 4];
+                reader.read_exact(&mut index_bytes)?;
+                let index = u32::from_le_bytes(index_bytes);
+                Ok(Instruction::LoadConstant(index))
+            }
+            0x02 => {
+                let mut len_bytes = [0u8; 4];
+                reader.read_exact(&mut len_bytes)?;
+                let len = u32::from_le_bytes(len_bytes) as usize;
+
+                let mut name_bytes = vec![0u8; len];
+                reader.read_exact(&mut name_bytes)?;
+                Ok(Instruction::LoadVariable(String::from_utf8(name_bytes)?))
+            }
+            0x03 => {
+                let mut len_bytes = [0u8; 4];
+                reader.read_exact(&mut len_bytes)?;
+                let len = u32::from_le_bytes(len_bytes) as usize;
+
+                let mut name_bytes = vec![0u8; len];
+                reader.read_exact(&mut name_bytes)?;
+                Ok(Instruction::StoreVariable(String::from_utf8(name_bytes)?))
+            }
+            0x10 => Ok(Instruction::Add),
+            0x11 => Ok(Instruction::Subtract),
+            0x12 => Ok(Instruction::Multiply),
+            0x13 => Ok(Instruction::Divide),
+            0x20 => Ok(Instruction::Print),
+            0x30 => Ok(Instruction::Pop),
+            0x31 => Ok(Instruction::Return)
+            _ => Err(format!("Unknown Instruction OPCODE: {}", opcode[0]).into()),
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 [package]
 name = "crabc"
-description = "A compiler that translates crabby source code into machine code, comes with a VM."
+description = "A compiler that translates crabby source code into machine code."
 version = "0.1.0"
 edition = "2024"
 license = "MIT"

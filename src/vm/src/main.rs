@@ -5,7 +5,7 @@ mod bytecode_file;
 
 use compiler::Compiler;
 use vm::VM;
-use bytecode_file::BytecodeFile;
+use bytecode::BytecodeFile;
 
 fn main() {
     println!("=== Bytecode VM ===\n")
