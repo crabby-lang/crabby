@@ -6,6 +6,8 @@
 
 ![GitHub License](https://img.shields.io/github/license/crabby-lang/crabby?style=for-the-badge&logo=gnu&logoColor=%23A42E2B)
 
+![GitHub Repo stars](https://img.shields.io/github/stars/Kazooki123/crabby?style=for-the-badge&logo=github&color=orange)
+
 ## Introduction
 
 ![Logo](https://github.com/crabby-lang/crabby/blob/main/crabbylogo.png)
@@ -191,6 +193,26 @@ for i in range(y) {
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly message :3
 
 Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksforgeeks.org/python/python-docstrings/)!
+
+## FEATURES
+
+> ⚠️ Most of this features are still in development and are being experimented!
+
+1. Asynchronous awaits
+2. Inheritance and Polymorphism
+3. Encapsulation
+4. Composition (rust style)
+5. Ability to do unsafe code (be careful though)
+6. Try catch error handling
+7. Python-style `finally` keyword
+8. Import and exports (W.I.P)
+9. Anonymous functions (with Lambdas)
+10. Higher-order Functions
+11. Pipe Operators (Elixir/Ruby style)
+12. Type Safety
+13. Pattern matching with `match` and `case`
+14. The use of `extern` for using C code
+15. `foreign` keyword to code non-crabby code inside crabby (can load shared libaries like DLLs/.so files and reuse it)
 
 ## FAQs
 
