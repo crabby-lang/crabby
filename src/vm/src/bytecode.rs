@@ -23,7 +23,7 @@
 *
 */
 
-use crate::vm::Instruction;
+use crate::vm::Instructions;
 use crate::value::Value;
 use std::fs::File;
 use std::io::{Read, Write, BufWriter, BufReader};
@@ -33,11 +33,11 @@ use std::io::{Read, Write, BufWriter, BufReader};
 // Version: 1 byte
 // Constants count: 4 bytes (little endian)
 // Constants section: VARIABLE LENGTH
-// Instruction count: 4 bytes (little endian)
-// Instruction section: VARIABLE LENGTH
+// Instructions count: 4 bytes (little endian)
+// Instructions section: VARIABLE LENGTH
 
 pub struct BytecodeFile {
-    pub instructions: Vec<Instruction>,
+    pub instructions: Vec<Instructions>,
     pub constants: Vec<Value>,
 }
 
@@ -45,7 +45,7 @@ impl BytecodeFile {
     const MAGIC: &'static [u8] = b"CRAB";
     const VERSION: u8 = 1;
 
-    pub fn new(instructions: Vec<Instruction>, constants: Vec<Value>) -> Self {
+    pub fn new(instructions: Vec<Instructions>, constants: Vec<Value>) -> Self {
         Self {
             instructions,
             constants,
@@ -114,7 +114,7 @@ impl BytecodeFile {
 
         let mut instructions = Vec::new();
         for _ in 0..instructions_count {
-            intructions.push(self.read_instructions(&mut reader)?);
+            instructions.push(self.read_instructions(&mut reader)?);
         }
 
         Ok(Self {
@@ -143,7 +143,7 @@ impl BytecodeFile {
                 writer.write_all(&[0x04])?; // returns nothing
             }
         }
-        Ok(())        
+        Ok(())
     }
 
     fn read_value(&self, reader: &mut BufReader<File>) -> Result<(), Box<dyn std::error::Error>> {
@@ -175,14 +175,14 @@ impl BytecodeFile {
         }
     }
 
-    fn write_instruction(&self, writer: &mut BufWriter<File>, instruction: &Instruction) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_instruction(&self, writer: &mut BufWriter<File>, instruction: &Instructions) -> Result<(), Box<dyn std::error::Error>> {
         writer.write_all(&[instruction.to_opcode()])?;
 
         match instruction {
-            Instruction::LoadConstant(index) => {
+            Instructions::LoadConstant(index) => {
                 writer.write_all(&(*index as u32).to_le_bytes())?;
             }
-            Instruction::LoadVariable(name) | Instruction::StoreVariable(name) => {
+            Instructions::LoadVariable(name) | Instructions::StoreVariable(name) => {
                 writer.write_all(&(name.len() as u32).to_le_bytes())?;
                 writer.write_all(name.as_bytes())?;
             }
@@ -191,7 +191,7 @@ impl BytecodeFile {
         Ok(())
     }
 
-    fn read_instruction(&self, reader: &mut BufReader<File>) -> Result<Instruction, Box<dyn std::error::Error>> {
+    fn read_instruction(&self, reader: &mut BufReader<File>) -> Result<Instructions, Box<dyn std::error::Error>> {
         let mut opcode = [0u8; 1];
         reader.read_exact(&mut opcode)?;
 
@@ -200,7 +200,7 @@ impl BytecodeFile {
                 let mut index_bytes = [0u8; 4];
                 reader.read_exact(&mut index_bytes)?;
                 let index = u32::from_le_bytes(index_bytes);
-                Ok(Instruction::LoadConstant(index))
+                Ok(Instructions::LoadConstant(index))
             }
             0x02 => {
                 let mut len_bytes = [0u8; 4];
@@ -209,7 +209,7 @@ impl BytecodeFile {
 
                 let mut name_bytes = vec![0u8; len];
                 reader.read_exact(&mut name_bytes)?;
-                Ok(Instruction::LoadVariable(String::from_utf8(name_bytes)?))
+                Ok(Instructions::LoadVariable(String::from_utf8(name_bytes)?))
             }
             0x03 => {
                 let mut len_bytes = [0u8; 4];
@@ -218,17 +218,16 @@ impl BytecodeFile {
 
                 let mut name_bytes = vec![0u8; len];
                 reader.read_exact(&mut name_bytes)?;
-                Ok(Instruction::StoreVariable(String::from_utf8(name_bytes)?))
+                Ok(Instructions::StoreVariable(String::from_utf8(name_bytes)?))
             }
-            0x10 => Ok(Instruction::Add),
-            0x11 => Ok(Instruction::Subtract),
-            0x12 => Ok(Instruction::Multiply),
-            0x13 => Ok(Instruction::Divide),
-            0x20 => Ok(Instruction::Print),
-            0x30 => Ok(Instruction::Pop),
-            0x31 => Ok(Instruction::Return)
-            _ => Err(format!("Unknown Instruction OPCODE: {}", opcode[0]).into()),
+            0x10 => Ok(Instructions::Add),
+            0x11 => Ok(Instructions::Subtract),
+            0x12 => Ok(Instructions::Multiply),
+            0x13 => Ok(Instructions::Divide),
+            0x20 => Ok(Instructions::Print),
+            0x30 => Ok(Instructions::Pop),
+            0x31 => Ok(Instructions::Return),
+            _ => Err(format!("Unknown Instructions OPCODE: {}", opcode[0]).into()),
         }
     }
-
 }

@@ -47,13 +47,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
         interpreter.interpret(&ast).await?;
 
-        // Shows version of Crabby
+        // Shows the version of Crabby
         if cli.version {
             println!("Crabby Version: {}", env!("CARGO_PKG_VERSION"));
             return Ok(());
         }
 
-        // When used it analyzes any dead & unused code
+        // When used, it analyzes any dead & unused code
         if cli.deadcodewarn {
             let mut analyzer = DeadCodeAnalyzer::new();
             let warnings = analyzer.analyze(&ast)?;

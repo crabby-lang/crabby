@@ -2,12 +2,12 @@
 
 import http from "http"
 
-async def fetch_data(url: String) -> String {
+pub async def fetch_data(url: String) -> String {
     let response = await http.get(url)
     let response.body
 }
 
-pub async def main() {
+async def main() {
     let data = await fetch_data("http://api.example.com")
     print(data)
 }

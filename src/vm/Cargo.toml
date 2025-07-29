@@ -1,12 +1,13 @@
 [package]
-name = "crabbyvm"
+name = "crabvm"
 description = "Bytecode VM for Crabby"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
 
 [[bin]]
-name = "crabbyvm"
+name = "crabvm"
 path = "src/main.rs"
 
 [dependencies]
+crabc = { path = "../compiler", version = "0.1.0" }

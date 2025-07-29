@@ -1,14 +1,12 @@
 mod vm;
-mod compiler;
-mod value;
-mod bytecode_file;
+mod bytecode;
 
 use compiler::Compiler;
 use vm::VM;
 use bytecode::BytecodeFile;
 
 fn main() {
-    println!("=== Bytecode VM ===\n")
+    println!("=== Bytecode VM ===\n");
 
     let source1 = "10 + 5 * 2 ";
     println!("Source: {}", source1);

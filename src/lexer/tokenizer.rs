@@ -32,6 +32,8 @@ pub enum Token {
     With,
     #[token("in")]
     In,
+    #[token("not")]
+    Not,
     #[token("where")]
     Where,
     #[token("range")]
@@ -186,8 +188,8 @@ pub enum Token {
     Arrow,
     #[token("->")]
     CoolerArrow,
-    #[token("!")]
-    Not,
+    #[token("!")] // Can be used for macros or a "!= / not" operator
+    ExclamationMark,
     #[token("&")] // For borrowing, not to be confused with the 'and' keyword or '&&' operator.
     Ampersand,
     #[token("@")]

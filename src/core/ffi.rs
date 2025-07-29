@@ -19,7 +19,7 @@ pub enum FFIType {
 }
 
 pub struct FFIFunction<'a> {
-    lib: Library,
+    lib: std::sync::Arc<Library>,
     func: Symbol<'a, unsafe extern "C" fn()>,
     arg_types: Vec<FFIType>,
     return_type: FFIType,
@@ -34,12 +34,12 @@ pub enum FFIValue {
     Pointer(*mut c_void),
 }
 
-pub struct FFIManager<'a> {
+pub struct FFIManager {
     loaded_libs: HashMap<String, Library>,
-    functions: HashMap<String, FFIFunction<'a>>,
+    functions: HashMap<String, FFIFunction<'static>>,
 }
 
-impl FFIManager<'_> {
+impl FFIManager {
     pub fn new() -> Self {
         Self {
             loaded_libs: HashMap::new(),
@@ -77,7 +77,7 @@ impl FFIManager<'_> {
             self.functions.insert(
                 func_name.to_string(),
                 FFIFunction {
-                    lib: lib.clone(),
+                    lib: &Library,
                     func,
                     arg_types,
                     return_type,
@@ -170,55 +170,65 @@ fn parse_ffi_type(type_str: &str) -> Result<FFIType, CrabbyError> {
 }
 
 pub fn register_ffi_builtins(interpreter: &mut interpreter::Interpreter) {
-    interpreter.add_builtin("loadlib", |args| {
-        if args.len() != 1 {
-            return Err(CrabbyError::InterpreterError("load_library expects a library path".into()));
+    // Create separate FFIManager instance for each function
+    let ffi_manager1 = std::sync::Arc::new(std::sync::Mutex::new(FFIManager::new()));
+    let ffi_manager2 = ffi_manager1.clone();
+
+    interpreter.add_builtin("loadlib", {
+        let ffi_manager = ffi_manager1;
+        move |args| {
+            if args.len() != 1 {
+                return Err(CrabbyError::InterpreterError("load_library expects a library path".into()));
+            }
+            let lib_path = match &args[0] {
+                Value::String(s) => s.clone(),
+                _ => return Err(CrabbyError::InterpreterError("First argument must be library path".into())),
+            };
+            ffi_manager.lock().unwrap().load_library(&lib_path)?;
+            Ok(Value::Void)
         }
-        let lib_path = match &args[0] {
-            Value::String(s) => s.clone(),
-            _ => return Err(CrabbyError::InterpreterError("First argument must be library path".into())),
-        };
-        interpreter.ffi_manager.load_library(&lib_path)?;
-        Ok(Value::Void)
     });
 
-    interpreter.add_builtin("extern", |args| {
-        if args.len() != 3 {
-            return Err(CrabbyError::InterpreterError("extern_function expects library path, function name, and type signature".into()));
-        }
-
-        let lib_path = match &args[0] {
-            Value::String(s) => s.clone(),
-            _ => return Err(CrabbyError::InterpreterError("First argument must be library path".into())),
-        };
-
-        let func_name = match &args[1] {
-            Value::String(s) => s.clone(),
-            _ => return Err(CrabbyError::InterpreterError("Second argument must be function name".into())),
-        };
-
-        let type_sig = match &args[2] {
-            Value::Array(types) => {
-                let mut arg_types = Vec::new();
-                let mut return_type = FFIType::Void;
-
-                for (i, t) in types.iter().enumerate() {
-                    if let Value::String(type_str) = t {
-                        if i == types.len() - 1 {
-                            return_type = parse_ffi_type(type_str)?;
-                        } else {
-                            arg_types.push(parse_ffi_type(type_str)?);
-                        }
-                    } else {
-                        return Err(CrabbyError::InterpreterError("Type signature must be strings".into()));
-                    }
-                }
-                (arg_types, return_type)
+    interpreter.add_builtin("extern", {
+        let ffi_manager = ffi_manager2;
+        move |args| {
+            if args.len() != 3 {
+                return Err(CrabbyError::InterpreterError("extern_function expects library path, function name, and type signature".into()));
             }
-            _ => return Err(CrabbyError::InterpreterError("Third argument must be array of type signatures".into())),
-        };
 
-        interpreter.ffi_manager.register_function(&lib_path, &func_name, type_sig.0, type_sig.1)?;
-        Ok(Value::Void)
+            let lib_path = match &args[0] {
+                Value::String(s) => s.clone(),
+                _ => return Err(CrabbyError::InterpreterError("First argument must be library path".into())),
+            };
+
+            let func_name = match &args[1] {
+                Value::String(s) => s.clone(),
+                _ => return Err(CrabbyError::InterpreterError("Second argument must be function name".into())),
+            };
+
+            let type_sig = match &args[2] {
+                Value::Array(types) => {
+                    let mut arg_types = Vec::new();
+                    let mut return_type = FFIType::Void;
+
+                    for (i, t) in types.iter().enumerate() {
+                        if let Value::String(type_str) = t {
+                            if i == types.len() - 1 {
+                                return_type = parse_ffi_type(type_str)?;
+                            } else {
+                                arg_types.push(parse_ffi_type(type_str)?);
+                            }
+                        } else {
+                            return Err(CrabbyError::InterpreterError("Type signature must be strings".into()));
+                        }
+                    }
+                    (arg_types, return_type)
+                }
+                _ => return Err(CrabbyError::InterpreterError("Third argument must be array of type signatures".into())),
+            };
+
+            ffi_manager.lock().unwrap().register_function(&lib_path, &func_name, type_sig.0, type_sig.1)?;
+            Ok(Value::Void)
+        }
     });
 }

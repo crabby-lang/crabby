@@ -70,7 +70,7 @@ impl<'a> Parser<'a> {
             Token::If => self.parse_if_statement(),
             Token::While => self.parse_while_statement(),
             Token::Async => self.parse_async_statement(),
-            Token::Await => self.parse_await_statement(),
+            // Token::Await => self.parse_await_statement(),
             Token::Identifier(_) => {
                 let expr = self.parse_expression()?;
 
@@ -296,12 +296,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_await_statement(&mut self) -> Result<Statement, CrabbyError> {
-        self.advance(); // consume 'await'
+    // pub fn parse_await_statement(&mut self) -> Result<Statement, CrabbyError> {
+    //    self.advance(); // consume 'await'
 
-        let expr = self.parse_expression()?;
-        Ok(Expression::Await { expr: Box::new(expr)});
-    }
+    //    let expr = self.parse_expression()?;
+    //    Ok(Expression::Await { expr: Box::new(expr)});
+    // }
 
     // fn parse_class_statement(&mut self) -> Result<Statement, CrabbyError> {
     //    self.advance(); // consume 'class'

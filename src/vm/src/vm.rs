@@ -24,10 +24,10 @@
 */
 
 use crate::value::Value;
-use crate::collections::HashMap;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
-pub enum Instruction {
+pub enum Instructions {
     LoadConstant(usize),
     LoadVariable(String),
     StoreVariable(String),
@@ -43,38 +43,40 @@ pub enum Instruction {
 // A set of Instructions
 impl Instructions {
     pub fn to_opcode(&self) -> u8 {
-        Instruction::LoadConstants(_) => 0x01,
-        Instruction::LoadVariable(_) => 0x02,
-        Instruction::StoreVariable(_) => 0x03,
-        Instruction::Add => 0x10,
-        Instruction::Subtract => 0x11,
-        Instruction::Multiply => 0x12,
-        Instruction::Divide => 0x13,
-        Instruction::Print => 0x20,
-        Instruction::Pop => 0x30,
-        Instruction::Return => 0x31,
+        match self {
+            Instructions::LoadConstant(_) => 0x01,
+            Instructions::LoadVariable(_) => 0x02,
+            Instructions::StoreVariable(_) => 0x03,
+            Instructions::Add => 0x10,
+            Instructions::Subtract => 0x11,
+            Instructions::Multiply => 0x12,
+            Instructions::Divide => 0x13,
+            Instructions::Print => 0x20,
+            Instructions::Pop => 0x30,
+            Instructions::Return => 0x31,
+        }
     }
 
     pub fn opcode_name(&self) -> &'static str {
         match self {
-            Instruction::LoadConstants(_) => "ldc",
-            Instruction::LoadVariable(_) => "aload",
-            Instruction::StoreVariable(_) => "astore",
-            Instruction::Add => "iadd",
-            Instruction::Subtract => "isub",
-            Instruction::Multiply => "imul",
-            Instruction::Divide => "idiv"
-            Instruction::Print => "invokevirtual"
-            Instruction::Pop => "pop",
-            Instruction::Return => "return",
+            Instructions::LoadConstant(_) => "ldc",
+            Instructions::LoadVariable(_) => "aload",
+            Instructions::StoreVariable(_) => "astore",
+            Instructions::Add => "iadd",
+            Instructions::Subtract => "isub",
+            Instructions::Multiply => "imul",
+            Instructions::Divide => "idiv",
+            Instructions::Print => "invokevirtual",
+            Instructions::Pop => "pop",
+            Instructions::Return => "return",
         }
     }
 }
 
 pub struct VM {
-    stack: Vec<Value>,
-    constants: Vec<Value>,
-    variables: HashMap<String, Value>,
+    pub stack: Vec<Value>,
+    pub constants: Vec<Value>,
+    pub variables: HashMap<String, Value>,
 }
 
 impl VM {
@@ -90,18 +92,18 @@ impl VM {
         println!("=== Bytecode ===");
         println!("  Code:");
         for (i, instruction) in instructions.iter().enumerate() {
-            println!("   {}:", i):
+            println!("   {}:", i);
             match instruction {
-                Instruction::LoadConstant(index) => {
+                Instructions::LoadConstant(index) => {
                     println!("{} #{}", instruction.opcode_name(), index);
                 }
-                Instruction::LoadVariable(name) => {
+                Instructions::LoadVariable(name) => {
                     println!("{} #{}", instruction.opcode_name(), name);
                 }
-                Instruction::StoreVariable(name) => {
+                Instructions::StoreVariable(name) => {
                     println!("{} #{}", instruction.opcode_name(), name);
                 }
-                Instruction::Print => {
+                Instructions::Print => {
                     println!("{} #crab/io/PrintStream.println:(Lcrab/lang/Object;)V", instruction.opcode_name());
                 }
                 _ => {
@@ -112,24 +114,24 @@ impl VM {
 
         if !self.constants.is_empty() {
             println!("   Constant pool:");
-            for (i, constant) in self.constant.iter().enumerate() {
+            for (i, constant) in self.constants.iter().enumerate() {
                 println!("    #{} = {}", i, constant.to_string());
             }
         }
         println!();
     }
 
-    pub fn to_raw_bytecode(&self, instructions: &[Instruction]) -> Vec<u8> {
+    pub fn to_raw_bytecode(&self, instructions: &[Instructions]) -> Vec<u8> {
         let mut bytecode = Vec::new();
 
         for instruction in instructions {
             bytecode.push(instruction.to_opcode());
 
             match instruction {
-                Instruction::LoadConstant(index) => {
+                Instructions::LoadConstant(index) => {
                     bytecode.push(*index as u8);
                 }
-                Instruction::LoadVariable(name) | Instruction::StoreVariable(name) => {
+                Instructions::LoadVariable(name) | Instructions::StoreVariable(name) => {
                     bytecode.push(name.len() as u8);
                     bytecode.extend(name.as_bytes());
                 }
@@ -140,31 +142,31 @@ impl VM {
         bytecode
     }
 
-    pub fn execute(&mut self, instructions: Vec<Instruction>) -> Option<Value> {
+    pub fn execute(&mut self, instructions: Vec<Instructions>) -> Option<Value> {
         for instruction in instructions {
             match instruction {
-                Instruction::LoadConstant(index) => {
+                Instructions::LoadConstant(index) => {
                     if let Some(value) = self.constants.get(index) {
                         self.stack.push(value.clone());
                     } else {
                         panic!("Invalid constant index: {}", index);
                     }
                 }
-                Instruction::LoadVariable(name) => {
+                Instructions::LoadVariable(name) => {
                     if let Some(value) = self.variables.get(&name) {
                         self.stack.push(value.clone());
                     } else {
                         panic!("Undefined variable: {}", name);
                     }
                 }
-                Instruction::StoreVariable(name) => {
+                Instructions::StoreVariable(name) => {
                     if let Some(value) = self.stack.pop() {
                         self.variables.insert(name, value);
                     } else {
                         panic!("Stack underflow when storing variable");
                     }
                 }
-                Instruction::Add => {
+                Instructions::Add => {
                     let b = self.stack.pop().expect("Stack overflow!");
                     let a = self.stack.pop().expect("Stack overflow!");
 
@@ -175,10 +177,10 @@ impl VM {
                         (Value::String(a), Value::String(b)) => {
                             self.stack.push(Value::String(format!("{}{}", a, b)));
                         }
-                        _ => panic!("Cannot add these types");
+                        _ => panic!("Cannot add these types")
                     }
                 }
-                Instruction::Subtract => {
+                Instructions::Subtract => {
                     let b = self.stack.pop().expect("Stack overflow!");
                     let a = self.stack.pop().expect("Stack overflow!");
 
@@ -188,7 +190,7 @@ impl VM {
                         panic!("Cannot subtract non-numbers!!");
                     }
                 }
-                Instruction::Multiply => {
+                Instructions::Multiply => {
                     let b = self.stack.pop().expect("Stack overflow!");
                     let a = self.stack.pop().expect("Stack overflow!");
 
@@ -198,7 +200,7 @@ impl VM {
                         panic!("Cannot multiply non-numbers!")
                     }
                 }
-                Instruction::Divide => {
+                Instructions::Divide => {
                     let b = self.stack.pop().expect("Stack underflow");
                     let a = self.stack.pop().expect("Stack underflow");
 
@@ -212,17 +214,17 @@ impl VM {
                         panic!("Cannot divide non-numbers!");
                     }
                 }
-                Instruction::Print => {
+                Instructions::Print => {
                     if let Some(value) = self.stack.pop() {
                         println!("{}", value.to_string());
                     } else {
                         panic!("Stack underflow when printing");
                     }
                 }
-                Instruction::Pop => {
+                Instructions::Pop => {
                     self.stack.pop();
                 }
-                Instruction::Return => {
+                Instructions::Return => {
                     return self.stack.pop();
                 }
             }

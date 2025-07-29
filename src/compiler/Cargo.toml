@@ -11,4 +11,3 @@ clap = "4.5.40"
 cranelift-codegen = "0.121.1"
 logos = "0.15.0"
 nom = "8.0.0"
-

@@ -9,7 +9,7 @@ match value {
 
 let number = 5
 match number {
-    case 1 | 3 | 5 | 7  => print("This is a odd number")
+    case 1 | 3 | 5 | 7  => print("This is a odd number"),
     case _ => print("Not an odd number")
 }
 

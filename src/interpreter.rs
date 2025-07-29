@@ -11,7 +11,7 @@ use crate::parser::*;
 use crate::lexer::*;
 use crate::modules::Module;
 
-use crate::core::ffi::{FFIManager, FFIValue, FFIType};
+// use crate::core::ffi::{FFIManager, FFIValue};
 
 pub struct Interpreter {
     variables: HashMap<String, Value>,
@@ -20,8 +20,8 @@ pub struct Interpreter {
     call_stack: Vec<String>,
     module: Module,
     current_file: Option<PathBuf>,
-    pub ffi_manager: FFIManager<'static>,
-    builtin_functions: HashMap<String, Box<dyn Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync>>,
+    // pub ffi_manager: FFIManager,
+    // add_builtin: HashMap<String, Box<dyn Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync>>,
 }
 
 impl Interpreter {
@@ -37,8 +37,8 @@ impl Interpreter {
                 variable: HashMap::new()
             },
             current_file: file_path,
-            ffi_manager: FFIManager::new(),
-            builtin_functions: HashMap::new(),
+            // ffi_manager: FFIManager::new(),
+            // add_builtin: HashMap::new(),
         };
 
         interpreter.function_definitions.insert("print".to_string(), Function {
@@ -57,34 +57,34 @@ impl Interpreter {
         }
     }
 
-    pub fn add_builtin<F>(&mut self, name: &str, func: F)
-    where
-        F: Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync + 'static,
-    {
-        self.builtin_functions.insert(name.to_string(), Box::new(func));
-    }
+    // pub fn add_builtin<F>(&mut self, name: &str, func: F)
+    // where
+    //     F: Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync + 'static,
+    // {
+    //     self.add_builtin.insert(name.to_string(), Box::new(func));
+    // }
 
-    pub fn call_ffi_function(&mut self, name: &str, args: Vec<Value>) -> Result<Value, CrabbyError> {
-        let ffi_args = args.into_iter()
-            .map(|arg| Ok(match arg {
-                Value::Integer(i) => FFIValue::Int(i as i32),
-                Value::Float(f) => FFIValue::Float(f),
-                Value::String(s) => FFIValue::String(std::ffi::CString::new(s)
-                    .map_err(|e| CrabbyError::InterpreterError(format!("Invalid string for FFI: {}", e)))?),
-                _ => return Err(CrabbyError::InterpreterError("Unsupported FFI argument type".into())),
-            }))
-            .collect::<Result<Vec<_>, _>>()?;
+    // pub fn call_ffi_function(&mut self, name: &str, args: Vec<Value>) -> Result<Value, CrabbyError> {
+    //     let ffi_args = args.into_iter()
+    //         .map(|arg| Ok(match arg {
+    //             Value::Integer(i) => FFIValue::Int(i as i32),
+    //             Value::Float(f) => FFIValue::Float(f),
+    //             Value::String(s) => FFIValue::String(std::ffi::CString::new(s)
+    //                 .map_err(|e| CrabbyError::InterpreterError(format!("Invalid string for FFI: {}", e)))?),
+    //             _ => return Err(CrabbyError::InterpreterError("Unsupported FFI argument type".into())),
+    //         }))
+    //         .collect::<Result<Vec<_>, _>>()?;
 
-        let result = self.ffi_manager.call_function(name, ffi_args)?;
+    //     let result = self.ffi_manager.call_function(name, ffi_args)?;
 
-        Ok(match result {
-            FFIValue::Int(i) => Value::Integer(i as i64),
-            FFIValue::Float(f) => Value::Float(f),
-            FFIValue::String(s) => Value::String(s.to_string_lossy().into_owned()),
-            FFIValue::Void => Value::Void,
-            FFIValue::Pointer(_) => Value::Void, // Handle pointers appropriately
-        })
-    }
+    //     Ok(match result {
+    //         FFIValue::Int(i) => Value::Integer(i as i64),
+    //         FFIValue::Float(f) => Value::Float(f),
+    //         FFIValue::String(s) => Value::String(s.to_string_lossy().into_owned()),
+    //        FFIValue::Void => Value::Void,
+    //        FFIValue::Pointer(_) => Value::Void, // Handle pointers appropriately
+    //     })
+    // }
 
     pub fn interpret_function_def(&mut self, name: &str, params: &[String], body: &Statement) -> Result<(), CrabbyError> {
         let is_public = name.starts_with("pub ");
@@ -395,6 +395,7 @@ impl Interpreter {
                             }
                         }
                     }
+                    Ok(None)
                 }
                 Statement::Block(statements) => {
                     for stmt in statements {
@@ -537,7 +538,7 @@ impl Interpreter {
                         }
                     };
                     self.call_stack.pop();
-                    result;
+                    let _ = result;
 
                     Ok(Value::Void)
                 },
@@ -545,7 +546,7 @@ impl Interpreter {
                     let cond_value = self.interpret_expression(condition).await?;
                     match cond_value {
                         Value::Boolean(true) => {
-                            self.interpret_statement(body);
+                            self.interpret_statement(body).await?;
                             Ok(self.interpret_expression(expr).await?)
                         },
                         _ => Ok(Value::Boolean(false)),
@@ -630,7 +631,7 @@ impl Interpreter {
                             if r == 0 {
                                 return Err(CrabbyError::InterpreterError("Division by zero".to_string()));
                             }
-                            return Ok(Value::Integer(l / r));
+                            Ok(Value::Integer(l / r))
                         }
 
                         // Float operations
@@ -641,7 +642,7 @@ impl Interpreter {
                             if r == 0.0 {
                                 return Err(CrabbyError::InterpreterError("Division by zero".to_string()));
                             }
-                            return Ok(Value::Float(l / r));
+                            Ok(Value::Float(l / r))
                         }
 
                         // Mixed Integer and Float operations
@@ -655,7 +656,7 @@ impl Interpreter {
                                     if r == 0.0 {
                                         return Err(CrabbyError::InterpreterError("Division by zero".to_string()));
                                     }
-                                    return Ok(Value::Float(l / r));
+                                    Ok(Value::Float(l / r))
                                 }
                                 BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
                                 BinaryOp::MatchOp => Ok(Value::Boolean((*left).matches(&*right))),
@@ -673,7 +674,7 @@ impl Interpreter {
                                     if r == 0.0 {
                                         return Err(CrabbyError::InterpreterError("Division by zero".to_string()));
                                     }
-                                    return Ok(Value::Float(l / r));
+                                    Ok(Value::Float(l / r))
                                 }
                                 BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
                                 BinaryOp::MatchOp => Err(CrabbyError::InterpreterError("Cannot use match operator with numbers".to_string())),
@@ -687,9 +688,8 @@ impl Interpreter {
                         (Value::String(l), BinaryOp::Add, r) => Ok(Value::String(format!("{}{}", l, r.to_string()))),
                         (l, BinaryOp::Add, Value::String(r)) => Ok(Value::String(format!("{}{}", l.to_string(), r))),
 
-                        _ => return Err(CrabbyError::InterpreterError("Invalid operation".to_string())),
-                    }?;
-                    Ok(Value::Void)
+                        _ => Err(CrabbyError::InterpreterError("Invalid operation".to_string())),
+                    }
                 },
                 _ => Ok(Value::Void)
             }
