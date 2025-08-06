@@ -12,7 +12,7 @@
 
 ![Logo](https://github.com/crabby-lang/crabby/blob/main/crabbylogo.png)
 
-**NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
+> **NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
 
 <h3><b>Shout out to this wonderful programmers helping:</b></h3>
 
@@ -22,6 +22,9 @@
     <td><a href="https://github.com/Aleksandere84">@Aleksandere84</a></td>
     <td>@mesmerica / luci (discord)</td>
     <td><a href="https://github.com/jamiw1">@jamiw1</a></td>
+  </tr>
+  <tr>
+    <td><a href="https://github.com/">@FlameFox</a></td>
   </tr>
 </table>
 
@@ -85,6 +88,12 @@ In **Crabby🦀**, its syntax mostly resembles **Python** in general BUT there a
 It's default file format is a `.crab` or `.cb`
 But for now it's `.crab`
 
+helloworld.crab:
+
+```js
+print("Hello, World!")
+```
+
 example.crab:
 
 ```js
@@ -109,10 +118,14 @@ pub def foo() {
 foo()
 ```
 
-helloworld.crab:
+arrays.crab:
 
-```js
-print("Hello, World!")
+```rs
+let numbers: Int = [1, 2, 3, 4, 5]
+
+print(numbers[0])
+print(numbers[4])
+
 ```
 
 math.crab:
@@ -190,6 +203,37 @@ for i in range(y) {
 }
 ```
 
+enums.crab:
+
+```rs
+pub enum Colors {
+    Red,
+    Green,
+    Pink,
+    Purple,
+    Blue,
+    RGB(r: Int, g: Int, b: Int),
+}
+```
+
+matching.crab:
+
+```rs
+match value {
+    case 1 => print("one"),
+    case _ => print("default"),
+}
+
+// Match multiple values:
+
+let number = 5
+
+match number {
+    case 1 | 3 | 5 | 7  => print("This is a odd number"),
+    case _ => print("Not an odd number")
+}
+```
+
 Note: **Crabby** supports commenting, use `//` to comment out a code or leave a silly message :3
 
 Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksforgeeks.org/python/python-docstrings/)!
@@ -212,7 +256,7 @@ Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksfo
 12. Type Safety
 13. Pattern matching with `match` and `case`
 14. The use of `extern` for using C code
-15. `foreign` keyword to code non-crabby code inside crabby (can load shared libaries like DLLs/.so files and reuse it)
+15. `foreign` keyword to code non-crabby code inside crabby (can load shared libraries like DLLs/.so files and reuse it)
 
 ## FAQs
 

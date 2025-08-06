@@ -13,6 +13,10 @@ use crate::modules::Module;
 
 // use crate::core::ffi::{FFIManager, FFIValue};
 
+// Used for limiting the recursion Crabby receives
+// to avoid stack overflow at runtime interpretation
+const MAX_RECURSION_DEPTH: usize = 1000;
+
 pub struct Interpreter {
     variables: HashMap<String, Value>,
     awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
@@ -20,6 +24,7 @@ pub struct Interpreter {
     call_stack: Vec<String>,
     module: Module,
     current_file: Option<PathBuf>,
+    recursion_depth: usize,
     // pub ffi_manager: FFIManager,
     // add_builtin: HashMap<String, Box<dyn Fn(Vec<Value>) -> Result<Value, CrabbyError> + Send + Sync>>,
 }
@@ -37,6 +42,7 @@ impl Interpreter {
                 variable: HashMap::new()
             },
             current_file: file_path,
+            recursion_depth: 0,
             // ffi_manager: FFIManager::new(),
             // add_builtin: HashMap::new(),
         };
@@ -106,6 +112,67 @@ impl Interpreter {
         }
 
         Ok(())
+    }
+
+    pub async fn interpret_async(&mut self, program: &Program) -> Result<(), CrabbyError> {
+        let mut futures = Vec::new();
+
+        for statement in &program.statements {
+            match statement {
+                Statement::AsyncFunction { name, params, body, return_type } => {
+                    let future = self.handle_async_function(name, params, body, return_type.clone()).await?;
+                    futures.push(future);
+                }
+                _ => {
+                    self.interpret_statement(statement).await?;
+                }
+            }
+        }
+
+        // Wait for all async operations to complete
+        futures::future::join_all(futures).await;
+        Ok(())
+    }
+
+    async fn handle_async_function(
+        &mut self,
+        name: &str,
+        params: &[String],
+        body: &Statement,
+        _return_type: Option<String>,
+    ) -> Result<Pin<Box<dyn Future<Output = Result<Value, CrabbyError>>>>, CrabbyError> {
+        let function = Function {
+            params: params.to_vec(),
+            body: Box::new(body.clone())
+        };
+
+        self.function_definitions.insert(name.to_string(), function);
+        Ok(Box::pin(async move { Ok(Value::Void) }))
+    }
+
+    async fn handle_function_call(&mut self, function: &str, arguments: &[Expression]) -> Result<Value, CrabbyError> {
+        // Checks recursion depth
+        if self.recursion_depth >= MAX_RECURSION_DEPTH {
+            return Err(CrabbyError::InterpreterError(
+                format!("Maximum recursion depth ({}) exceeded", MAX_RECURSION_DEPTH)
+            ));
+        }
+
+        self.recursion_depth += 1;
+        let result = match self.variables.get(function) {
+            Some(Value::Lambda(lambda)) => {
+                self.handle_lambda_call(lambda.clone(), arguments).await
+            }
+            _ => {
+                if let Some(func) = self.function_definitions.get(function) {
+                    self.handle_lambda_call(func.clone(), arguments).await
+                } else {
+                    Err(CrabbyError::InterpreterError(format!("Undefined function: {}", function)))
+                }
+            }
+        };
+        self.recursion_depth -= 1;
+        result
     }
 
     pub async fn handle_lambda_call(&mut self, lambda: Function, arguments: &[Expression]) -> Result<Value, CrabbyError> {
@@ -219,7 +286,7 @@ impl Interpreter {
         let ast = parse(tokens).await?;
         let mut module_interpreter = Interpreter::new(Some(resolved_path.clone()));
         module_interpreter.interpret(&ast).await?;
-        Ok(module_interpreter.module)
+        Ok(module_interpreter.module.clone())
     }
 
     pub fn interpret_statement<'a>(&'a mut self, stmt: &'a Statement) -> Pin<Box<dyn Future<Output = Result<Option<Value>, CrabbyError>> + 'a>> {
@@ -396,7 +463,7 @@ impl Interpreter {
                         }
                     }
                     Ok(None)
-                }
+                },
                 Statement::Block(statements) => {
                     for stmt in statements {
                         self.interpret_statement(stmt).await?;
@@ -657,9 +724,13 @@ impl Interpreter {
                                         return Err(CrabbyError::InterpreterError("Division by zero".to_string()));
                                     }
                                     Ok(Value::Float(l / r))
-                                }
+                                },
                                 BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
-                                BinaryOp::MatchOp => Ok(Value::Boolean((*left).matches(&*right))),
+                                BinaryOp::MatchOp => {
+                                    let left_expr = left.as_ref();
+                                    let right_expr = right.as_ref();
+                                    Ok(Value::Boolean(left_expr.matches(right_expr)))
+                                },
                                 BinaryOp::Dot => Err(CrabbyError::InterpreterError("Cannot use dot operator with numbers".to_string())),
                             }
                         }
@@ -675,7 +746,7 @@ impl Interpreter {
                                         return Err(CrabbyError::InterpreterError("Division by zero".to_string()));
                                     }
                                     Ok(Value::Float(l / r))
-                                }
+                                },
                                 BinaryOp::Eq => Ok(Value::Integer(if (l - r).abs() < f64::EPSILON { 1 } else { 0 })),
                                 BinaryOp::MatchOp => Err(CrabbyError::InterpreterError("Cannot use match operator with numbers".to_string())),
                                 BinaryOp::Dot => Err(CrabbyError::InterpreterError("Cannot use dot operator with numbers".to_string())),
@@ -694,5 +765,16 @@ impl Interpreter {
                 _ => Ok(Value::Void)
             }
         })
+    }
+}
+
+impl Drop for Interpreter {
+    fn drop(&mut self) {
+        // Clean up resources
+        self.variables.clear();
+        self.awaiting.clear();
+        self.function_definitions.clear();
+        self.call_stack.clear();
+        self.module.clear();
     }
 }

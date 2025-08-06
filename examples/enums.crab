@@ -9,14 +9,14 @@ pub enum Colors {
     RGB(r: Int, g: Int, b: Int),
 }
 
-pub def colors(color: Color) {
+pub def colors(color: Colors) {
     match color {
-        case Color.Red => print("Red"),
-        case Color.Green => print("Green"),
-        case Color.Pink => print("Pink"),
-        case Color.Purple => print("Purple"),
-        case Color.Blue => print("Blue"),
-        case Color.RGB => print(f"RGB: {r}, {g}, {b}"),
+        case Red => print("Red"),
+        case Green => print("Green"),
+        case Pink => print("Pink"),
+        case Purple => print("Purple"),
+        case Blue => print("Blue"),
+        case RGB => print(f"RGB: {r}, {g}, {b}"),
         case _ => print("Other color")
     }
 }

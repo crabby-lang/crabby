@@ -3,10 +3,10 @@
 let value: Option<Int> = None
 
 if value.is_some() {
-    print(value.unwrap())
+    print(value())
 }
 
-let value2: String? = "hello"
+let variable: String? = "hello"
 
 // String?
 //      ^^ this is optional

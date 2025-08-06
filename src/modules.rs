@@ -17,6 +17,14 @@ pub struct Module {
     pub private_items: HashMap<String, Value>
 }
 
+impl Drop for Module {
+    fn drop(&mut self) {
+        self.variable.clear();
+        self.public_items.clear();
+        self.private_items.clear();
+    }
+}
+
 impl Module {
     pub fn new() -> Self {
         Self {
@@ -24,6 +32,12 @@ impl Module {
             private_items: HashMap::new(),
             variable: HashMap::new()
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.variable.clear();
+        self.public_items.clear();
+        self.private_items.clear();
     }
 
     pub fn import_item(&mut self, module: &Module, item_name: &str) -> Result<(), CrabbyError> {

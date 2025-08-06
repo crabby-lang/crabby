@@ -1,3 +1,7 @@
+// Documentation Generator in Crabby
+// for comments like """this""" in crab codes
+// still being developed and improved currently.
+
 use crate::ast::Statement;
 
 pub struct Documentation {

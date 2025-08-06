@@ -23,7 +23,7 @@
 *
 */
 
-use crate::value::Value;
+use crate::value::ValueVM;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -74,9 +74,9 @@ impl Instructions {
 }
 
 pub struct VM {
-    pub stack: Vec<Value>,
-    pub constants: Vec<Value>,
-    pub variables: HashMap<String, Value>,
+    pub stack: Vec<ValueVM>,
+    pub constants: Vec<ValueVM>,
+    pub variables: HashMap<String, ValueVM>,
 }
 
 impl VM {
@@ -104,7 +104,7 @@ impl VM {
                     println!("{} #{}", instruction.opcode_name(), name);
                 }
                 Instructions::Print => {
-                    println!("{} #crab/io/PrintStream.println:(Lcrab/lang/Object;)V", instruction.opcode_name());
+                    println!("{} #crab/lib/std/Print.print:(Lcrab/lang/Object;)V", instruction.opcode_name());
                 }
                 _ => {
                     println!("{}", instruction.opcode_name());
@@ -142,7 +142,7 @@ impl VM {
         bytecode
     }
 
-    pub fn execute(&mut self, instructions: Vec<Instructions>) -> Option<Value> {
+    pub fn execute(&mut self, instructions: Vec<Instructions>) -> Option<ValueVM> {
         for instruction in instructions {
             match instruction {
                 Instructions::LoadConstant(index) => {
@@ -171,11 +171,11 @@ impl VM {
                     let a = self.stack.pop().expect("Stack overflow!");
 
                     match (a, b) {
-                        (Value::Number(a), Value::Number(b)) => {
-                            self.stack.push(Value::Number(a + b));
+                        (ValueVM::Number(a), ValueVM::Number(b)) => {
+                            self.stack.push(ValueVM::Number(a + b));
                         }
-                        (Value::String(a), Value::String(b)) => {
-                            self.stack.push(Value::String(format!("{}{}", a, b)));
+                        (ValueVM::String(a), ValueVM::String(b)) => {
+                            self.stack.push(ValueVM::String(format!("{}{}", a, b)));
                         }
                         _ => panic!("Cannot add these types")
                     }
@@ -184,8 +184,8 @@ impl VM {
                     let b = self.stack.pop().expect("Stack overflow!");
                     let a = self.stack.pop().expect("Stack overflow!");
 
-                    if let (Value::Number(a), Value::Number(b)) = (a, b) {
-                        self.stack.push(Value::Number(a - b));
+                    if let (ValueVM::Number(a), ValueVM::Number(b)) = (a, b) {
+                        self.stack.push(ValueVM::Number(a - b));
                     } else {
                         panic!("Cannot subtract non-numbers!!");
                     }
@@ -194,8 +194,8 @@ impl VM {
                     let b = self.stack.pop().expect("Stack overflow!");
                     let a = self.stack.pop().expect("Stack overflow!");
 
-                    if let (Value::Number(a), Value::Number(b)) = (a, b) {
-                        self.stack.push(Value::Number(a * b));
+                    if let (ValueVM::Number(a), ValueVM::Number(b)) = (a, b) {
+                        self.stack.push(ValueVM::Number(a * b));
                     } else {
                         panic!("Cannot multiply non-numbers!")
                     }
@@ -204,9 +204,9 @@ impl VM {
                     let b = self.stack.pop().expect("Stack underflow");
                     let a = self.stack.pop().expect("Stack underflow");
 
-                    if let (Value::Number(a), Value::Number(b)) = (a, b) {
+                    if let (ValueVM::Number(a), ValueVM::Number(b)) = (a, b) {
                         if b != 0.0 {
-                            self.stack.push(Value::Number(a / b));
+                            self.stack.push(ValueVM::Number(a / b));
                         } else {
                             panic!("Division by zero");
                         }
@@ -234,7 +234,7 @@ impl VM {
         self.stack.pop()
     }
 
-    pub fn add_constant(&mut self, value: Value) -> usize {
+    pub fn add_constant(&mut self, value: ValueVM) -> usize {
         self.constants.push(value);
         self.constants.len() - 1
     }

@@ -11,14 +11,22 @@ pub struct DeadCodeAnalyzer {
 }
 
 #[derive(Debug)]
-struct SymbolInfo {
+pub struct SymbolInfo {
     kind: SymbolKind,
     line: usize,
     column: usize,
 }
 
 #[derive(Debug)]
-enum SymbolKind {
+pub struct DeadCodeWarning {
+    pub symbol: String,
+    pub kind: String,
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug)]
+pub enum SymbolKind {
     Function,
     Variable,
     Struct,
@@ -41,7 +49,7 @@ impl DeadCodeAnalyzer {
 
         // Generate warnings for unused symbols
         let mut warnings = Vec::new();
-        
+
         for (name, info) in &self.defined_symbols {
             // Skips if symbol is public or used
             if self.pub_exports.contains(name) || self.used_symbols.contains(name) {
@@ -158,14 +166,6 @@ impl DeadCodeAnalyzer {
     fn add_symbol(&mut self, name: String, kind: SymbolKind, line: usize, column: usize) {
         self.defined_symbols.insert(name, SymbolInfo { kind, line, column });
     }
-}
-
-#[derive(Debug)]
-pub struct DeadCodeWarning {
-    pub symbol: String,
-    pub kind: String,
-    pub line: usize,
-    pub column: usize,
 }
 
 impl SymbolKind {

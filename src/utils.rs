@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt;
 
 use crate::ast::{BinaryOp, Expression, Statement};
@@ -23,57 +24,22 @@ impl Span {
     }
 }
 
-#[derive(Debug, Clone, thiserror::Error)]
+#[derive(Debug)]
+pub struct ErrorLocation {
+    pub line: usize,
+    pub column: usize,
+    pub message: String,
+}
+
+#[derive(Debug)]
 pub enum CrabbyError {
-    #[error("Lexer error at line {line}, column {column}: {message}")]
-    LexerError {
-        line: usize,
-        column: usize,
-        message: String,
-    },
-
-    #[error("Parser error at line {line}, column {column}: {message}")]
-    ParserError {
-        line: usize,
-        column: usize,
-        message: String,
-    },
-
-    #[error("Invalid match pattern: {0}")]
-    InvalidMatchPattern(String),
-
-    #[error("Match operation error: {0}")]
-    MatchError(String),
-
-    #[error("Missing match arm: {0}")]
-    MissingMatchArm(String),
-
-    #[error("Missing case in match: {0}")]
-    MissingCaseKeyword(String),
-
-    #[error("Class error: {0}")]
-    ClassError(String),
-
-    #[error("Trait error: {0}")]
-    TraitError(String),
-
-    #[error("Implementation error: {0}")]
-    ImplError(String),
-
-    #[error("Async/Await error: {0}")]
-    AsyncError(String),
-
-    #[error("Type error: {0}")]
-    TypeError(String),
-
-    #[error("Visibility error: {0}")]
-    VisibilityError(String),
-
-    #[error("Interpretation error: {0}")]
+    LexerError(ErrorLocation),
+    ParserError(ErrorLocation),
     InterpreterError(String),
-
-    #[error("Runtime error: {0}")]
+    TypeError(String),
     RuntimeError(String),
+    IoError(String),
+    MissingCaseKeyword(ErrorLocation),
 }
 
 impl fmt::Display for Span {
@@ -200,5 +166,30 @@ impl fmt::Display for Statement {
             Statement::Expression(expr) => write!(f, "{}", expr),
             _ => write!(f, "{:?}", self),
         }
+    }
+}
+
+impl fmt::Display for CrabbyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            CrabbyError::LexerError(loc) => write!(f, "Lexer error at line {}, column {}: {}", 
+                loc.line, loc.column, loc.message),
+            CrabbyError::ParserError(loc) => write!(f, "Parser error at line {}, column {}: {}", 
+                loc.line, loc.column, loc.message),
+            CrabbyError::MissingCaseKeyword(loc) => write!(f, "Missing case keyword at line {}, column {}: {}", 
+                loc.line, loc.column, loc.message),
+            CrabbyError::InterpreterError(msg) => write!(f, "Interpreter error: {}", msg),
+            CrabbyError::TypeError(msg) => write!(f, "Type error: {}", msg),
+            CrabbyError::RuntimeError(msg) => write!(f, "Runtime error: {}", msg),
+            CrabbyError::IoError(msg) => write!(f, "IO error: {}", msg),
+        }
+    }
+}
+
+impl Error for CrabbyError {}
+
+impl From<std::io::Error> for CrabbyError {
+    fn from(error: std::io::Error) -> Self {
+        CrabbyError::IoError(error.to_string())
     }
 }

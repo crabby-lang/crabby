@@ -1,13 +1,13 @@
 // Crabby's Example network usage - EXPERIMENTAL
 
-import net from "net"
+import http from "http"
 
 def network_example() {
-    let server = net.listen("127.0.0.1", 8080)
+    let server = http.listen("127.0.0.1", 8080)
     server.send("Hello!")
     let response = server.receive()
 
-    let client = net.connect("127.0.0.1", 8080)
+    let client = http.connect("127.0.0.1", 8080)
     client.send("Hello server!")
 }
 

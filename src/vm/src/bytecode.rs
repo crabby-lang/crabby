@@ -24,7 +24,7 @@
 */
 
 use crate::vm::Instructions;
-use crate::value::Value;
+use crate::value::ValueVM;
 use std::fs::File;
 use std::io::{Read, Write, BufWriter, BufReader};
 
@@ -38,14 +38,14 @@ use std::io::{Read, Write, BufWriter, BufReader};
 
 pub struct BytecodeFile {
     pub instructions: Vec<Instructions>,
-    pub constants: Vec<Value>,
+    pub constants: Vec<ValueVM>,
 }
 
 impl BytecodeFile {
     const MAGIC: &'static [u8] = b"CRAB";
     const VERSION: u8 = 1;
 
-    pub fn new(instructions: Vec<Instructions>, constants: Vec<Value>) -> Self {
+    pub fn new(instructions: Vec<Instructions>, constants: Vec<ValueVM>) -> Self {
         Self {
             instructions,
             constants,
@@ -124,22 +124,22 @@ impl BytecodeFile {
 
     }
 
-    fn write_value(&self, writer: &mut BufWriter<File>, value: &Value) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_value(&self, writer: &mut BufWriter<File>, value: &ValueVM) -> Result<(), Box<dyn std::error::Error>> {
         match value {
-            Value::Number(n) => {
+            ValueVM::Number(n) => {
                 writer.write_all(&[0x01])?;
                 writer.write_all(&n.to_le_bytes())?;
             }
-            Value::String(s) => {
+            ValueVM::String(s) => {
                 writer.write_all(&[0x02])?;
                 writer.write_all(&(s.len() as u32).to_le_bytes())?;
                 writer.write_all(s.as_bytes())?;
             }
-            Value::Boolean(b) => {
+            ValueVM::Boolean(b) => {
                 writer.write_all(&[0x03])?;
                 writer.write_all(&[if *b { 1 } else { 0 }])?;
             }
-            Value::Nil => {
+            ValueVM::Nil => {
                 writer.write_all(&[0x04])?; // returns nothing
             }
         }
@@ -154,7 +154,7 @@ impl BytecodeFile {
             0x01 => {
                 let mut bytes = [0u8; 8];
                 reader.read_exact(&mut bytes)?;
-                Ok(Value::Number(f64::from_le_bytes(bytes)))
+                Ok(ValueVM::Number(f64::from_le_bytes(bytes)))
             }
             0x02 => {
                 let mut len_bytes = [0u8; 4];
@@ -163,14 +163,14 @@ impl BytecodeFile {
 
                 let mut string_bytes = vec![0u8; len];
                 reader.read_exact(&mut string_bytes)?;
-                Ok(Value::String(String::from_utf8(string_bytes)?))
+                Ok(ValueVM::String(String::from_utf8(string_bytes)?))
             }
             0x03 => {
                 let mut bool_bytes = [0u8; 1];
                 reader.read_exact(&mut bool_bytes)?;
-                Ok(Value::Boolean(bool_bytes[0] != 0))
+                Ok(ValueVM::Boolean(bool_bytes[0] != 0))
             }
-            0x04 => Ok(Value::Nil),
+            0x04 => Ok(ValueVM::Nil),
             _ => Err(format!("Unknown value type tag: {}", type_tag[0]).into()),
         }
     }

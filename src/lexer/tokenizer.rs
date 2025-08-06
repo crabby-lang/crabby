@@ -1,9 +1,9 @@
 use logos::Logos;
-use crate::utils::{CrabbyError, Span};
+use crate::utils::{CrabbyError, ErrorLocation, Span};
 
 #[derive(Logos, Debug, PartialEq, Clone)]
 pub enum Token {
-    // Keywords
+    // KEYWORDS
     #[token("def")]
     Def,
     #[token("fun")]
@@ -38,6 +38,18 @@ pub enum Token {
     Where,
     #[token("range")]
     Range,
+    /**
+     * Metaprogramming using **macros** in Crabby
+     *
+     * Example:
+     *
+     * macro something {
+     *   /* macro code goes here */
+     * }
+     *
+     * Use this if you want to use a macro in your code (`!` symbol)
+     * For example: `def { something!(/* logic of your macro */) }`
+     */
     #[token("macro")]
     Macro,
     #[token("match")]
@@ -46,11 +58,22 @@ pub enum Token {
     Case,
     #[token("pub")]
     Public,
-    #[token("private")] // You can make a function have private or not, if not it'll still treat it as private
+    /**
+     * You can make a function have private or not
+     * if not it'll still treat it as private
+     *
+     * You can freely choose to whether you use the **private** keyword or not.
+     */
+    #[token("private")]
     Private,
     #[token("protect")]
     Protect,
-    #[token("foreign")] // Runs language functions inside crabby (BETA)
+    /**
+     * Runs language functions inside Crabby
+     *
+     * Refer to `examples/foreign.crab` for more information.
+     */
+    #[token("foreign")]
     Foreign,
     #[token("unless")]
     Unless,
@@ -125,7 +148,7 @@ pub enum Token {
     #[token("from")]
     From,
 
-    // Literals
+    // LITERALS
     #[regex(r"-?[0-9]+\.[0-9]+", |lex| lex.slice().parse::<f64>().ok())]
     Float(f64),
 
@@ -153,7 +176,7 @@ pub enum Token {
     #[token("nil")]
     Nil,
 
-    // Operators and delimiters
+    // OPERATORS and DELIMITERS
     #[token("+")]
     Plus,
     #[token("-")]
@@ -190,8 +213,35 @@ pub enum Token {
     CoolerArrow,
     #[token("!")] // Can be used for macros or a "!= / not" operator
     ExclamationMark,
-    #[token("&")] // For borrowing, not to be confused with the 'and' keyword or '&&' operator.
+    /**
+     * Ampersand - For borrowing!
+     *
+     * let a = "a"
+     * leb b = &a <-- borrowed
+     *
+     * You can use the `move` keyword too as an alternative approach.
+     *
+     * Not to be confused with the 'and' keyword or '&&' operator.
+     */
+    #[token("&")]
     Ampersand,
+    /**
+     * Crabby's decorator system - Metaprogramming
+     * In Crabby, the `@` symbol indicates a decorator call,
+     * similar to Python's decorator feature:
+     * 
+     * ```
+     * def sprinkles() {
+     *  print("Adding Sprinkles!❄️")
+     * }
+     *
+     * @sprinkles
+     * def ice_cream() {
+     *  print("Here is your ice cream! 🍨")
+     * }
+     * ```
+     * 
+     */
     #[token("@")]
     Decorator,
     #[token("==")]
@@ -226,7 +276,7 @@ pub struct TokenStream<'source> {
     pub slice: &'source str,
 }
 
-pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
+pub async fn tokenize(source: &'_ str) -> Result<Vec<TokenStream<'_>>, CrabbyError> {
     let mut tokens = Vec::new();
     let mut lex = Token::lexer(source);
     let mut line = 1;
@@ -278,22 +328,22 @@ pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
                         .map(|c| format!("'{}'", c))
                         .unwrap_or_else(|| "unknown".to_string());
 
-                    return Err(CrabbyError::LexerError {
+                    return Err(CrabbyError::LexerError(ErrorLocation {
                         line,
                         column,
                         message: format!("Invalid character {} at position {}", problem_char, span_start),
-                    });
+                    }));
                 }
             }
         }
     }
 
     if tokens.is_empty() {
-        return Err(CrabbyError::LexerError {
+        return Err(CrabbyError::LexerError(ErrorLocation {
             line: 1,
             column: 1,
             message: "Empty source file".to_string(),
-        });
+        }));
     }
 
     Ok(tokens)

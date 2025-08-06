@@ -77,7 +77,7 @@ impl FFIManager {
             self.functions.insert(
                 func_name.to_string(),
                 FFIFunction {
-                    lib: &Library,
+                    lib,
                     func,
                     arg_types,
                     return_type,

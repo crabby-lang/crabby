@@ -21,6 +21,7 @@ mod etc;
 #[command(author="Kazooki123")]
 #[command(about = "Crabby Programming Language Interpreter", long_about=None)]
 #[command(version = env!("CARGO_PKG_VERSION"))]
+#[command(disable_version_flag = true)]
 pub struct Cli {
     #[arg(help = "Input .crab or .cb file")]
     input: Option<PathBuf>,
@@ -45,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let tokens = lexer::tokenize(&source).await;
         let ast = parse(tokens.expect("Failed to parse token")).await.expect("Failed to parse AST");
         let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
-        interpreter.interpret(&ast).await?;
+        interpreter.interpret(&ast).await;
 
         // Shows the version of Crabby
         if cli.version {

@@ -64,22 +64,29 @@ impl Value {
     pub fn matches(&self, other: &Value) -> bool {
         match (self, other) {
             (Value::Integer(a), Value::Integer(b)) => a == b,
-            (Value::Float(a), Value::Float(b)) => a == b,
+            (Value::Float(a), Value::Float(b)) => (a - b).abs() < f64::EPSILON,
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
+            (Value::Array(a), Value::Array(b)) => {
+                a.len() == b.len() && 
+                a.iter().zip(b.iter()).all(|(x, y)| x.matches(y))
+            },
+            (Value::Void, Value::Void) => true,
+            // Lambda comparison is always false since functions aren't comparable
+            (Value::Lambda(_), Value::Lambda(_)) => false,
             _ => false,
         }
     }
 
-    pub fn equals(&self, other: &Value) -> bool {
-        match (self, other) {
-            (Value::Integer(a), Value::Integer(b)) => a == b,
-            (Value::Float(a), Value::Float(b)) => a == b,
-            (Value::String(a), Value::String(b)) => a == b,
-            (Value::Boolean(a), Value::Boolean(b)) => a == b,
-            _ => false,
-        }
-    }
+    // pub fn equals(&self, other: &Value) -> bool {
+    //    match (self, other) {
+    //        (Value::Integer(a), Value::Integer(b)) => a == b,
+    //        (Value::Float(a), Value::Float(b)) => a == b,
+    //        (Value::String(a), Value::String(b)) => a == b,
+    //        (Value::Boolean(a), Value::Boolean(b)) => a == b,
+    //        _ => false,
+    //    }
+   // }
 
     pub fn get_index(&self, index: i64) -> Result<Value, CrabbyError> {
         match self {

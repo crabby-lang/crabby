@@ -9,13 +9,13 @@ loop 10 {
 
 // Option 2: for loops
 
-let x = range(10)
+let x = range(10000) // 10_000
 
 for i in x {
-    print(i) // Prints it 10 times
+    print(i) // Prints it 10_000 times
 }
 
-let y = 10
+let y = 10000 // 10_000
 
 for i in range(y) {
     print(i)
