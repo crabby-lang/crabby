@@ -203,6 +203,17 @@ for i in range(y) {
 }
 ```
 
+structs.crab:
+
+```rs
+pub struct Person {
+    name: String,
+    age: Int,
+    hobbies: String,
+    birthday: Date,
+}
+```
+
 enums.crab:
 
 ```rs
