@@ -24,7 +24,7 @@
     <td><a href="https://github.com/jamiw1">@jamiw1</a></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/">@FlameFox</a></td>
+    <td><a href="https://github.com/FlameF0X">@FlameFox</a></td>
   </tr>
 </table>
 
