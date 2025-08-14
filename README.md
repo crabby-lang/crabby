@@ -12,9 +12,10 @@
 
 ![Logo](https://github.com/crabby-lang/crabby/blob/main/crabbylogo.png)
 
-> **NOTE⚠️**: **Crabby** is still under `development` with new features and bugs being fixed, if you encounter an error then that's OUR fault, and we're still **fixing** it. Crabby is **very new** due to the `rewrite update` and is still is experiencing bugs and errors. **You can help fixing Crabby if you want to.**
+> [!WARNING]
+> **Crabby** is *still under development* with new features and bugs being fixed, if you encounter an error then that's **OUR** fault, and **we're still fixing it**. Crabby is **very new** due to the `rewrite update` and is still experiencing bugs and errors. **If you want to help out, please do!**
 
-<h3><b>Shout out to this wonderful programmers helping:</b></h3>
+<h3><b>Shout out to these wonderful programmers helping:</b></h3>
 
 <table>
   <tr>
@@ -28,49 +29,51 @@
   </tr>
 </table>
 
-Crabby is a **Modern High-level**, **Versatile**, **Multi-paradigm**, **general-purpose**, and a **hybrid approach** programming language.
+Crabby is a modern, **high-level**, **versatile**, **multi-paradigm**, general purpose language, with a hybrid approach!
 It is designed to be *readable*, *ease-to-use* for beginners, and *powerful* enough for advanced users.
 
-Crabby is leaning into *multi-paradigm*, supporting paradigms like **OOP** and **Procedural** style of programming.
+Crabby is leaning into *multi-paradigm*, supporting paradigms like object oriented and procedural programming.
 But if you want the functional nature of Crabby, It is still a **Functional** programming language by default!
 
-## What Change?
+As you may notice, Crabby has been through a few stages of rewrites, if you're thinking that it is abandoned, think again!
+**Crabby** has been entirely rewritten in **Rust**, benefitting from its memory safety and type checking!
 
-As you may notice, Crabby has been through phases of rewrite, and if you're thinking that
-**Crabby** is abounded, well... You're Wrong!
+## What's Changed?
 
-Crabby has been officially and well be written in **Rust** due to its memory safety and type checking compared to *C*.
-
-Here's what changed:
-
-1. It has a Pythonic-style syntax BUT with a functional approach.
-2. It's purely functional (not yet for now).
-3. JIT interpret/runtime.
-4. Runtime & Type checking on the work.
-5. Error handling on the work.
-6. More parsing and features!
+1. A new Pythonic-style syntax but with a functional approach!
+2. Runtime & Type checking is in the works!
+3. Error handling is in the works!
+4. More features!
 
 ## Installation
 
-`Note`: **We highly recommend to use the nightly toolchain edition of Rust.**
+If you are on Linux and wish to use a pre-compiled binary of Crabby, you can skip right to step 4, and use the second option!
 
-Step 1: Make sure to have `git` and `rust/cargo` installed
+> [!TIP]
+> For building from source, we highly recommend that you use the **nightly** version of Rust!
+
+Step 1: Make sure you have `git` and `rust`/`cargo` installed and up-to-date.
 
 ```bash
 git --version
 cargo --version
 ```
 
-Step 2: Git clone
+Step 2: Clone the repository.
 
 ```bash
 git clone https://github.com/crabby-lang/crabby.git
 ```
 
-Step 3: Build it and Test it for yourself
+Step 3: Build it!
 
 ```bash
 cargo build
+```
+
+Step 4: Test it for yourself!
+
+```bash
 cargo run examples/example.crab
 ```
 
@@ -83,10 +86,9 @@ cd bin
 
 ## Syntax
 
-In **Crabby🦀**, its syntax mostly resembles **Python** in general BUT there are `hints` of Functional Programming syntax since Crabby aims to be versatile, functional and powerful to use not just for advanced programmers but for beginners also!
+**Crabby**'s syntax generally resembles **Python**, but there are some *hints* of functional programming syntax!
 
-It's default file format is a `.crab` or `.cb`
-But for now it's `.crab`
+Crabby reserves the `.crab` and `.cb` file extensions, but for now only `.crab` is used!
 
 helloworld.crab:
 
@@ -251,7 +253,8 @@ Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksfo
 
 ## FEATURES
 
-> ⚠️ Most of this features are still in development and are being experimented!
+> [!IMPORTANT]
+> Many features listed here are still in development, and may not work or be missing components!
 
 1. Asynchronous awaits
 2. Inheritance and Polymorphism
@@ -319,3 +322,4 @@ Thanks goes to these wonderful people that used to help this project! 👨‍�
     </tr>
   </tbody>
 </table>
+
