@@ -1,0 +1,16 @@
+# Maintainer: Kazooki123 <mgamerdinge146@gmail.com>
+
+pkgname=crabby-bin
+pkgver=1.2.1
+pkgrel=1
+pkgdesc="Crabby Programming Language"
+arch=("x86_64")
+url="https://github.com/crabby-lang/crabby"
+license=("GPL3")
+depends=()
+source=("$pkgname-$pkgver.tar.gz::https://github.com/crabby-lang/crabby/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=("dee7a4ce2841fb0c0ff4e271b463c79759af8595116ac8ebe2ebe886887f0dc4")
+
+package() {
+    install -Dm755 "crabby" "$pkgdir/usr/bin/crabby"
+}

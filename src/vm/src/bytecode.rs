@@ -100,7 +100,7 @@ impl BytecodeFile {
         // Reads constants
         let mut constants_count = [0u8; 4];
         reader.read_exact(&mut constants_count)?;
-        let contants_count = u32::from_le_bytes(constants_count);
+        let constants_count = u32::from_le_bytes(constants_count);
 
         let mut constants = Vec::new();
         for _ in 0..constants_count {
