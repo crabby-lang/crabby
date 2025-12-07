@@ -79,7 +79,7 @@ impl BytecodeFile {
         Ok(())
     }
 
-    pub fn load_from_file(filename: &str) -> Result<Self, Box<dyn  std::error::Error>> {
+    pub fn load_from_file(&self, filename: &str) -> Result<Self, Box<dyn  std::error::Error>> {
         let file = File::open(filename)?;
         let mut reader = BufReader::new(file);
 
@@ -191,15 +191,15 @@ impl BytecodeFile {
         Ok(())
     }
 
-    fn read_instruction(&self, reader: &mut BufReader<File>) -> Result<Instructions, Box<dyn std::error::Error>> {
+    fn read_instructions(&self, reader: &mut BufReader<File>) -> Result<Instructions, Box<dyn std::error::Error>> {
         let mut opcode = [0u8; 1];
         reader.read_exact(&mut opcode)?;
 
         match opcode[0] {
             0x01 => {
-                let mut index_bytes = [0u8; 4];
+                let mut index_bytes = [0u8; 8];
                 reader.read_exact(&mut index_bytes)?;
-                let index = u32::from_le_bytes(index_bytes);
+                let index = usize::from_le_bytes(index_bytes);
                 Ok(Instructions::LoadConstant(index))
             }
             0x02 => {

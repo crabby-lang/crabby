@@ -1,0 +1,26 @@
+// In Crabby the MAYBE & PROBABLY keyword indicates a 50/50 chance of true or false, `maybe` having the 50/50 chance, while `probably` uses randomization on the possibilities of TRUE or FALSE
+// EXPERIMENTAL - Keywords and code will change during updates
+
+let coin = maybe
+let chaos = probably
+
+if maybe and probably {
+    print("Chaotic branch")
+}
+
+if maybe {
+    print("True")
+} else {
+    print("False")
+}
+
+if probably {
+    print("True randomness")
+}
+
+// In variables
+let roll = maybe
+print(roll)
+
+// Got any problem? You can create an issue for this file!
+

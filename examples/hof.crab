@@ -1,3 +1,19 @@
-// Higher-order-functions (HOF) in Crabby - EXPERIMENTAL
+// Higher-order Functions (HOF) in Crabby - EXPERIMENTAL
 
+// A Higher-Order Function is a way for a `function` that either takes the function as an argument OR returns it as a function
 
+def add(a, b) {
+    return a + b
+}
+
+let arr: [Int] = [1, 2, 3, 4, 5, 6, 7]
+
+// More examples
+
+map(lambda x: x + 1, [1, 2, 3, 4, ...])
+
+def make_adder(n) {
+    return lambda x: x + n
+}
+
+// Got any problem? You can create an issue for this file!
