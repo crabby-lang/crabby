@@ -125,6 +125,19 @@ pub enum Token {
     Reference,
     #[token("move")] // Move keyboard
     Move,
+    /**
+     *  Unsafe code in Crabby (Don't panic if you're a beginner)
+     * 
+     *  In Crabby, the use of `unsafe` is for programmers who want to touch the memory,
+     *  the core hardware or just maybe doing silly stuffs in Assembly :3
+     *  
+     *  unsafe {
+     *      @asm(
+     *          "syscall"
+     *    ) // Syscall instruction
+     *  }
+     * 
+     */
     #[token("unsafe")] // Introduces for C, C++ & Assembly FFI feature
     Unsafe,
     #[token("del")]
@@ -141,6 +154,10 @@ pub enum Token {
     Break,
     #[token("pass")]
     Pass,
+    #[token("maybe")]
+    Maybe,
+    #[token("probably")]
+    Probably,
 
     // Imports
     #[token("import")]
