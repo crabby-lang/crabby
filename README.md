@@ -123,7 +123,7 @@ foo()
 arrays.crab:
 
 ```rs
-let numbers: Int = [1, 2, 3, 4, 5]
+let numbers: [Int] = [1, 2, 3, 4, 5]
 
 print(numbers[0])
 print(numbers[4])
@@ -155,12 +155,12 @@ print(x3 - y3)
 print(x4 / y4)
 ```
 
-**Data Types?**
+## **Data Types?**
 
 datatypes.crab:
 
 ```js
-// Lists  of Data Types and Types in Crabby
+// Lists of Data Types and Types in Crabby
 
 String
 
