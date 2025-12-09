@@ -1,0 +1,18 @@
+// Yields in Crabby - EXPERIMENTAL
+
+def nums {
+    yield 1
+    yield 2
+    yield 3
+    yield 4
+}
+
+def odds {
+    for n in range(1, 10) {
+        if n % 2 == 1 {
+            yield n
+        }
+    }
+}
+
+// Got any problem? You can create an issue for this file!

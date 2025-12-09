@@ -1,0 +1,19 @@
+// Unless keyword in Crabby - EXPERIMENTAL
+
+unless isRaining {
+    print("Let's go outside!")
+}
+
+unless loggedIn {
+    print("Please login")
+} else {
+    print("Welcome!")
+}
+
+// can be paired with `maybe`
+
+maybe unless apiAvailable {
+    print("Maybe the server is offline")
+}
+
+// Got any problem? You can create an issue for this file!

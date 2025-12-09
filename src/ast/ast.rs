@@ -84,6 +84,10 @@ pub enum Statement {
     },
     Mutable {
         name: String,
+    }, // the `mut` keyword
+    Unless {
+        name: String,
+        body: Box<Statement>,
     },
     ForIn {
         variable: String,
@@ -112,6 +116,12 @@ pub enum Statement {
     Trait {
         name: String,
         methods: Vec<MethodDefinition>,
+    },
+    Maybe {
+        name: String,
+    },
+    Probably {
+        name: String,
     },
     Impl {
         target: String,

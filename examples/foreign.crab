@@ -2,15 +2,21 @@
 
 @ffi("graphics.dll")
 foreign Graphics {
-    fn init_window(width: Int, height: Int) -> Void
-    fn draw_triangle(x: Float, y: Float, size: Float)
+    def init_window(width: Int, height: Int) -> Void
+    def draw_triangle(x: Int, y: Int, size: Float)
 }
 
 // What's Happening?
 // We load the graphics DLL lib using the "@ffi" decorator
 // We then use the "foreign" keyword to load the "Graphics" function or struct
 // then run the function from the DLL inside foreign
-// It basically runs a non-crabby code inside Crabby
 // This also works when importing C or Rust made shared libraries with the help of APIs
+
+// You can also do
+
+foreign Graphics from "graphics.dll" {
+    def init_win( ... )
+    def draw( ... )
+} // If you want to avoid using annotations
 
 // Got any problem? You can create an issue for this file!

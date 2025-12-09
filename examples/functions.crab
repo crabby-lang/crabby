@@ -15,7 +15,7 @@ pub def create_person(name: String, age: Int) -> Person {
     return person
 }
 
-// - NEW/BETA: 'fun' keyword, works like **def** too.
+// - NEW: 'fun' keyword, works like **def** too.
 
 pub fun create_person(name: String, age: Int) -> Person {
     let person = Person {
