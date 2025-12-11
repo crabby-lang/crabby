@@ -1,0 +1,15 @@
+// Static in Crabby - EXPERIMENTAL
+
+// can be used for FFI's or `unsafe` blocks of code
+
+static SYS_PATH = "/usr/lib/"
+
+unsafe {
+    @asm(
+        arch="x86",
+        "mov eax 1",
+        "int 0x80"
+    )
+}
+
+// Got any problem? You can create an issue for this file!

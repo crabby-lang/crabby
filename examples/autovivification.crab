@@ -1,0 +1,40 @@
+// Autovivification in Crabby - EXPERIMENTAL
+
+// Brings missing or empty data into life
+
+let mut user = {}
+
+user.profile.name = "George Bussin"
+user.profile.age = 61
+
+print(user)
+
+// Output:
+// {
+//   "profile": {
+//      "name": "George Bussin",
+//      "age": 61
+//   }
+// }
+
+// Crabby automatically created:
+
+// user.profile = {}
+// user.profile.name = "George Bussin"
+// user.profile.age = 61
+
+// Autovivification Errors (Bad ways)
+
+class Person {
+    def init(self, name) {
+        self.name = name
+    }
+}
+
+let p = Person("Kid")
+p.profile.age = 17
+
+// Output:
+
+// Error: cannot autovivify on class 'Person'!
+// Hint: define the property in the class or use a map

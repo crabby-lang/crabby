@@ -19,4 +19,15 @@ match someOption {
     case None => pass
 }
 
+// Matching with ranges !! :3
+
+case 1..10 => print("between 1 to 10")
+
+// With type matchings
+
+case Int => print("An Integer")
+case String => print("A String")
+case Float => print("A Float")
+case bool => print("A boolean")
+
 // Got any problem? You can create an issue for this file!

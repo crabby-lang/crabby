@@ -75,6 +75,22 @@ pub enum Token {
      */
     #[token("foreign")]
     Foreign,
+    /**
+     * 
+     * Yield - lazy~ish generator inside functions! :3
+     * 
+     * def yieldFunction {
+     *      yield 1
+     *      yield 2
+     *      yield 3
+     *      ...
+     * }
+     * 
+     */
+    #[token("yield")]
+    Yield,
+    #[token("union")]
+    Union,
     #[token("unless")]
     Unless,
     #[token("until")]
@@ -228,8 +244,10 @@ pub enum Token {
     Arrow,
     #[token("->")]
     CoolerArrow,
-    #[token("!")] // Can be used for macros or a "!= / not" operator
+    #[token("!")] // Can be used for macros or a "!= / `not` (keyword)" operator
     ExclamationMark,
+    #[token("&&")]
+    DoubleAmpersand,
     /**
      * Ampersand - For borrowing!
      *
@@ -261,6 +279,8 @@ pub enum Token {
      */
     #[token("@")]
     Decorator,
+    #[token("%")]
+    Percentage,
     #[token("==")]
     DoubleEquals,
     #[token("(")]

@@ -1,0 +1,5 @@
+// iter() in Crabby - EXPERIMENTAL
+
+for x in list.iter() {
+    ...
+}

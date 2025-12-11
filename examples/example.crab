@@ -1,12 +1,17 @@
 // An example code on how Crabby works
 
+// Few clarifications:
+// let - immutable (its state cannot be changed whatsoever)
+// var - mutable (its state can be modified/edited or reassigned)
+// const - COMPILE-time constant (its state cannot also be changed or reassigned like `let`)
+
 let x = 42
 let y = 3.14
 let message = "Hello, Crabby!"
 let h = "hello"
 let w = " world"
 let result = "example"
-var two = 2 // var functions exactly like 'let' because Crabby is multi-paradigm
+var two = 2
 // const three = 3 // const acts like var and let too, see constants.crab for more info
 
 def foo() {
