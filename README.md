@@ -269,7 +269,7 @@ Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksfo
 12. Type Safety
 13. Pattern matching with `match` and `case`
 14. The use of `extern` for using C code
-15. `foreign` keyword to code non-crabby code inside crabby (can load shared libraries like DLLs/.so files and reuse it)
+15. `foreign` keyword to code FFI related tasks in crabby, see examples for more detail.
 
 ## FAQs
 
