@@ -20,6 +20,8 @@ pub enum Token {
     Let,
     #[token("lambda")]
     Lambda,
+    #[token("chan")]
+    Channel,
     #[token("loop")]
     Loop,
     #[token("for")]
@@ -76,21 +78,23 @@ pub enum Token {
     #[token("foreign")]
     Foreign,
     /**
-     * 
+     *
      * Yield - lazy~ish generator inside functions! :3
-     * 
+     *
      * def yieldFunction {
      *      yield 1
      *      yield 2
      *      yield 3
      *      ...
      * }
-     * 
+     *
      */
     #[token("yield")]
     Yield,
     #[token("union")]
     Union,
+    #[token("interface")]
+    Interface,
     #[token("unless")]
     Unless,
     #[token("until")]
@@ -143,16 +147,16 @@ pub enum Token {
     Move,
     /**
      *  Unsafe code in Crabby (Don't panic if you're a beginner)
-     * 
+     *
      *  In Crabby, the use of `unsafe` is for programmers who want to touch the memory,
      *  the core hardware or just maybe doing silly stuffs in Assembly :3
-     *  
+     *
      *  unsafe {
      *      @asm(
      *          "syscall"
      *    ) // Syscall instruction
      *  }
-     * 
+     *
      */
     #[token("unsafe")] // Introduces for C, C++ & Assembly FFI feature
     Unsafe,
@@ -264,7 +268,7 @@ pub enum Token {
      * Crabby's decorator system - Metaprogramming
      * In Crabby, the `@` symbol indicates a decorator call,
      * similar to Python's decorator feature:
-     * 
+     *
      * ```
      * def sprinkles() {
      *  print("Adding Sprinkles!❄️")
@@ -275,7 +279,7 @@ pub enum Token {
      *  print("Here is your ice cream! 🍨")
      * }
      * ```
-     * 
+     *
      */
     #[token("@")]
     Decorator,

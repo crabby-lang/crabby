@@ -23,8 +23,9 @@
 *
 */
 
+mod value;
+
 use crate::vm::Instructions;
-use crate::value::ValueVM;
 use std::fs::File;
 use std::io::{Read, Write, BufWriter, BufReader};
 
