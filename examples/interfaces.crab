@@ -1,0 +1,34 @@
+// Interfaces in Crabby - EXPERIMENTAL
+
+interface Drawable {
+    def draw()
+}
+
+class Player extend Drawable {
+    def draw() {
+        print("Drawing player")
+    }
+}
+
+let p = Player()
+p.draw()
+
+// interface + chan ?
+
+interface Worker {
+    def work()
+}
+
+let jobs = chan()
+
+class Printer extend Worker {
+    def work() {
+        let job = <-jobs
+        print(job)
+    }
+}
+
+jobs <- "Print this"
+Printer().work()
+
+// Got any problem? You can create an issue for this file!

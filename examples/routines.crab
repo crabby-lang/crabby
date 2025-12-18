@@ -1,0 +1,24 @@
+// Routines in Crabby - EXPERIMENTAL
+
+// Routines in Crabby often involve on running 2 or more functions or tasks at the same time
+
+// go = by default, inspired from go(lang), it runs a function at the same time as the program.
+// crab = (not to be confused with the `cli` at this context), basically functions the same as `go`, this is just an alias though :p
+
+// go vs chan ?
+// `go` starts a function CONCURRENTLY
+// Use `chan` to communicate safely. If you don't need results, you really don't need channels.
+
+let tasks = chan()
+
+def worker() {
+    tasks <- "done"
+}
+
+go worker()
+crab worker()
+
+let result = <-tasks
+print(result)
+
+// Got any problem? You can create an issue for this file!

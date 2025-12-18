@@ -12,4 +12,17 @@ unsafe {
     )
 }
 
+// You can also do
+
+static counter = 0
+
+def increment() {
+    counter = counter + 1
+}
+
+increment()
+increment()
+
+print(counter)
+
 // Got any problem? You can create an issue for this file!

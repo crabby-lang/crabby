@@ -3,3 +3,14 @@
 for x in list.iter() {
     ...
 }
+
+let numbers = [1, 2, 3, 4]
+
+for n in numbers.iter() {
+    print(n)
+}
+
+let doubled = numbers.iter().map(n => n * 2)
+print(doubled)
+
+// Got any problem? You can create an issue for this file!

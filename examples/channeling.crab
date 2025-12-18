@@ -1,0 +1,17 @@
+// Channels in Crabby - EXPERIMENTAL
+
+let messages = chan()
+
+def send() {
+    messages <- "hello"
+}
+
+def receive() {
+    let msg = <-messages
+    print(msg)
+}
+
+send()
+receive()
+
+// Got any problem? You can create an issue for this file!

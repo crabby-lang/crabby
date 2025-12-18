@@ -7,6 +7,6 @@ typedef Point = struct {
     y: Int
 }
 
-typedef c_int = i32
+typedef c_int = Int
 
 // Got any problem? You can create an issue for this file!

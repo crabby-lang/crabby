@@ -6,7 +6,6 @@ Crabby is an open source programming language project that aims to be simple on 
 
 We want Crabby to be a place where people of all skill levels, backgrounds, identities, and experiences feel safe contributing, asking questions, and sharing ideas.
 
-
 ## Our Values
 
 The Crabby community values:
@@ -20,7 +19,6 @@ The Crabby community values:
 4. Collaboration over competition
 
 5. Patience with beginners and those learning
-
 
 ## Expected Behavior
 
@@ -38,7 +36,6 @@ All contributors, maintainers, and community members are expected to:
 
 - Respect differing levels of knowledge and experience
 
-
 ## Unacceptable Behavior
 
 The following behaviors are not tolerated in the Crabby community:
@@ -55,8 +52,7 @@ The following behaviors are not tolerated in the Crabby community:
 
 - Doxxing, leaking or any sort of hacking towards contributors
 
-Any behavior that creates an unsafe or unwelcoming environment
-
+- **Any behavior that creates an unsafe or unwelcoming environment**
 
 This applies to all project spaces, including but not limited to:
 
@@ -68,11 +64,9 @@ This applies to all project spaces, including but not limited to:
 
 - Community chat platforms (if applicable)
 
-
 ## Scope
 
 This Code of Conduct applies to all Crabby-related spaces, both online and offline, where the project is represented. This includes interactions between contributors, maintainers, users, and observers.
-
 
 ## Enforcement
 
@@ -86,16 +80,13 @@ If unacceptable behavior is reported or observed, maintainers may take appropria
 
 - Temporarily or permanently restricting participation
 
-
 Actions taken will be proportional to the severity and context of the behavior.
-
 
 ## Reporting
 
 If you experience or witness behavior that violates this Code of Conduct, please report it to the project maintainers through appropriate private channels (such as direct messages or email, if provided).
 
 All reports will be reviewed with care, respect, and confidentiality.
-
 
 ## Community Philosophy
 
@@ -107,16 +98,12 @@ Crabby is designed with the belief that:
 
 - Learning should be encouraged, not punished
 
-**Everyone starts somewhere**
-
+- **Everyone starts somewhere**
 
 You do not need to be an expert to belong here.
-
 
 ## Acknowledgment
 
 By participating in the Crabby project, you agree to uphold this Code of Conduct and help maintain a respectful and welcoming community for everyone.
-
-
 
 This Code of Conduct may evolve as the project grows and the community expands.

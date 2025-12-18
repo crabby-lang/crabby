@@ -1,0 +1,29 @@
+// Unions in Crabby - EXPERIMENTAL
+
+mode unstrict
+
+def main() {
+    union IntOrFloat {
+        i: Int,
+        f: Float,
+    }
+
+    let mut u = IntOrFloat { f: 6.7 }
+
+    let value = unsafe { u.f }
+    print(f"from f: {value}")
+
+    u.i = 10;
+
+    let value_f = unsafe { u.f }
+    print(f"from f (after i write): {value_f}")
+
+    unsafe {
+        match u {
+            case IntOrFloat { i } => print(f"found integer: {i}")
+            // case IntOrFloat { f } => print(f"found float: {f}")
+        }
+    }
+}
+
+// Got any problem? You can create an issue for this file!
