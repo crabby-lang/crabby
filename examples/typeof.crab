@@ -1,0 +1,17 @@
+// Typeof in Crabby - EXPERIMENTAL
+// The `typeof` keyword in Crabby acts as a TYPE OPERATOR to extract a STATIC TYPE from a variable's value (at compile time of course)
+
+// Basically does:
+type SomethingType = typeof existingVar
+
+// You can also do
+let x = "this is a type"
+let y: typeof x
+
+// Crabby typeof objects
+
+let person = { name: 'John', age: 67 }
+
+type PersonType = typeof person // <- { name: String, age: Int}
+
+// Got any problem? You can create an issue for this file!

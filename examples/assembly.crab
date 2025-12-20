@@ -2,6 +2,8 @@
 // - Note: Just a concept, and changes will occur in updates.
 // Also very EXPERIMENTAL
 
+mode unstrict
+
 unsafe {
     @asm(
         "mov eax, 1",

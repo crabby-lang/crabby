@@ -1,0 +1,58 @@
+"""
+Crabby Standard Math Library
+Basic Numeric Utilities (will expand sooner on)
+
+Author: Kazooki123
+"""
+
+pub def abs(x) {
+    //
+    // import math
+    // 
+    // print(math.abs(-20))
+    //
+    if x < 0 {
+        return -x
+    }
+    return x
+}
+
+pub def clamp(value, min, max) {
+    //
+    // import math
+    // 
+    // print(math.clamp(15, 0, 10))
+    //
+    if value < min {
+        return min
+    }
+    if value > max {
+        return max
+    }
+    return value
+}
+
+pub def pow(base, exp) {
+    let result = 1
+    let i = 0
+
+    while i < exp {
+        result = result * base
+        i += 1
+    }
+
+    return result
+}
+
+pub def is_even(x) {
+    //
+    // import math
+    // 
+    // print(math.is_even(6)
+    //
+    return x % 2 == 0
+}
+
+pub def is_odd(x) {
+    return x % 2 != 0
+}

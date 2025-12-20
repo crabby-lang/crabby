@@ -1,0 +1,18 @@
+// Asserts in Crabby - EXPERIMENTAL
+
+x = 4
+y = 0
+
+print("The value of a x / y is: ")
+assert b != 0, "Zero Division Error!"
+print(x / y)
+
+def calc_area(radius) {
+    assert radius >= 0, "Radius cannot be negative!!"
+    return 3.14 * radius * radius
+}
+
+print(calc_area(5))
+print(calc_area(-1)) // This will raise the assertion error
+
+// Got any problem? You can create an issue for this file!

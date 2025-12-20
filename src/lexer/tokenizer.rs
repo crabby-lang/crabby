@@ -14,10 +14,16 @@ pub enum Token {
     If,
     #[token("else")]
     Else,
+    #[token("elif")]
+    ElIf,
     #[token("while")]
     While,
     #[token("let")]
     Let,
+    #[token("assert")]
+    Assert,
+    #[token("mode")]
+    Mode,
     #[token("lambda")]
     Lambda,
     #[token("chan")]
@@ -81,7 +87,7 @@ pub enum Token {
      *
      * Yield - lazy~ish generator inside functions! :3
      *
-     * def yieldFunction {
+     * def yieldFunction() {
      *      yield 1
      *      yield 2
      *      yield 3
@@ -91,6 +97,23 @@ pub enum Token {
      */
     #[token("yield")]
     Yield,
+    /**
+     * Generators in Crabby (!! EXPERIMENTAL !!)
+     *
+     * Creates `resumable` iterators, similar to how `async` blocks work for AWAITABLES
+     *
+     * Ex:
+     *
+     * gen {
+     *   yield 1
+     *   yield 2
+     *   yield 3
+     *   ...
+     * }
+     *
+     */
+    #[token("gen")]
+    Generate,
     #[token("union")]
     Union,
     #[token("interface")]
@@ -137,6 +160,8 @@ pub enum Token {
     Variable,
     #[token("do")] // Does looping (now there are 3 options)
     Do,
+    #[token("or")]
+    Or,
     #[token("try")]
     Try,
     #[token("catch")]
@@ -168,6 +193,8 @@ pub enum Token {
     Is,
     #[token("typedef")]
     TypeDef,
+    #[token("typeof")]
+    TypeOf,
     #[token("continue")]
     Continue,
     #[token("break")]
@@ -178,6 +205,19 @@ pub enum Token {
     Maybe,
     #[token("probably")]
     Probably,
+    /**
+     *
+     * Nonlocal in Crabby (!! EXPERIMENTAL !!)
+     *
+     */
+    #[token("nonlocal")]
+    NonLocal,
+    #[token("raise")]
+    Raise,
+    #[token("virtual")]
+    Virtual,
+    #[token("go")]
+    Routines,
 
     // Imports
     #[token("import")]
