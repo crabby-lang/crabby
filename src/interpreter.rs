@@ -124,7 +124,7 @@ impl Interpreter {
                     futures.push(future);
                 }
                 _ => {
-                    self.interpret_statement(statement).await?;
+                    self.interpret_statement(statement.clone()).await?;
                 }
             }
         }
@@ -177,7 +177,7 @@ impl Interpreter {
 
     pub async fn handle_lambda_call(&mut self, lambda: Function, arguments: &[Expression]) -> Result<Value, CrabbyError> {
         for (param, arg) in lambda.params.iter().zip(arguments) {
-            let arg_value = self.interpret_expression(arg).await?;
+            let arg_value = self.interpret_expression(arg.clone()).await?;
             self.variables.insert(param.clone(), arg_value);
         }
 
@@ -268,9 +268,9 @@ impl Interpreter {
     }
 
     pub async fn interpret_where(&mut self, expr: &Expression, condition: &Expression, _body: &Statement) -> Result<Value, CrabbyError> {
-        let cond_value = self.interpret_expression(condition).await?;
+        let cond_value = self.interpret_expression(condition.clone()).await?;
         if let Value::Boolean(true) = cond_value {
-            self.interpret_expression(expr).await
+            self.interpret_expression(expr.clone()).await
         } else {
             Ok(Value::Void)
         }
@@ -289,7 +289,7 @@ impl Interpreter {
         Ok(module_interpreter.module.clone())
     }
 
-    pub fn interpret_statement<'a>(&'a mut self, stmt: &'a Statement) -> Pin<Box<dyn Future<Output = Result<Option<Value>, CrabbyError>> + 'a>> {
+    pub fn interpret_statement(mut self, stmt: Statement) -> Pin<Box<dyn Future<Output = Result<Option<Value>, CrabbyError>>>> {
         Box::pin(async move {
             match stmt {
                 Statement::FunctionDef { name, params, body, return_type: _, docstring: _ } => {
@@ -346,7 +346,7 @@ impl Interpreter {
                         name.to_string()
                     };
 
-                    let interpreted_value = self.interpret_expression(value).await?;
+                    let interpreted_value = self.interpret_expression(*value).await?;
 
                     if is_public {
                         self.module.public_items.insert(var_name.clone(), interpreted_value.clone());
@@ -365,7 +365,7 @@ impl Interpreter {
                         name.to_string()
                     };
 
-                    let interpreted_value = self.interpret_expression(value).await?;
+                    let interpreted_value = self.interpret_expression(*value).await?;
 
                     if is_public {
                         self.module.public_items.insert(var_name.clone(), interpreted_value.clone());
@@ -384,7 +384,7 @@ impl Interpreter {
                         name.to_string()
                     };
 
-                    let interpreted_value = self.interpret_expression(value).await?;
+                    let interpreted_value = self.interpret_expression(*value).await?;
 
                     if is_public {
                         self.module.public_items.insert(var_name.clone(), interpreted_value.clone());
@@ -403,8 +403,8 @@ impl Interpreter {
                 },
                 Statement::ArrayAssign { array, index, value } => {
                     let array_val = self.interpret_expression(array).await?;
-                    let index_val = self.interpret_expression(index).await?;
-                    let new_val = self.interpret_expression(value).await?;
+                    let index_val = self.interpret_expression(*index).await?;
+                    let new_val = self.interpret_expression(*value).await?;
 
                     if let (Value::Array(mut elements), Value::Integer(i)) = (array_val, index_val) {
                         if i < 0 || i >= elements.len() as i64 {
@@ -422,14 +422,14 @@ impl Interpreter {
                 },
                 Statement::Match { value, arms } => self.interpret_match(value, arms).await,
                 Statement::Return(expr) => {
-                    let value = self.interpret_expression(expr).await?;
+                    let value = self.interpret_expression(*expr).await?;
                     Ok(Some(value))
                 },
                 Statement::Loop { count, body } => {
-                    let count_value = self.interpret_expression(count).await?;
+                    let count_value = self.interpret_expression(*count).await?;
                     if let Value::Integer(n) = count_value {
                         for _ in 0..n {
-                            self.interpret_statement(body).await?;
+                            self.interpret_statement(*body).await?;
                         }
                         Ok(None)
                     } else {
@@ -437,12 +437,12 @@ impl Interpreter {
                     }
                 },
                 Statement::If { condition, then_branch, else_branch } => {
-                    let cond_value = self.interpret_expression(condition).await?;
+                    let cond_value = self.interpret_expression(*condition).await?;
                     match cond_value {
-                        Value::Boolean(true) => Ok(self.interpret_statement(then_branch).await?),
+                        Value::Boolean(true) => Ok(self.interpret_statement(*then_branch).await?),
                         Value::Boolean(false) => {
                             if let Some(else_branch) = else_branch {
-                                Ok(self.interpret_statement(else_branch).await?)
+                                Ok(self.interpret_statement(*else_branch).await?)
                             } else {
                                 Ok(None)
                             }
@@ -452,11 +452,11 @@ impl Interpreter {
                 },
                 Statement::While { condition, body } => {
                     loop {
-                        let condition_value = self.interpret_expression(condition).await?;
+                        let condition_value = self.interpret_expression(*condition).await?;
                         match condition_value {
                             Value::Integer(0) => break,
                             _ => {
-                                if let Some(Value::Integer(-1)) = self.interpret_statement(body).await? {
+                                if let Some(Value::Integer(-1)) = self.interpret_statement(*body).await? {
                                     break;
                                 }
                             }
@@ -477,10 +477,10 @@ impl Interpreter {
                 Statement::Import { name, source } => {
                     if let Some(source_path) = source {
                         let module = self.load_and_import_module(name, source_path).await?;
-                        if let Some(value) = module.public_items.get(name) {
+                        if let Some(value) = module.public_items.get(&name) {
                             self.module.variable.insert(name.clone(), value.clone());
                             Ok(None)
-                        } else if module.private_items.contains_key(name) {
+                        } else if module.private_items.contains_key(&name) {
                             Err(CrabbyError::InterpreterError(format!(
                                 "Cannot import private item '{}' from module",
                                 name
@@ -503,11 +503,11 @@ impl Interpreter {
                     Ok(None)
                 },
                 Statement::ForIn { variable, iterator, body } => {
-                    let iter_value = self.interpret_expression(iterator).await?;
+                    let iter_value = self.interpret_expression(*iterator).await?;
                     if let Value::Integer(n) = iter_value {
                         for i in 0..n {
                             self.variables.insert(variable.clone(), Value::Integer(i));
-                            self.interpret_statement(body).await?;
+                            self.interpret_statement(*body).await?;
                         }
                         Ok(None)
                     } else {
@@ -529,7 +529,7 @@ impl Interpreter {
         })
     }
 
-    pub fn interpret_expression<'a>(&'a mut self, expr: &'a Expression) -> Pin<Box<dyn Future<Output = Result<Value, CrabbyError>> + 'a>> {
+    pub fn interpret_expression(mut self, expr: Expression) -> Pin<Box<dyn Future<Output = Result<Value, CrabbyError>>>> {
         Box::pin(async move {
             match expr {
                 Expression::Integer(n) => Ok(Value::Integer(*n)),
@@ -537,18 +537,18 @@ impl Interpreter {
                 Expression::String(s) => Ok(Value::String(s.clone())),
                 Expression::Boolean(value) => Ok(Value::Integer(if *value { 1 } else { 0 })),
                 Expression::Variable(name) => {
-                    self.variables.get(name).cloned().ok_or_else(|| {
+                    self.variables.get(&name).cloned().ok_or_else(|| {
                         CrabbyError::InterpreterError(format!("Undefined variable: {}", name))
                     })
                 },
                 Expression::Await { expr } => {
-                    let value = self.interpret_expression(expr).await?;
+                    let value = self.interpret_expression(*expr).await?;
                     Ok(value)
                 },
                 Expression::Call { function, arguments } => {
                     let mut interpreted_args = Vec::new();
 
-                    if self.call_stack.contains(function) {
+                    if self.call_stack.contains(&function) {
                         return Err(CrabbyError::InterpreterError(format!(
                             "Recursion is not allowed: function '{}' calls itself", function
                         )));
@@ -560,14 +560,14 @@ impl Interpreter {
                     }
 
                     if function == "print" {
-                        return self.handle_print(arguments).await;
+                        return self.handle_print(&arguments).await;
                     }
 
-                    if let Some(Value::Lambda(lambda)) = self.variables.get(function) {
-                        return self.handle_lambda_call(lambda.clone(), arguments).await;
+                    if let Some(Value::Lambda(lambda)) = self.variables.get(&function) {
+                        return self.handle_lambda_call(lambda.clone(), &arguments).await;
                     }
 
-                    let func = self.function_definitions.get(function).cloned().ok_or_else(|| {
+                    let func = self.function_definitions.get(&function).cloned().ok_or_else(|| {
                         CrabbyError::InterpreterError(format!("Undefined function: {}", function))
                     })?;
 
@@ -580,10 +580,10 @@ impl Interpreter {
                         )));
                     }
 
-                    let result = if let Some(Value::Lambda(lambda)) = self.variables.get(function) {
-                        self.handle_lambda_call(lambda.clone(), arguments).await
+                    let result = if let Some(Value::Lambda(lambda)) = self.variables.get(&function) {
+                        self.handle_lambda_call(lambda.clone(), &arguments).await
                     } else {
-                        let func = self.function_definitions.get(function).cloned().ok_or_else(|| {
+                        let func = self.function_definitions.get(&function).cloned().ok_or_else(|| {
                             CrabbyError::InterpreterError(format!("Undefined function: {}", function))
                         })?;
                         if arguments.len() != func.params.len() {
@@ -610,17 +610,17 @@ impl Interpreter {
                     Ok(Value::Void)
                 },
                 Expression::Where { expr, condition, body } => {
-                    let cond_value = self.interpret_expression(condition).await?;
+                    let cond_value = self.interpret_expression(*condition).await?;
                     match cond_value {
                         Value::Boolean(true) => {
-                            self.interpret_statement(body).await?;
-                            Ok(self.interpret_expression(expr).await?)
+                            self.interpret_statement(*body).await?;
+                            Ok(self.interpret_expression(*expr).await?)
                         },
                         _ => Ok(Value::Boolean(false)),
                     }
                 },
                 Expression::Range(count) => {
-                    let count_value = self.interpret_expression(count).await?;
+                    let count_value = self.interpret_expression(*count).await?;
                     if let Value::Integer(n) = count_value {
                         Ok(Value::Integer(n))
                     } else {
@@ -635,8 +635,8 @@ impl Interpreter {
                     Ok(Value::Array(values))
                 },
                 Expression::Index { array, index } => {
-                    let array_value = self.interpret_expression(array).await?;
-                    let index_value = self.interpret_expression(index).await?;
+                    let array_value = self.interpret_expression(*array).await?;
+                    let index_value = self.interpret_expression(*index).await?;
 
                     match index_value {
                         Value::Integer(i) => array_value.get_index(i),
@@ -674,7 +674,7 @@ impl Interpreter {
                 },
                 Expression::Pattern(pattern_kind) => match &**pattern_kind {
                     PatternKind::Literal(expr) => {
-                        self.interpret_expression(expr).await
+                        self.interpret_expression(*expr).await
                     },
                     PatternKind::Variable(name) => Ok(Value::String(name.clone())),
                     PatternKind::Wildcard => Ok(Value::Void),
@@ -686,8 +686,8 @@ impl Interpreter {
                     }))
                 },
                 Expression::Binary { left, operator, right } => {
-                    let left_val = self.interpret_expression(left).await?;
-                    let right_val = self.interpret_expression(right).await?;
+                    let left_val = self.interpret_expression(*left).await?;
+                    let right_val = self.interpret_expression(*right).await?;
 
                     match (left_val, operator, right_val) {
                         // Integer operations

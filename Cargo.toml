@@ -14,7 +14,7 @@ exclude = [
     "docs/*",
     "target/*",
 ]
-build = "build.rs"
+# build = "build.rs"
 
 [[bin]]
 name = "crabby"

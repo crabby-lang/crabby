@@ -2,13 +2,13 @@ use crate::lexer::{Token, TokenStream};
 use crate::ast::*;
 use crate::utils::{CrabbyError, ErrorLocation};
 
-pub struct Parser<'a> {
-    tokens: &'a [TokenStream<'a>],
+pub struct Parser {
+    tokens: TokenStream,
     current: usize,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(tokens: &'a [TokenStream]) -> Self {
+impl Parser {
+    pub fn new(tokens: TokenStream) -> Self {
         Self {
             tokens,
             current: 0,
@@ -857,7 +857,7 @@ impl<'a> Parser<'a> {
         Ok(Statement::Block(statements))
     }
 
-    fn peek(&self) -> &TokenStream<'a> {
+    fn peek(&self) -> &TokenStream {
         if self.is_at_end() {
             &self.tokens[self.tokens.len() - 1]
         } else {
@@ -899,7 +899,7 @@ impl<'a> Parser<'a> {
     }
 }
 
-pub async fn parse(tokens: Vec<TokenStream<'_>>) -> Result<Program, CrabbyError> {
+pub async fn parse(tokens: Vec<TokenStream>) -> Result<Program, CrabbyError> {
     let mut parser = Parser::new(&tokens);
     parser.parse()
 }

@@ -161,7 +161,7 @@ pub enum Token {
     #[token("do")] // Does looping (now there are 3 options)
     Do,
     #[token("or")]
-    Or,
+    OrKeyword,
     #[token("try")]
     Try,
     #[token("catch")]
@@ -351,13 +351,14 @@ pub enum Token {
     Whitespace,
 }
 
-pub struct TokenStream<'source> {
+pub struct TokenStream {
     pub token: Token,
     pub span: Span,
-    pub slice: &'source str,
+    pub slice: str,
+    pub source: String,
 }
 
-pub async fn tokenize(source: &'_ str) -> Result<Vec<TokenStream<'_>>, CrabbyError> {
+pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
     let mut tokens = Vec::new();
     let mut lex = Token::lexer(source);
     let mut line = 1;
@@ -397,6 +398,7 @@ pub async fn tokenize(source: &'_ str) -> Result<Vec<TokenStream<'_>>, CrabbyErr
                     token,
                     span,
                     slice: lex.slice(),
+                    source,
                 });
 
                 // Update column for the token
