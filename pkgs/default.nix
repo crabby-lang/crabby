@@ -16,7 +16,7 @@ stdenv.mkDerivation rec {
     '';
 
     meta = with stdenv.lib; {
-        description = "Crabby programming language compiler & interpreter";
+        description = "Crabby Programming Language";
         homepage = "https://github.com/crabby-lang/crabby";
         license = license.gpl3;
         platforms = platforms.linux;

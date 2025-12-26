@@ -78,7 +78,7 @@ impl Module {
     pub async fn load_module(&mut self, current_file: &Path, _name: &str, source: &str) -> Result<(), CrabbyError> {
         let resolved_path = Module::resolve_path(current_file, source);
         let source_code = fs::read_to_string(&resolved_path).map_err(|e| CrabbyError::InterpreterError(e.to_string()))?;
-        let tokens = tokenize(&source_code).await?;
+        let tokens = tokenize(source_code).await?;
         let ast = parse(tokens).await?;
         let mut module_interpreter = Interpreter::new(Some(resolved_path));
         module_interpreter.interpret(&ast).await?;

@@ -6,7 +6,7 @@ type SomethingType = typeof existingVar
 
 // You can also do
 let x = "this is a type"
-let y: typeof x
+let y = typeof x
 
 // Crabby typeof objects
 

@@ -11,6 +11,4 @@ unsafe def {
     // Unsafe functions
 }
 
-let x = unsafe deref(prt)
-
 // Got any problem? You can create an issue for this file!

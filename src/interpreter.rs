@@ -114,7 +114,7 @@ impl Interpreter {
         Ok(())
     }
 
-    pub async fn interpret_async(&mut self, program: &Program) -> Result<(), CrabbyError> {
+    pub async fn interpret_async(mut self, program: &Program) -> Result<(), CrabbyError> {
         let mut futures = Vec::new();
 
         for statement in &program.statements {
@@ -229,35 +229,35 @@ impl Interpreter {
             return Err(CrabbyError::InterpreterError("print takes exactly one argument".to_string()));
         }
 
-        let value = self.interpret_expression(&args[0]).await?;
+        let value = self.interpret_expression(args[0]).await?;
         println!("{}", value.to_string());
         Ok(Value::Integer(0))
     }
 
     pub async fn interpret(&mut self, program: &Program) -> Result<(), CrabbyError> {
         for statement in &program.statements {
-            self.interpret_statement(statement).await?;
+            self.interpret_statement(statement.clone()).await?;
         }
         Ok(())
     }
 
-    pub async fn interpret_match(&mut self, value: &Expression, arms: &[MatchArm]) -> Result<Option<Value>, CrabbyError> {
-        let match_value = self.interpret_expression(value).await?;
+    pub async fn interpret_match(self, value: &Expression, arms: &[MatchArm]) -> Result<Option<Value>, CrabbyError> {
+        let match_value = self.interpret_expression(value.clone()).await?;
 
         for arm in arms {
             if self.pattern_matches(&match_value, &arm.pattern).await? {
-                return Ok(Some(self.interpret_expression(&arm.body).await?));
+                return Ok(Some(self.interpret_expression(arm.body.clone()).await?));
             }
         }
 
         Ok(None)
     }
 
-    async fn pattern_matches(&mut self, value: &Value, pattern: &Expression) -> Result<bool, CrabbyError> {
+    async fn pattern_matches(mut self, value: &Value, pattern: &Expression) -> Result<bool, CrabbyError> {
         match pattern {
             Expression::Pattern(pattern_kind) => match &**pattern_kind {
                 PatternKind::Literal(expr) => {
-                    let interpreted = self.interpret_expression(expr).await?;
+                    let interpreted = self.interpret_expression(*expr).await?;
                     Ok(value == &interpreted)
                 },
                 PatternKind::Variable(_) => Ok(true),
@@ -267,7 +267,7 @@ impl Interpreter {
         }
     }
 
-    pub async fn interpret_where(&mut self, expr: &Expression, condition: &Expression, _body: &Statement) -> Result<Value, CrabbyError> {
+    pub async fn interpret_where(self, expr: &Expression, condition: &Expression, _body: &Statement) -> Result<Value, CrabbyError> {
         let cond_value = self.interpret_expression(condition.clone()).await?;
         if let Value::Boolean(true) = cond_value {
             self.interpret_expression(expr.clone()).await
@@ -282,7 +282,7 @@ impl Interpreter {
         let source_code = fs::read_to_string(&resolved_path).map_err(|e| {
             CrabbyError::InterpreterError(format!("Failed to read module '{}': {}", resolved_path.display(), e))
         })?;
-        let tokens = tokenize(&source_code).await?;
+        let tokens = tokenize(source_code).await?;
         let ast = parse(tokens).await?;
         let mut module_interpreter = Interpreter::new(Some(resolved_path.clone()));
         module_interpreter.interpret(&ast).await?;
@@ -672,9 +672,9 @@ impl Interpreter {
                     final_string.push_str(&result[curr_pos..]);
                     Ok(Value::String(final_string))
                 },
-                Expression::Pattern(pattern_kind) => match &**pattern_kind {
+                Expression::Pattern(pattern_kind) => match &*pattern_kind {
                     PatternKind::Literal(expr) => {
-                        self.interpret_expression(*expr).await
+                        self.interpret_expression(expr).await
                     },
                     PatternKind::Variable(name) => Ok(Value::String(name.clone())),
                     PatternKind::Wildcard => Ok(Value::Void),

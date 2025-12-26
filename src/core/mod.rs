@@ -4,4 +4,4 @@ pub mod memory;
 pub mod embedded;
 pub mod metaprogram;
 pub mod r#unsafe;
-pub mod graphics;
+pub mod bindings;

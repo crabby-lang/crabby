@@ -6,13 +6,20 @@ mode unstrict
 
 unsafe {
     @asm(
+        arch="native", // <-- this means the decorator/attribute detects what architecture you are on
         "mov eax, 1",
         "int 0x80",
     )
 }
 
-// OR
+// List of supported (cpu) architectures for doing inline assembly in Crabby.
+// Currently x86_64 and AArch64 (ARM) are planned to be officially supported,
+// meanwhile Risc-V, PowerPC, and LoongArch will be extended later on if there are demands
 
-@asm("mov eax, 1; int 0x80") // one-liner
+unsafe {
+    @asm(arch="x86", "...") // x86_64
+    @asm(arch="arm", "...") // AArch64
+    @asm(arch="riscv", "...") // Risc-V (Unofficial, will update sooner on)
+}
 
 // Got any problem? You can create an issue for this file!

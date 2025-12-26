@@ -10,8 +10,8 @@ print(a) // Error! Value moved to 'b'
 let a1 = "hello"
 let b1 = &a1 // <- Borrowed
 
-print(a) // Valid!
-print(b) // Still valid!
+print(a1) // Valid!
+print(b1) // Still valid!
 
 // Mutable borrowing (mut)
 

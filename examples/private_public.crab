@@ -1,28 +1,51 @@
-// How Private and Public functions in Crabby works
+// How Private and Public functions in Crabby works - EXPERIMENTAL
 // A Guide!
 
-// First, we have the keyword 'private':
-private def foo() {
-    print("This is a private function!")
-}
-
-// This is also a private function even without the 'private' keyword
+// This is a private function, by default functions in general are private
 def bar() {
     print("This is also a private function!")
 }
 
-global def foo1() {
-    print("I'm global!... But private?!") // Explanation: This is global BUT private, (since it has no 'pub'), it's available everywhere in the program but NOT automatically public to other modules.
-}
-
-// Second, global/pub keywords
-
-global pub def bar1() {
-    print("This is a public function!")
-}
-
+// By adding the `pub` (public) keyword, you have made a function public for exporting
 pub def foo2() {
     print("This is also a public function!")
+}
+
+// Same goes for enums, structs, etc
+
+// private enum
+
+enum Planets {
+    Mercury,
+    Venus,
+    Earth,
+    Mars,
+}
+
+// public enum
+
+pub enum Planets {
+    Jupiter,
+    Saturn,
+    Uranus,
+    Neptune,
+}
+
+// private structs
+
+struct Human {
+    name: String,
+    age: Int,
+    hobbies: String,
+    birthday: Date,
+}
+
+// public structs
+
+pub struct Town {
+    townname: String
+    population: Int,
+    isSafe: bool,
 }
 
 // Got any problem? You can create an issue for this file!

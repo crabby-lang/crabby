@@ -354,13 +354,13 @@ pub enum Token {
 pub struct TokenStream {
     pub token: Token,
     pub span: Span,
-    pub slice: str,
+    pub slice: String,
     pub source: String,
 }
 
-pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
+pub async fn tokenize(source: String) -> Result<Vec<TokenStream>, CrabbyError> {
     let mut tokens = Vec::new();
-    let mut lex = Token::lexer(source);
+    let mut lex = Token::lexer(&source);
     let mut line = 1;
     let mut column = 1;
 
@@ -371,7 +371,7 @@ pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
         let span_start = lex.span().start;
 
         // Update line and column for any skipped whitespace
-        for (_pos, ch) in source[last_valid_pos..span_start].chars().enumerate() {
+        for (_pos, ch) in source[last_valid_pos..span_start].chars().enumerate().clone() {
             if ch == '\n' {
                 line += 1;
                 column = 1;
@@ -397,8 +397,8 @@ pub async fn tokenize(source: &str) -> Result<Vec<TokenStream>, CrabbyError> {
                 tokens.push(TokenStream {
                     token,
                     span,
-                    slice: lex.slice(),
-                    source,
+                    slice: lex.slice().to_string(),
+                    source: source.clone(),
                 });
 
                 // Update column for the token

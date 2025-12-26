@@ -82,13 +82,13 @@ pub enum Statement {
         params: String,
         body: Box<Expression>,
     },
-    Mutable {
-        name: String,
-    }, // the `mut` keyword
-    Unless {
-        name: String,
-        body: Box<Statement>,
-    },
+    // Mutable {
+    //    name: String,
+    // }, // the `mut` keyword
+    // Unless {
+    //    name: String,
+    //    body: Box<Statement>,
+    // },
     ForIn {
         variable: String,
         iterator: Box<Expression>,
@@ -98,10 +98,10 @@ pub enum Statement {
         name: String,
         source: Option<String>,
     },
-    Static {
-        name: String,
-        value: Option<Box<Expression>>,
-    },
+    // Static {
+    //    name: String,
+    //    value: Option<Box<Expression>>,
+    // },
     Class {
         name: String,
         parent: Option<String>,
@@ -117,12 +117,12 @@ pub enum Statement {
         name: String,
         methods: Vec<MethodDefinition>,
     },
-    Maybe {
-        name: String,
-    },
-    Probably {
-        name: String,
-    },
+    // Maybe {
+    //    name: String,
+    // },
+    // Probably {
+    //    name: String,
+    // },
     Impl {
         target: String,
         trait_name: Option<String>,

@@ -1,7 +1,7 @@
 // Asserts in Crabby - EXPERIMENTAL
 
-x = 4
-y = 0
+let x = 4
+let y = 0
 
 print("The value of a x / y is: ")
 assert b != 0, "Zero Division Error!"

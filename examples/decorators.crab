@@ -1,5 +1,5 @@
 // Crabby Decorators -  A way of Metaprogramming
-// Just like Macros but it takes a different approach
+// Just like Macros but takes a Pythonic approach
 // - EXPERIMENTAL!
 
 def sprinkles() {

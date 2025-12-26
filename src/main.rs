@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(input) = cli.input {
         let absolute_path = input.canonicalize().expect("Failed to get absolute path");
         let source = fs::read_to_string(&absolute_path).expect("Failed to read file");
-        let tokens = lexer::tokenize(&source).await;
+        let tokens = lexer::tokenize(source).await;
         let ast = parse(tokens.expect("Failed to parse token")).await.expect("Failed to parse AST");
         let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
         interpreter.interpret(&ast).await;

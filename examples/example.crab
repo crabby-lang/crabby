@@ -19,6 +19,26 @@ def foo() {
     DOCSTRING
     """
     print("bar")
+    let a = false
+    let b = true
+
+    if b {
+        print("True!")
+    } else {
+        print("False!")
+    }
+}
+
+def test() {
+    print("Function bellow")
+    def func() {
+        print("Function inside a function")
+        def funct() {
+            print("Function inside a function that's also inside a function!?")
+        }
+        funct()
+    }
+    func()
 }
 
 print(x)
@@ -30,3 +50,4 @@ print(two)
 // print(three)
 // print(f"Result: {example}")
 foo()
+test()

@@ -271,6 +271,40 @@ Speaking of comments, **Crabby** also support [`Docstrings`](https://www.geeksfo
 14. The use of `extern` for using C code
 15. `foreign` keyword to code FFI related tasks in crabby, see examples for more detail.
 
+## Speed
+
+Since Crabby is written in **Rust**, we make sure Crabby interprets millisecond speeds for benchmarking and testing.
+
+> Note that some **inaccuracy happens**, and that's fine due to the early nature of Crabby, benchmark data updates occur for every Crabby update or patch. Thank you.
+
+```bash
+time ./crabby ../examples/example.crab
+
+./crabby ../examples/example.crab
+0.00s user
+0.01s system
+21%   cpu
+0.083 total
+```
+
+```bash
+cat ../examples/loops.crab
+
+> let x = range(10000) // 10_000
+>
+> for i in x {
+>     print(i) // Prints it 10_000 times
+> }
+
+time ./crabby ../examples/loops.crab
+
+./crabby ../examples/loops.crab
+0.08s user
+0.17s system
+78%   cpu
+0.320 total
+```
+
 ## FAQs
 
 > `Q`: Is Crabby going to be the new Python or Rust?
