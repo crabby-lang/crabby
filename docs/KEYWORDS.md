@@ -1,10 +1,11 @@
 # Crabby's Keyword
 
+> [!WARNING]
+> Due to **Crabby's** early development stage, we expect you to not take some (or most) of these keywords seriously, the **interpreter** is currently still broken, so that's why the creator of the language is findings ways to fix it, it can take years, which is normal for a language that only has one person doing all the work. Thank you for your patience.
+
 This markdown file will guide and inform you the available keywords of Crabby.
 
-> [!WARNING]
-> Due to **Crabby's** early development stage, we expect you to not take some (or most) of this keywords seriously, the **interpreter** is currently still broken, so that's why the creator of the language is findings ways to fix it, it can take years, which is normal for a language that only has one person doing all the work. Thank you for your patience.
-> [!NOTE]
+> [!TIP]
 > In Crabby, keywords are categorized as **simple**, **reserved**, and **experimental**
 
 ## print()
@@ -31,7 +32,7 @@ def doSomething() {
 
 ## pub
 
-To make a function, structure, enum or a data to be public, use the `pub` keyword.
+To make a function, structure, enum or a data public, use the `pub` keyword.
 
 ```rs
 pub def publicFunction() {

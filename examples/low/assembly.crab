@@ -17,9 +17,21 @@ unsafe {
 // meanwhile Risc-V, PowerPC, and LoongArch will be extended later on if there are demands
 
 unsafe {
-    @asm(arch="x86", "...") // x86_64
-    @asm(arch="arm", "...") // AArch64
-    @asm(arch="riscv", "...") // Risc-V (Unofficial, will update sooner on)
+    @asm(arch="x86",
+        "mov rax, 60",
+        "mov rdi, 0",
+        "syscall",
+    ) // x86_64
+    @asm(arch="arm",
+        "mov x8, 93",
+        "mov x0, 0",
+        "svc #0",
+    ) // AArch64 (ARM)
+    @asm(arch="riscv",
+        "li a7, 93",
+        "li a0, 0",
+        "ecall",
+    ) // Risc-V (Unofficial, will update sooner on)
 }
 
 // Got any problem? You can create an issue for this file!

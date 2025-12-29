@@ -1,0 +1,14 @@
+// Crabby's Lambda operation
+
+let x = lambda(a) {
+    return a + 10
+}
+
+// let square = |x| x * x // <- EXPERIMENTAL
+// let double = lambda x: x * 2 // <- EXPERIMENTAL
+
+print(x(5))
+// print(square(5))
+// print(double(10))
+
+// Got any problem? You can create an issue for this file!

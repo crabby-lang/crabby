@@ -1,7 +1,7 @@
 mod vm;
 mod bytecode;
 
-use super::super::compiler::Compiler;
+use super::compiler::Compiler;
 use vm::VM;
 use bytecode::BytecodeFile;
 

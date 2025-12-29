@@ -1,0 +1,15 @@
+// Macro scripting in Crabby - EXPERIMENTAL
+
+macro repeat {
+    (value, count) => {
+        for i in 0..count {
+            print(value)
+        }
+    }
+}
+
+pub def bar() {
+    repeat!("Hello, World!", 10)
+}
+
+// Got any problem? You can create an issue for this file!

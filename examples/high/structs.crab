@@ -1,0 +1,15 @@
+// Crabby's 'Struct' and 'Where' statements - EXPERIMENTAL
+
+struct Point where x >= 0 {
+    x: Int,
+    y: Int,
+}
+
+pub struct Person {
+    name: String,
+    age: Int,
+    hobbies: String,
+    birthday: Date,
+}
+
+// Got any problem? You can create an issue for this file!

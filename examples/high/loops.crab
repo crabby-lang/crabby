@@ -1,0 +1,24 @@
+// Loop statements in Crabby
+// Crabby supports 2 ways of looping
+
+// Option 1 : Loop
+
+loop 10 {
+    print("Hello, Crabby!") // Prints it 10 times
+}
+
+// Option 2: for loops
+
+let x = range(10000) // 10_000
+
+for i in x {
+    print(i) // Prints it 10_000 times
+}
+
+let y = 10000 // 10_000
+
+for i in range(y) {
+    print(i)
+}
+
+// Got any problem? You can create an issue for this file!

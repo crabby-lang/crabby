@@ -1,0 +1,32 @@
+// FFI example in Crabby - EXPERIMENTAL
+
+// Note: this is conceptual - will update later on or when syntax changes occur.
+
+// Let's say there exist a "libmath.c" file containing this code:
+//
+// double add(double a, double b) {
+//   return a + b;
+// }
+//
+// then compile it to "libmath.o" then use gcc shared to turn it into a "libmath.so" or "libmath.dll"
+// 
+// This is how you call it using FFIs:
+
+@ffi("libmath.so")
+foreign {
+    extern ded add(a: Float, b: Float) -> Float
+}
+
+unsafe {
+    let result = add(2.0, 3.0)
+    print(result)
+} // We're using an `unsafe` block because handling FFIs are usually low-level and needs careful memory management.
+
+// Incorrect Usages:
+
+let x = add(1, 2) // ERR: calling foreign functions outside of an unsafe block
+extern def add(a, b) // ERR: missing types
+
+@ffi("libmath.so")
+def add(a, b) { ... }
+// ^^^^^^^^^^^^^^^ ERR: extern functions cannot have bodies! 

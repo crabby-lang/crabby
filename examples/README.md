@@ -12,3 +12,9 @@ function well or completely don't work because they aren't being properly implem
 into the AST & Parser of Crabby yet.
 
 You can notice this with the **"- EXPERIMENTAL"** tag being present in each `.crab` files.
+
+## Sections
+
+In here, you'll notice two directories such as `high/` & `low/`, these directories indicates what
+examples of crabby is High-Level (high directory) and which ones Low-Level (low directory) usually
+containing memory safety stuffs, unsafe blocks, `FFIs`, etc.

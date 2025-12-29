@@ -23,7 +23,8 @@
 *
 */
 
-use crate::value::ValueVM;
+mod value;
+
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]

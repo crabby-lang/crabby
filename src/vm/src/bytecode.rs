@@ -43,7 +43,7 @@ pub struct BytecodeFile {
 }
 
 impl BytecodeFile {
-    const MAGIC: &'static [u8] = b"CRAB";
+    const MAGIC: &'static [u8] = b"CRAB1Y";
     const VERSION: u8 = 1;
 
     pub fn new(instructions: Vec<Instructions>, constants: Vec<ValueVM>) -> Self {

@@ -17,10 +17,15 @@ def math() {
     let d = 10
     let z = 3
 
+    // adding negatives
+    let o = -3
+    let p = -5
+
     print(x + y)
     print(a * b)
     print(c - s)
     print(d / z)
+    print(o - p)
 }
 
 math()

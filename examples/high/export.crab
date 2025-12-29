@@ -1,0 +1,16 @@
+// Exporting a function in Crabby
+
+pub def foo() {
+    print("An export statement")
+}
+
+pub def greet() {
+    print("Hello!")
+    helper()  // Can use private function within module
+}
+
+def helper() {  // Private function
+    print("I'm helping!")
+}
+
+// Got any problem? You can create an issue for this file!
