@@ -1,0 +1,14 @@
+# Template script for Crabby in Void Linux
+
+pkgname=crabby
+version=1.2.1
+revision=1
+build_style=cargo
+short_desc="Crabby Programming Language"
+maintainers="Kazooki123 <mgamerdinge146@gmail.com>"
+license="GPL3"
+homepage="https://github.com/crabby-lang/crabby"
+distfiles="https://github.com/crabby-lang/crabby/archive/v${version}.tar.gz"
+checksum=SKIP
+
+hostmakedepends="rust cargo"

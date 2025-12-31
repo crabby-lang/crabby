@@ -1,0 +1,17 @@
+# FREEBSD PORT OF CRABBY
+# YIPPIEE
+
+PORTNAME=crabby
+DISTVERSION=1.2.1
+CATEGORIES=lang
+MASTER_SITES=GH
+GH_ACCOUNT=crabby-lang
+
+MAINTAINER=mgamerdinge146@gmail.com
+COMMENT=Crabby Programming Language
+LICENSE=GPL3
+
+USE=cargo
+USE_GITHUB=yes
+
+PLIST_FILES=bin/crabby

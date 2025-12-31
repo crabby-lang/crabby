@@ -8,9 +8,15 @@ unsafe {
     @asm(
         arch="x86",
         "mov eax 1",
-        "int 0x80"
+        "int 0x80",
     )
 }
+
+static HELLO_WORLD: &String = "Hello, World! <3"
+
+print(f"the value is: {HELLO_WORLD}")
+
+// Output: value is: Hello, World! <3
 
 // You can also do
 

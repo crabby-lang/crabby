@@ -11,4 +11,21 @@ unsafe def {
     // Unsafe functions
 }
 
+// For example
+
+let mut number = 2;
+
+let x1 = &raw const number
+let x2 = &raw mut number
+
+unsafe {
+    print(f"x1 is: {*x1}")
+    print(f"x2 is: {*x2}")
+}
+
+// ^ Output:
+// x1 is: 2
+// x2 is: 2
+//
+
 // Got any problem? You can create an issue for this file!

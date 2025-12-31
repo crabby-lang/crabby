@@ -3,6 +3,26 @@
         "lineComment": "//",
         "blockComment": [ "/*", "*/" ]
     },
+    "onEnterRules": [
+        {
+            "beforeText": "/\\*\\*.*",
+            "action": {
+                "indent": "indentOutdent", "appendText": " * "
+            }
+        },
+        {
+            "beforeText": "\\s*\\*.*",
+            "action": {
+                "indent": "none", "appendText": "* "
+            }
+        },
+        {
+            "beforeText": "\\s*\\/\\*\\s",
+            "action": {
+                "indent": "indentOutdent", "appendText": " "
+            }
+        }
+    ],
     // symbols used as brackets
     "brackets": [
         ["{", "}"],

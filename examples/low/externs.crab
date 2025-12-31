@@ -11,4 +11,16 @@ extern def somethinglinux(x: Int, y: Int) -> Int {
     somethinglinux(200, 400)
 }
 
+// unsafe + extern ?
+
+unsafe extern def foo() {
+    def abs(input: Int) -> Int
+}
+
+def bar() {
+    unsafe {
+        print(f"The value of -7 is: {abs(-3)}")
+    }
+}
+
 // Got any problem? You can create an issue for this file!
