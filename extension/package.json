@@ -1,9 +1,9 @@
 {
-  "name": "crabby",
-  "displayName": "Crabby",
+  "name": "crabby-lang",
+  "displayName": "Crabby Programming Language",
   "description": "Crabby language support for Vscode",
-  "version": "0.4.18",
-  "publisher": "Kazooki123",
+  "version": "0.4.19",
+  "publisher": "ingStudiosOfficial",
   "repository": {
     "type": "git",
     "url": "https://github.com/crabby-lang/crabby"
