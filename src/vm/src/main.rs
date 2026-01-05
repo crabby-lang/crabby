@@ -1,5 +1,6 @@
 mod vm;
 mod bytecode;
+mod value;
 
 use super::compiler::Compiler;
 use vm::VM;

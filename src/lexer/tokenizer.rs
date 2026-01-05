@@ -182,8 +182,9 @@ pub enum Token {
      *    ) // Syscall instruction
      *  }
      *
+     *  Introduces for C, C++ & Assembly FFI feature
      */
-    #[token("unsafe")] // Introduces for C, C++ & Assembly FFI feature
+    #[token("unsafe")]
     Unsafe,
     #[token("del")]
     Delete,
@@ -354,6 +355,7 @@ pub enum Token {
 pub struct TokenStream {
     pub token: Token,
     pub span: Span,
+    pub len: String,
     pub slice: String,
     pub source: String,
 }
@@ -397,6 +399,7 @@ pub async fn tokenize(source: String) -> Result<Vec<TokenStream>, CrabbyError> {
                 tokens.push(TokenStream {
                     token,
                     span,
+                    len,
                     slice: lex.slice().to_string(),
                     source: source.clone(),
                 });

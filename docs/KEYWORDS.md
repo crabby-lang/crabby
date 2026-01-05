@@ -18,6 +18,34 @@ print("Hello World")
 
 That's all it, no bloat, no unreadable bs, just... `print()`
 
+## let
+
+To declare a variable, immutable (meaning its state cannot be changed).
+
+```crab
+let a = "Hello!"
+let b = 6
+let c = true
+```
+
+## var
+
+To declare a variable also, but mutable (meaning its state can be changed or modified).
+
+```crab
+var a = "Mutability for life!"
+var b = 7
+var c = false
+```
+
+## const
+
+Also again declares a immutable variable, at compile time (`Note:` Still very conceptual and experimental)
+
+```crab
+const MAX_USERS = 100
+```
+
 ## def
 
 To create a function, use the `def` keyword.
@@ -39,5 +67,15 @@ pub def publicFunction() {
     print("This is a public function.")
 }
 ```
+
+## if 
+
+## else
+
+## range
+
+## loop
+
+## class
 
 

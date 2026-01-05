@@ -3,6 +3,8 @@
 use std::collections::HashMap;
 use crate::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use crate::value::Value;
 use crate::utils::CrabbyError;
@@ -10,19 +12,17 @@ use crate::parser::*;
 use crate::interpreter::Interpreter;
 use crate::lexer::tokenize;
 
-#[derive(Clone)]
-pub struct Module {
-    pub variable: HashMap<String, Value>,
-    pub public_items: HashMap<String, Value>,
-    pub private_items: HashMap<String, Value>
+pub struct ModuleCache {
+    loaded: HashMap<PathBuf, Arc<Module>>,
+    loading: HashSet<PathBuf>,
 }
 
-impl Drop for Module {
-    fn drop(&mut self) {
-        self.variable.clear();
-        self.public_items.clear();
-        self.private_items.clear();
-    }
+#[derive(Clone)]
+pub struct Module {
+    // pub variable: HashMap<String, Value>,
+    pub public_items: HashMap<String, Value>,
+    // pub private_items: HashMap<String, Value>
+    pub exports: HashMap<String, Value>,
 }
 
 impl Module {
@@ -32,12 +32,6 @@ impl Module {
             private_items: HashMap::new(),
             variable: HashMap::new()
         }
-    }
-
-    pub fn clear(&mut self) {
-        self.variable.clear();
-        self.public_items.clear();
-        self.private_items.clear();
     }
 
     pub fn import_item(&mut self, module: &Module, item_name: &str) -> Result<(), CrabbyError> {
@@ -75,13 +69,17 @@ impl Module {
         }
     }
 
-    pub async fn load_module(&mut self, current_file: &Path, _name: &str, source: &str) -> Result<(), CrabbyError> {
+    pub async fn load_module(cache: &mut ModuleCache, current_file: &Path, source: &str) -> Result<Arc<Module>, CrabbyError> {
         let resolved_path = Module::resolve_path(current_file, source);
-        let source_code = fs::read_to_string(&resolved_path).map_err(|e| CrabbyError::InterpreterError(e.to_string()))?;
-        let tokens = tokenize(source_code).await?;
-        let ast = parse(tokens).await?;
-        let mut module_interpreter = Interpreter::new(Some(resolved_path));
-        module_interpreter.interpret(&ast).await?;
-        Ok(())
+
+        if let Some(module) = cache.loaded.get(&resolved_path) {
+            return Ok(module.clone());
+        }
+
+        if cache.loading.contains(&resolved_path) {
+            return Err(CrabbyError::InterpreterError("Cyclic module import detected!").to_string());
+        }
+
+        cache.loading.insert(resolved_path.clone());
     }
 }

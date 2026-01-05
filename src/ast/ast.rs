@@ -19,6 +19,7 @@ pub enum Statement {
         body: Box<Statement>,
         return_type: String,
         docstring: String,
+        visibiity: Visibility,
     },
     FunctionFun {
         name: String,
@@ -26,6 +27,7 @@ pub enum Statement {
         body: Box<Statement>,
         return_type: String,
         docstring: String,
+        visibiity: Visibility,
     },
     Let {
         name: String,
@@ -77,11 +79,11 @@ pub enum Statement {
         value: Box<Expression>,
         arms: Vec<MatchArm>,
     },
-    Macro {
-        name: String,
-        params: String,
-        body: Box<Expression>,
-    },
+    // Macro {
+    //    name: String,
+    //    params: String,
+    //    body: Box<Expression>,
+    // },
     // Mutable {
     //    name: String,
     // }, // the `mut` keyword

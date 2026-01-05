@@ -26,6 +26,7 @@
 mod value;
 
 use std::collections::HashMap;
+use crate::value::ValueVM;
 
 #[derive(Debug, Clone)]
 pub enum Instructions {
