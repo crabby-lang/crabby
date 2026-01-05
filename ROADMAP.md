@@ -14,7 +14,7 @@ We use a simple progress indicator to show the project's status.
 - [x] Loops (`loop`, `for-in`)
 - [ ] Loops (`while` & `do`)
 - [ ] Arrays / Lists
-- [ ] Functions & recursion (in progress)
+- [x] Functions & recursion (in progress)
 - [ ] Pattern Matching
 - [ ] Async awaits
 - [ ] Pipe Operators

@@ -114,7 +114,7 @@ impl Interpreter {
         Ok(())
     }
 
-    pub async fn interpret_async(mut self, program: &Program) -> Result<(), CrabbyError> {
+    pub async fn interpret_async(&mut self, program: &Program) -> Result<(), CrabbyError> {
         let mut futures = Vec::new();
 
         for statement in &program.statements {
@@ -224,17 +224,17 @@ impl Interpreter {
         Ok(())
     }
 
-    pub async fn handle_print(&mut self, args: &[Expression]) -> Result<Value, CrabbyError> {
+    pub async fn handle_print(self, args: &[Expression]) -> Result<Value, CrabbyError> {
         if args.len() != 1 {
             return Err(CrabbyError::InterpreterError("print takes exactly one argument".to_string()));
         }
 
-        let value = self.interpret_expression(args[0]).await?;
+        let value = self.interpret_expression(args[0].clone()).await?;
         println!("{}", value.to_string());
         Ok(Value::Integer(0))
     }
 
-    pub async fn interpret(&mut self, program: &Program) -> Result<(), CrabbyError> {
+    pub async fn interpret(self, program: &Program) -> Result<(), CrabbyError> {
         for statement in &program.statements {
             self.interpret_statement(statement.clone()).await?;
         }

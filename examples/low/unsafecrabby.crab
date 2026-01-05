@@ -13,7 +13,7 @@ unsafe def {
 
 // For example
 
-let mut number = 2;
+let mut number = 2
 
 let x1 = &raw const number
 let x2 = &raw mut number

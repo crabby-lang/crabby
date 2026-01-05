@@ -13,7 +13,7 @@ def main() {
     let value = unsafe { u.f }
     print(f"from f: {value}")
 
-    u.i = 10;
+    u.i = 10
 
     let value_f = unsafe { u.f }
     print(f"from f (after i write): {value_f}")

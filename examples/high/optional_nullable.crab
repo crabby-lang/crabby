@@ -8,6 +8,14 @@ if value.is_some() {
 
 let variable: String? = "hello"
 
+// OR
+
+let name: String? = null
+
+if name {
+    print(name)
+}
+
 // String?
 //      ^^ this is optional
 

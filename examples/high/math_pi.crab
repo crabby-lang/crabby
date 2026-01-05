@@ -1,0 +1,6 @@
+// Mathematic PI in Crabby - EXPERIMENTAL
+
+let radius = 5
+let area = π * r * r
+
+print(area)

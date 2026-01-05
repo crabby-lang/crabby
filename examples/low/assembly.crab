@@ -8,7 +8,7 @@ unsafe {
     @asm(
         arch="native", // <-- this means the decorator/attribute detects what architecture you are on
         "mov eax, 1",
-        "int 0x80",
+        "int 0x80"
     )
 }
 
@@ -20,18 +20,42 @@ unsafe {
     @asm(arch="x86",
         "mov rax, 60",
         "mov rdi, 0",
-        "syscall",
+        "syscall"
     ) // x86_64
     @asm(arch="arm",
         "mov x8, 93",
         "mov x0, 0",
-        "svc #0",
+        "svc #0"
     ) // AArch64 (ARM)
     @asm(arch="riscv",
         "li a7, 93",
         "li a0, 0",
-        "ecall",
+        "ecall"
     ) // Risc-V (Unofficial, will update sooner on)
+}
+
+// Naked Assembly?
+// (Conceptual/Experimental)
+
+@naked_asm
+unsafe {
+    def syscall_ex(code: Int)
+    @asm(arch="native",
+        "mov rax, 60",
+        "mov rdi, {code}",
+        "syscall"
+    )
+}
+
+// Raw Assembly
+// (Conceptual)
+// Note: Still planning to document this later on, it just hit to my head and thought would be a good idea :p
+
+@raw
+unsafe def foo() {
+    @asm(arch="native",
+        "..."
+    )
 }
 
 // Got any problem? You can create an issue for this file!

@@ -11,4 +11,10 @@ print(x(5))
 // print(square(5))
 // print(double(10))
 
+// You can also do:
+
+// let f = λ(x) {
+//  return x + 1
+//}
+
 // Got any problem? You can create an issue for this file!

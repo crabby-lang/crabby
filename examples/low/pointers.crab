@@ -1,0 +1,19 @@
+// Pointers in Crabby - EXPERIMENTAL
+
+// Note: Very conceptual and still being planned, this file will be updated soon once major updates
+// have been implemented and decided, Thank you.
+
+mode unstrict
+
+let user = &User {
+    name: "Bob",
+    age: 21
+}
+
+unsafe {
+    print(user->name)
+}
+
+// (user -> name)
+//  ^^^^    ^^^^
+// pointer  field

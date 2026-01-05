@@ -1,0 +1,44 @@
+name: MacOS Homebrew Binary Test
+
+on:
+    push:
+        branches: ["main"]
+    workflow_dispatch:
+
+jobs:
+    macos-brew:
+        runs-on: macos-latest
+
+        steps:
+          - name: Checkout Crabby Repo
+            uses: action/checkout@v4
+
+          - name: Show Sys Info
+            run: |
+              uname -a
+              sw_vers
+              brew --version
+              ruby --version
+
+          - name: Create Binary Executable
+            run: |
+              chmod +x crabby/bin/crabby
+              ls -lh crabby/bin
+
+          - name: Clone crabby-brew Tap
+            run: |
+              git clone https://github.com/crabby-lang/crabby-brew.git
+
+          - name: Copy Prebuilt binary into the brew formula structure 
+            run: |
+              mkdir -p crabby-brew/bin
+              cp crabby/bin/crabby crabby-brew/bin/crabby
+              
+          - name: Install Crabby via Homebrew (local tap)
+            run: |
+              brew install --formula ./crabby-brew/Formula/crabby.rb
+
+          - name: Verify the installation
+            run: |
+              which crabby
+              crabby --help || true            

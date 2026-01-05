@@ -4,7 +4,7 @@ Welcome to Crabby's inline assembly syntax tour and concept, we appreciate if yo
 contribute to this documentation or to Crabby in general! 🩷
 
 > [!WARNING]
-> Still very early, conceptual, and experimental, low level Crabby will be implemented later on but for now this docs exist as a preview or **demo** for Crabby's low level capabilities, note also that changes will occur once major updates have been release, Thank you for your patience.
+> Still very early, conceptual, and experimental, low level Crabby will be implemented later on but for now this docs exist as a preview and **demo** for Crabby's low level capabilities, also note that changes will occur once major updates have been release, Thank you for your patience.
 
 ## Why Assembly in Crabby?
 
@@ -102,3 +102,5 @@ unsafe {
     )
 }
 ```
+
+
