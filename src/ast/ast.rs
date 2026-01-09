@@ -180,9 +180,10 @@ pub enum Expression {
     },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum Visibility {
     Public,
+    #[default]
     Private,
     Protect,
 }

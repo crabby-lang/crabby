@@ -1,5 +1,5 @@
-use logos::Logos;
 use crate::utils::{CrabbyError, ErrorLocation, Span};
+use logos::Logos;
 
 #[derive(Logos, Debug, PartialEq, Clone)]
 pub enum Token {
@@ -360,77 +360,84 @@ pub struct TokenStream {
     pub source: String,
 }
 
-pub async fn tokenize(source: String) -> Result<Vec<TokenStream>, CrabbyError> {
-    let mut tokens = Vec::new();
-    let mut lex = Token::lexer(&source);
-    let mut line = 1;
-    let mut column = 1;
+impl TokenStream {
+    // y was this `async`?
+    pub fn tokenize(source: String) -> Result<Vec<Self>, CrabbyError> {
+        let mut tokens = Vec::new();
+        let mut lex = Token::lexer(&source);
+        let mut line = 1;
+        let mut column = 1;
 
-    // Track the last valid character position
-    let mut last_valid_pos = 0;
+        // Track the last valid character position
+        let mut last_valid_pos = 0;
 
-    while let Some(token_result) = lex.next() {
-        let span_start = lex.span().start;
+        while let Some(token_result) = lex.next() {
+            let span_start = lex.span().start;
 
-        // Update line and column for any skipped whitespace
-        for (_pos, ch) in source[last_valid_pos..span_start].chars().enumerate().clone() {
-            if ch == '\n' {
-                line += 1;
-                column = 1;
-            } else {
-                column += 1;
+            // Update line and column for any skipped whitespace
+            for (_pos, ch) in source[last_valid_pos..span_start]
+                .chars()
+                .enumerate()
+                .clone()
+            {
+                if ch == '\n' {
+                    line += 1;
+                    column = 1;
+                } else {
+                    column += 1;
+                }
+            }
+
+            match token_result {
+                Ok(token) => {
+                    // Skip the Whitespace token as it's handled above
+                    if matches!(token, Token::Whitespace) {
+                        continue;
+                    }
+
+                    let span = Span::new(span_start, lex.span().end, line, column);
+
+                    tokens.push(Self {
+                        token,
+                        span,
+                        len,
+                        slice: lex.slice().to_string(),
+                        source: source.clone(),
+                    });
+
+                    // Update column for the token
+                    column += lex.slice().len();
+                    last_valid_pos = lex.span().end;
+                }
+                Err(_) => {
+                    if last_valid_pos < source.len() {
+                        let problem_char = source[span_start..]
+                            .chars()
+                            .next()
+                            .map(|c| format!("'{}'", c))
+                            .unwrap_or_else(|| "unknown".to_string());
+
+                        return Err(CrabbyError::LexerError(ErrorLocation {
+                            line,
+                            column,
+                            message: format!(
+                                "Invalid character {} at position {}",
+                                problem_char, span_start
+                            ),
+                        }));
+                    }
+                }
             }
         }
 
-        match token_result {
-            Ok(token) => {
-                // Skip the Whitespace token as it's handled above
-                if matches!(token, Token::Whitespace) {
-                    continue;
-                }
-
-                let span = Span::new(
-                    span_start,
-                    lex.span().end,
-                    line,
-                    column,
-                );
-
-                tokens.push(TokenStream {
-                    token,
-                    span,
-                    len,
-                    slice: lex.slice().to_string(),
-                    source: source.clone(),
-                });
-
-                // Update column for the token
-                column += lex.slice().len();
-                last_valid_pos = lex.span().end;
-            }
-            Err(_) => {
-                if last_valid_pos < source.len() {
-                    let problem_char = source[span_start..].chars().next()
-                        .map(|c| format!("'{}'", c))
-                        .unwrap_or_else(|| "unknown".to_string());
-
-                    return Err(CrabbyError::LexerError(ErrorLocation {
-                        line,
-                        column,
-                        message: format!("Invalid character {} at position {}", problem_char, span_start),
-                    }));
-                }
-            }
+        if tokens.is_empty() {
+            return Err(CrabbyError::LexerError(ErrorLocation {
+                line: 1,
+                column: 1,
+                message: "Empty source file".to_string(),
+            }));
         }
-    }
 
-    if tokens.is_empty() {
-        return Err(CrabbyError::LexerError(ErrorLocation {
-            line: 1,
-            column: 1,
-            message: "Empty source file".to_string(),
-        }));
+        Ok(tokens)
     }
-
-    Ok(tokens)
 }

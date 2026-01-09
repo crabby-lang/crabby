@@ -1,6 +1,6 @@
 // Crabby scans crab code then checks if it's a dead/unused code or not
 
-use crate::ast::{Program, Statement, Expression};
+use crate::ast::{Expression, Program, Statement};
 use crate::utils::CrabbyError;
 use std::collections::{HashMap, HashSet};
 
@@ -70,7 +70,14 @@ impl DeadCodeAnalyzer {
     fn collect_definitions(&mut self, program: &Program) -> Result<(), CrabbyError> {
         for stmt in &program.statements {
             match stmt {
-                Statement::FunctionDef { name, params: _, body: _, return_type: _, docstring: _ } => {
+                Statement::FunctionDef {
+                    name,
+                    params: _,
+                    body: _,
+                    return_type: _,
+                    docstring: _,
+                    visibility: _,
+                } => {
                     if name.starts_with("pub ") {
                         let clean_name = name.trim_start_matches("pub ").to_string();
                         self.pub_exports.insert(clean_name.clone());
@@ -88,15 +95,27 @@ impl DeadCodeAnalyzer {
                         self.add_symbol(name.clone(), SymbolKind::Variable, 0, 0);
                     }
                 }
-                Statement::Struct { name, fields: _, where_clause: _ } => {
+                Statement::Struct {
+                    name,
+                    fields: _,
+                    where_clause: _,
+                } => {
                     self.add_symbol(name.clone(), SymbolKind::Struct, 0, 0);
                 }
-                Statement::Enum { name, variants: _, where_clause: _ } => {
+                Statement::Enum {
+                    name,
+                    variants: _,
+                    where_clause: _,
+                } => {
                     self.add_symbol(name.clone(), SymbolKind::Enum, 0, 0);
                 }
-                Statement::Macro { name, params: _, body: _ } => {
-                    self.add_symbol(name.clone(), SymbolKind::Macro, 0, 0);
-                }
+                // Statement::Macro {
+                //     name,
+                //     params: _,
+                //     body: _,
+                // } => {
+                //     self.add_symbol(name.clone(), SymbolKind::Macro, 0, 0);
+                // }
                 _ => {}
             }
         }
@@ -118,7 +137,11 @@ impl DeadCodeAnalyzer {
                     self.analyze_statement(stmt)?;
                 }
             }
-            Statement::If { condition, then_branch, else_branch } => {
+            Statement::If {
+                condition,
+                then_branch,
+                else_branch,
+            } => {
                 self.analyze_expression(condition)?;
                 self.analyze_statement(then_branch)?;
                 if let Some(else_branch) = else_branch {
@@ -129,7 +152,11 @@ impl DeadCodeAnalyzer {
                 self.analyze_expression(condition)?;
                 self.analyze_statement(body)?;
             }
-            Statement::ForIn { variable: _, iterator, body } => {
+            Statement::ForIn {
+                variable: _,
+                iterator,
+                body,
+            } => {
                 self.analyze_expression(iterator)?;
                 self.analyze_statement(body)?;
             }
@@ -143,17 +170,28 @@ impl DeadCodeAnalyzer {
             Expression::Variable(name) => {
                 self.used_symbols.insert(name.clone());
             }
-            Expression::Call { function, arguments } => {
+            Expression::Call {
+                function,
+                arguments,
+            } => {
                 self.used_symbols.insert(function.clone());
                 for arg in arguments {
                     self.analyze_expression(arg)?;
                 }
             }
-            Expression::Binary { left, operator: _, right } => {
+            Expression::Binary {
+                left,
+                operator: _,
+                right,
+            } => {
                 self.analyze_expression(left)?;
                 self.analyze_expression(right)?;
             }
-            Expression::Where { expr, condition, body } => {
+            Expression::Where {
+                expr,
+                condition,
+                body,
+            } => {
                 self.analyze_expression(expr)?;
                 self.analyze_expression(condition)?;
                 self.analyze_statement(body)?;
@@ -164,7 +202,8 @@ impl DeadCodeAnalyzer {
     }
 
     fn add_symbol(&mut self, name: String, kind: SymbolKind, line: usize, column: usize) {
-        self.defined_symbols.insert(name, SymbolInfo { kind, line, column });
+        self.defined_symbols
+            .insert(name, SymbolInfo { kind, line, column });
     }
 }
 

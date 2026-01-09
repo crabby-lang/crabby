@@ -1,4 +1,4 @@
-/**
+/*
 * MIT License
 *
 * Copyright (c) 2024 Kazooki123
@@ -23,12 +23,10 @@
 *
 */
 
-mod value;
-
-use crate::vm::Instructions;
 use crate::value::ValueVM;
+use crate::vm::Instructions;
 use std::fs::File;
-use std::io::{Read, Write, BufWriter, BufReader};
+use std::io::{BufReader, BufWriter, Read, Write};
 
 // Bytecode Crabby File Format (.cby)
 // Magic Number: "CRAB" (0x43524142)
@@ -81,7 +79,7 @@ impl BytecodeFile {
         Ok(())
     }
 
-    pub fn load_from_file(&self, filename: &str) -> Result<Self, Box<dyn  std::error::Error>> {
+    pub fn load_from_file(&self, filename: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let file = File::open(filename)?;
         let mut reader = BufReader::new(file);
 
@@ -123,10 +121,13 @@ impl BytecodeFile {
             instructions,
             constants,
         })
-
     }
 
-    fn write_value(&self, writer: &mut BufWriter<File>, value: &ValueVM) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_value(
+        &self,
+        writer: &mut BufWriter<File>,
+        value: &ValueVM,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         match value {
             ValueVM::Number(n) => {
                 writer.write_all(&[0x01])?;
@@ -148,7 +149,10 @@ impl BytecodeFile {
         Ok(())
     }
 
-    fn read_value(&self, reader: &mut BufReader<File>) -> Result<(), Box<dyn std::error::Error>> {
+    fn read_value(
+        &self,
+        reader: &mut BufReader<File>,
+    ) -> Result<ValueVM, Box<dyn std::error::Error>> {
         let mut type_tag = [0u8; 1];
         reader.read_exact(&mut type_tag)?;
 
@@ -177,7 +181,11 @@ impl BytecodeFile {
         }
     }
 
-    fn write_instruction(&self, writer: &mut BufWriter<File>, instruction: &Instructions) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_instruction(
+        &self,
+        writer: &mut BufWriter<File>,
+        instruction: &Instructions,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         writer.write_all(&[instruction.to_opcode()])?;
 
         match instruction {
@@ -193,7 +201,10 @@ impl BytecodeFile {
         Ok(())
     }
 
-    fn read_instructions(&self, reader: &mut BufReader<File>) -> Result<Instructions, Box<dyn std::error::Error>> {
+    fn read_instructions(
+        &self,
+        reader: &mut BufReader<File>,
+    ) -> Result<Instructions, Box<dyn std::error::Error>> {
         let mut opcode = [0u8; 1];
         reader.read_exact(&mut opcode)?;
 

@@ -2,14 +2,16 @@
 // By using lifetimes, Ownership and Borrowings. It makes Crabby memory safety as possible.
 // However, Memory safeties aren't always perfect, and Crabby is still in early development.
 
-use std::collections::HashMap;
+use crate::ast::{Expression, Program, Statement};
 use crate::utils::CrabbyError;
-use crate::ast::{Expression, Statement, Program};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 enum Lifetime {
     Static,
-    Local { scope_depth: u32 },
+    Local {
+        scope_depth: u32,
+    },
     Borrowed {
         from: String,
         scope_depth: u32,
@@ -52,22 +54,32 @@ impl MemoryChecker {
             Statement::Let { name, value } => {
                 self.check_expression(value)?;
 
-                self.ownership_map.insert(name.clone(), OwnershipInfo {
-                    lifetime: Lifetime::Local { scope_depth: self.current_scope },
-                    borrowed_count: 0,
-                    mut_borrowed: false,
-                    initialized: true,
-                });
+                self.ownership_map.insert(
+                    name.clone(),
+                    OwnershipInfo {
+                        lifetime: Lifetime::Local {
+                            scope_depth: self.current_scope,
+                        },
+                        borrowed_count: 0,
+                        mut_borrowed: false,
+                        initialized: true,
+                    },
+                );
             }
 
             Statement::Var { name, value } => {
                 self.check_expression(value)?;
-                self.ownership_map.insert(name.clone(), OwnershipInfo {
-                    lifetime: Lifetime::Local { scope_depth: self.current_scope },
-                    borrowed_count: 0,
-                    mut_borrowed: false,
-                    initialized: true,
-                });
+                self.ownership_map.insert(
+                    name.clone(),
+                    OwnershipInfo {
+                        lifetime: Lifetime::Local {
+                            scope_depth: self.current_scope,
+                        },
+                        borrowed_count: 0,
+                        mut_borrowed: false,
+                        initialized: true,
+                    },
+                );
             }
 
             Statement::Block(statements) => {
@@ -79,16 +91,28 @@ impl MemoryChecker {
                 self.current_scope -= 1;
             }
 
-            Statement::FunctionDef { name: _, params, body, return_type: _, docstring: _ } => {
+            Statement::FunctionDef {
+                name: _,
+                params,
+                body,
+                return_type: _,
+                docstring: _,
+                visibility: _,
+            } => {
                 self.current_scope += 1;
 
                 for param in params {
-                    self.ownership_map.insert(param.clone(), OwnershipInfo {
-                        lifetime: Lifetime::Local { scope_depth: self.current_scope },
-                        borrowed_count: 0,
-                        mut_borrowed: false,
-                        initialized: true,
-                    });
+                    self.ownership_map.insert(
+                        param.clone(),
+                        OwnershipInfo {
+                            lifetime: Lifetime::Local {
+                                scope_depth: self.current_scope,
+                            },
+                            borrowed_count: 0,
+                            mut_borrowed: false,
+                            initialized: true,
+                        },
+                    );
                 }
 
                 self.check_statement(body)?;
@@ -96,16 +120,28 @@ impl MemoryChecker {
                 self.current_scope -= 1;
             }
 
-            Statement::FunctionFun { name: _, params, body, return_type: _, docstring: _ } => {
+            Statement::FunctionFun {
+                name: _,
+                params,
+                body,
+                return_type: _,
+                docstring: _,
+                visibility: _,
+            } => {
                 self.current_scope += 1;
 
                 for param in params {
-                    self.ownership_map.insert(param.clone(), OwnershipInfo {
-                        lifetime: Lifetime::Local { scope_depth: self.current_scope },
-                        borrowed_count: 0,
-                        mut_borrowed: false,
-                        initialized: true,
-                    });
+                    self.ownership_map.insert(
+                        param.clone(),
+                        OwnershipInfo {
+                            lifetime: Lifetime::Local {
+                                scope_depth: self.current_scope,
+                            },
+                            borrowed_count: 0,
+                            mut_borrowed: false,
+                            initialized: true,
+                        },
+                    );
                 }
 
                 self.check_statement(body)?;
@@ -117,7 +153,11 @@ impl MemoryChecker {
                 self.check_expression(expr)?;
             }
 
-            Statement::ArrayAssign { array, index, value } => {
+            Statement::ArrayAssign {
+                array,
+                index,
+                value,
+            } => {
                 if let Expression::Variable(name) = array {
                     self.check_mutable_access(name)?;
                 }
@@ -133,7 +173,11 @@ impl MemoryChecker {
                 self.current_scope -= 1;
             }
 
-            Statement::If { condition, then_branch, else_branch } => {
+            Statement::If {
+                condition,
+                then_branch,
+                else_branch,
+            } => {
                 self.check_expression(condition)?;
 
                 self.current_scope += 1;
@@ -162,30 +206,40 @@ impl MemoryChecker {
         match expr {
             Expression::Variable(name) => {
                 if self.moved_variables.contains(name) {
-                    return Err(CrabbyError::InterpreterError(
-                        format!("Use of moved variable '{}'", name)
-                    ));
+                    return Err(CrabbyError::InterpreterError(format!(
+                        "Use of moved variable '{}'",
+                        name
+                    )));
                 }
 
                 if let Some(info) = self.ownership_map.get(name) {
                     if !info.initialized {
-                        return Err(CrabbyError::InterpreterError(
-                            format!("Use of uninitialized variable '{}'", name)
-                        ));
+                        return Err(CrabbyError::InterpreterError(format!(
+                            "Use of uninitialized variable '{}'",
+                            name
+                        )));
                     }
                 } else {
-                    return Err(CrabbyError::InterpreterError(
-                        format!("Use of undefined variable '{}'", name)
-                    ));
+                    return Err(CrabbyError::InterpreterError(format!(
+                        "Use of undefined variable '{}'",
+                        name
+                    )));
                 }
             }
 
-            Expression::Binary { left, operator: _, right } => {
+            Expression::Binary {
+                left,
+                operator: _,
+                right,
+            } => {
                 self.check_expression(left)?;
                 self.check_expression(right)?;
             }
 
-            Expression::Call { function: _, arguments } => {
+            Expression::Call {
+                function: _,
+                arguments,
+            } => {
                 for arg in arguments {
                     self.check_expression(arg)?;
                 }
@@ -210,26 +264,26 @@ impl MemoryChecker {
     fn check_mutable_access(&self, var_name: &str) -> Result<(), CrabbyError> {
         if let Some(info) = self.ownership_map.get(var_name) {
             if info.borrowed_count > 0 {
-                return Err(CrabbyError::InterpreterError(
-                    format!("Cannot mutably access '{}' while borrowed", var_name)
-                ));
+                return Err(CrabbyError::InterpreterError(format!(
+                    "Cannot mutably access '{}' while borrowed",
+                    var_name
+                )));
             }
             if info.mut_borrowed {
-                return Err(CrabbyError::InterpreterError(
-                    format!("Cannot access '{}' while mutably borrowed", var_name)
-                ));
+                return Err(CrabbyError::InterpreterError(format!(
+                    "Cannot access '{}' while mutably borrowed",
+                    var_name
+                )));
             }
         }
         Ok(())
     }
 
     fn cleanup_scope(&mut self, scope: u32) {
-        self.ownership_map.retain(|_, info| {
-            match info.lifetime {
-                Lifetime::Local { scope_depth } => scope_depth < scope,
-                Lifetime::Borrowed { scope_depth, .. } => scope_depth < scope,
-                Lifetime::Static => true,
-            }
+        self.ownership_map.retain(|_, info| match info.lifetime {
+            Lifetime::Local { scope_depth } => scope_depth < scope,
+            Lifetime::Borrowed { scope_depth, .. } => scope_depth < scope,
+            Lifetime::Static => true,
         });
 
         self.moved_variables.clear();
@@ -243,14 +297,16 @@ impl MemoryChecker {
         if let Some(info) = self.ownership_map.get(var_name) {
             if mutable {
                 if info.borrowed_count > 0 || info.mut_borrowed {
-                    return Err(CrabbyError::InterpreterError(
-                        format!("Cannot mutably borrow '{}' while already borrowed", var_name)
-                    ));
+                    return Err(CrabbyError::InterpreterError(format!(
+                        "Cannot mutably borrow '{}' while already borrowed",
+                        var_name
+                    )));
                 }
             } else if info.mut_borrowed {
-                return Err(CrabbyError::InterpreterError(
-                    format!("Cannot borrow '{}' while mutably borrowed", var_name)
-                ));
+                return Err(CrabbyError::InterpreterError(format!(
+                    "Cannot borrow '{}' while mutably borrowed",
+                    var_name
+                )));
             }
         }
         Ok(())

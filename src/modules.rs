@@ -1,16 +1,16 @@
 // Module handler for Crabby's import && export system
 
-use std::collections::{HashMap, HashSet};
 use crate::fs;
+use crate::lexer::TokenStream;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::value::Value;
-use crate::utils::CrabbyError;
-use crate::parser::*;
 use crate::interpreter::Interpreter;
-use crate::lexer::tokenize;
+use crate::parser::*;
+use crate::utils::CrabbyError;
+use crate::value::Value;
 
 pub struct ModuleCache {
     loaded: HashMap<PathBuf, Arc<Module>>,
@@ -21,7 +21,7 @@ pub struct ModuleCache {
 pub struct Module {
     pub variable: HashMap<String, Value>,
     pub public_items: HashMap<String, Value>,
-    pub private_items: HashMap<String, Value>
+    pub private_items: HashMap<String, Value>,
     pub exports: HashMap<String, Value>,
 }
 
@@ -70,7 +70,11 @@ impl Module {
         }
     }
 
-    pub async fn load_module(cache: &mut ModuleCache, current_file: &Path, source: &str) -> Result<Arc<Module>, CrabbyError> {
+    pub async fn load_module(
+        cache: &mut ModuleCache,
+        current_file: &Path,
+        source: &str,
+    ) -> Result<Arc<Module>, CrabbyError> {
         let resolved_path = Module::resolve_path(current_file, source);
 
         if let Some(module) = cache.loaded.get(&resolved_path) {
@@ -78,22 +82,32 @@ impl Module {
         }
 
         if cache.loading.contains(&resolved_path) {
-            return Err(CrabbyError::InterpreterError("Cyclic module import detected!".to_string()));
+            return Err(CrabbyError::InterpreterError(
+                "Cyclic module import detected!".to_string(),
+            ));
         }
 
         cache.loading.insert(resolved_path.clone());
 
         let source_code = fs::read_to_string(&resolved_path)?;
-        let tokens = tokenize(source_code).await?;
+        let tokens = TokenStream::tokenize(source_code)?;
 
-        let ast = parse(tokens).await?;
+        let ast = parse(tokens)?;
 
         let mut interpreter = Interpreter::new(Some(resolved_path.clone()));
-        interpreter.interpret(&ast).await?;
+        interpreter.interpret(&ast)?;
 
         let exports = interpreter.env.borrow().exports.clone();
+        let variable = interpreter.env.borrow().variable.clone();
+        let public_items = interpreter.env.borrow().public_items.clone();
+        let private_items = interpreter.env.borrow().private_items.clone();
 
-        let module = Arc::new(Module { exports });
+        let module = Arc::new(Module {
+            exports,
+            variable,
+            public_items,
+            private_items,
+        });
 
         cache.loaded.insert(resolved_path.clone(), module.clone());
 

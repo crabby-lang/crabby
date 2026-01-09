@@ -1,5 +1,5 @@
-use crate::lexer::{Token, TokenStream};
 use crate::ast::*;
+use crate::lexer::{Token, TokenStream};
 use crate::utils::{CrabbyError, ErrorLocation};
 
 pub struct Parser {
@@ -9,10 +9,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(tokens: TokenStream) -> Self {
-        Self {
-            tokens,
-            current: 0,
-        }
+        Self { tokens, current: 0 }
     }
 
     pub fn parse(&mut self) -> Result<Program, CrabbyError> {
@@ -57,7 +54,7 @@ impl Parser {
                 self.advance(); // consume 'return'
                 let expr = self.parse_expression()?;
                 Ok(Statement::Return(Box::new(expr)))
-            },
+            }
             // Token::Class => self.parse_class_statement(),
             // Token::Trait => self.parse_trait_statement(),
             // Token::Implement => self.parse_impl_statement(),
@@ -94,11 +91,11 @@ impl Parser {
                 } else {
                     Ok(Statement::Expression(expr))
                 }
-            },
+            }
             _ => {
                 let expr = self.parse_expression()?;
                 Ok(Statement::Expression(expr))
-            },
+            }
         }
     }
 
@@ -107,15 +104,15 @@ impl Parser {
             Token::Public => {
                 self.advance();
                 Ok(Visibility::Public)
-            },
+            }
             Token::Protect => {
                 self.advance();
                 Ok(Visibility::Protect)
-            },
+            }
             Token::Private => {
                 self.advance();
                 Ok(Visibility::Private)
-            },
+            }
             _ => Ok(Visibility::Private),
         }
     }
@@ -158,7 +155,7 @@ impl Parser {
             body: Box::new(body),
             return_type: String::new(),
             docstring: String::new(),
-            visibility,
+            visibility: Visibility::default(),
         })
     }
 
@@ -200,7 +197,7 @@ impl Parser {
             body: Box::new(body),
             return_type: String::new(),
             docstring: String::new(),
-            visibility,
+            visibility: Visibility::default(),
         })
     }
 
@@ -213,8 +210,9 @@ impl Parser {
         while !matches!(self.peek().token, Token::RBrace) {
             if !matches!(self.peek().token, Token::Case) {
                 return Err(CrabbyError::MissingCaseKeyword(ErrorLocation {
-                    line: span.line,
-                    column: span.column,
+                    // ASSUMPTION: `span.X` means `self.tokens.span.X`
+                    line: self.tokens.span.line,
+                    column: self.tokens.span.column,
                     message: "Expected 'case' keyword!".to_string(),
                 }));
             }
@@ -577,7 +575,7 @@ impl Parser {
                 } else {
                     Ok(expr)
                 }
-            },
+            }
         }
     }
 
@@ -722,7 +720,10 @@ impl Parser {
                 None
             };
 
-            variants.push(EnumVariant { name: variant_name, fields });
+            variants.push(EnumVariant {
+                name: variant_name,
+                fields,
+            });
 
             if matches!(self.peek().token, Token::Comma) {
                 self.advance();
@@ -901,7 +902,7 @@ impl Parser {
     }
 }
 
-pub async fn parse(tokens: Vec<TokenStream>) -> Result<Program, CrabbyError> {
+pub fn parse(tokens: Vec<TokenStream>) -> Result<Program, CrabbyError> {
     let mut parser = Parser::new(&tokens);
     parser.parse()
 }

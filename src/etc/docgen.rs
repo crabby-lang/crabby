@@ -18,7 +18,14 @@ impl Documentation {
 
         for node in statement {
             match node {
-                Statement::FunctionDef { name, params, body, return_type, docstring } => {
+                Statement::FunctionDef {
+                    name,
+                    params,
+                    body,
+                    return_type,
+                    docstring,
+                    visibility: _,
+                } => {
                     docs.push(Documentation {
                         name: name.clone(),
                         body: body.clone(),

@@ -1,4 +1,4 @@
-
+#[derive(Clone, Debug)]
 pub enum ValueVM {
     Number(f64),
     String(String),
