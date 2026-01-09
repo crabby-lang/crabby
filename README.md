@@ -15,7 +15,9 @@
 > [!WARNING]
 > **Crabby** is *still under development* with new features and bugs being fixed, if you encounter an error then that's **OUR** fault, and **we're still fixing it**. Crabby is **very new** due to the `rewrite update` and is still experiencing bugs and errors. **If you want to help out, please do!**
 
-<h3><b>Shout out to these wonderful programmers helping:</b></h3>
+<h3><b>Shout out to these wonderful programmers helping 🩷</b></h3>
+
+They're the reason why this project is still alive.
 
 <table>
   <tr>
