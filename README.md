@@ -25,6 +25,7 @@
   </tr>
   <tr>
     <td><a href="https://github.com/FlameF0X">@FlameFox</a></td>
+    <td><a href="https://github.com/DitherDude">@DitherDude</a></td>
   </tr>
 </table>
 
