@@ -19,7 +19,7 @@ pub enum Statement {
         body: Box<Statement>,
         return_type: String,
         docstring: String,
-        visibiity: Visibility,
+        visibility: Visibility,
     },
     FunctionFun {
         name: String,
@@ -27,7 +27,7 @@ pub enum Statement {
         body: Box<Statement>,
         return_type: String,
         docstring: String,
-        visibiity: Visibility,
+        visibility: Visibility,
     },
     Let {
         name: String,

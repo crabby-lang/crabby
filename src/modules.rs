@@ -1,6 +1,6 @@
 // Module handler for Crabby's import && export system
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use crate::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -19,9 +19,9 @@ pub struct ModuleCache {
 
 #[derive(Clone)]
 pub struct Module {
-    // pub variable: HashMap<String, Value>,
+    pub variable: HashMap<String, Value>,
     pub public_items: HashMap<String, Value>,
-    // pub private_items: HashMap<String, Value>
+    pub private_items: HashMap<String, Value>
     pub exports: HashMap<String, Value>,
 }
 
@@ -30,7 +30,8 @@ impl Module {
         Self {
             public_items: HashMap::new(),
             private_items: HashMap::new(),
-            variable: HashMap::new()
+            variable: HashMap::new(),
+            exports: HashMap::new(),
         }
     }
 
@@ -77,9 +78,27 @@ impl Module {
         }
 
         if cache.loading.contains(&resolved_path) {
-            return Err(CrabbyError::InterpreterError("Cyclic module import detected!").to_string());
+            return Err(CrabbyError::InterpreterError("Cyclic module import detected!".to_string()));
         }
 
         cache.loading.insert(resolved_path.clone());
+
+        let source_code = fs::read_to_string(&resolved_path)?;
+        let tokens = tokenize(source_code).await?;
+
+        let ast = parse(tokens).await?;
+
+        let mut interpreter = Interpreter::new(Some(resolved_path.clone()));
+        interpreter.interpret(&ast).await?;
+
+        let exports = interpreter.env.borrow().exports.clone();
+
+        let module = Arc::new(Module { exports });
+
+        cache.loaded.insert(resolved_path.clone(), module.clone());
+
+        cache.loading.remove(&resolved_path);
+
+        Ok(module)
     }
 }

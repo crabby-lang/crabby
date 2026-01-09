@@ -7,7 +7,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 use crate::utils::CrabbyError;
-use crate::ast::{Program, Statement, Expression, BinaryOp, PatternKind, MatchArm};
+use crate::ast::{Program, Statement, Expression, BinaryOp, PatternKind, MatchArm, Visibility};
 use crate::value::{Value, Function};
 use crate::parser::*;
 use crate::lexer::*;
@@ -25,7 +25,7 @@ pub struct Environment {
 }
 
 pub struct Interpreter {
-    env: Rc<RefCell<Environment>>,
+    pub env: Rc<RefCell<Environment>>,
     awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
     function_definitions: HashMap<String, Function>,
     call_stack: Vec<String>,
@@ -344,14 +344,14 @@ impl Interpreter {
                     body: body.clone(),
                 };
 
-                self.function_definitions.insert(name.clone(), function.clone())
+                self.function_definitions.insert(name.clone(), function.clone());
 
-                match visibilty {
+                match visibility {
                     Visibility::Public => {
                         self.module.public_items.insert(name, Value::Lambda(function));
                     }
                     Visibility::Private => {
-                        self.module.private_items.insert(name, Value::Lambda(function))
+                        self.module.private_items.insert(name, Value::Lambda(function));
                     }
                     _ => {}
                 }
@@ -378,14 +378,14 @@ impl Interpreter {
                     body: body.clone(),
                 };
 
-                self.function_definitions.insert(name.clone(), function.clone())
+                self.function_definitions.insert(name.clone(), function.clone());
 
-                match visibilty {
+                match visibility {
                     Visibility::Public => {
                         self.module.public_items.insert(name, Value::Lambda(function));
                     }
                     Visibility::Private => {
-                        self.module.private_items.insert(name, Value::Lambda(function))
+                        self.module.private_items.insert(name, Value::Lambda(function));
                     }
                     _ => {}
                 }
@@ -536,25 +536,17 @@ impl Interpreter {
                 Ok(Some(value))
             },
             Statement::Import { name, source } => {
-                if let Some(source_path) = source {
-                    let module = self.load_and_import_module(&name, &source_path)?;
-                    if let Some(value) = module.public_items.get(&name) {
-                        self.module.insert(name.clone(), value.clone());
-                        Ok(None)
-                    } else if module.private_items.contains_key(&name) {
-                        Err(CrabbyError::InterpreterError(format!(
-                            "Cannot import private item '{}' from module",
-                            name
-                        )))
-                    } else {
-                        Err(CrabbyError::InterpreterError(format!(
-                            "Item '{}' not found in module",
-                             name
-                        )))
-                    }
-                } else {
-                    Err(CrabbyError::InterpreterError("Standard library imports not yet implemented".to_string()))
-                }
+                let module = self.module_loader.load(
+                    self.current_file.as_ref().unwrap(),
+                    &source.unwrap(),
+                )?;
+
+                let value = module.exports.get(&name).ok_or_else(|| {
+                    CrabbyError::InterpreterError(format!("Item '{}' not found in module!", name))
+                })?;
+
+                self.env.borrow_mut().define(name, value.clone());
+                Ok(None)
             },
             // Statement::Macro { name, params, body } => {
             //    self.env.borrow().insert(name.clone(), Value::Lambda(Function {

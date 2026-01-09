@@ -158,6 +158,7 @@ impl Parser {
             body: Box::new(body),
             return_type: String::new(),
             docstring: String::new(),
+            visibility,
         })
     }
 
@@ -199,6 +200,7 @@ impl Parser {
             body: Box::new(body),
             return_type: String::new(),
             docstring: String::new(),
+            visibility,
         })
     }
 
@@ -236,27 +238,27 @@ impl Parser {
         })
     }
 
-    fn parse_macro_statement(&mut self) -> Result<Statement, CrabbyError> {
-        self.advance(); // consume 'macro'
-        let name = if let Token::Identifier(name) = &self.peek().token {
-            name.clone()
-        } else {
-            return Err(self.error("Expected macro name"));
-        };
-        self.advance();
+    // fn parse_macro_statement(&mut self) -> Result<Statement, CrabbyError> {
+    //    self.advance(); // consume 'macro'
+    //    let name = if let Token::Identifier(name) = &self.peek().token {
+    //        name.clone()
+    //    } else {
+    //        return Err(self.error("Expected macro name"));
+    //    };
+    //    self.advance();
 
-        let params = self.parse_params()?;
-        let body = self.parse_block()?;
+    //    let params = self.parse_params()?;
+    //    let body = self.parse_block()?;
 
-        Ok(Statement::Macro {
-            name,
-            params: params.join(","),
-            body: Box::new(Expression::Lambda {
-                params,
-                body: Box::new(body),
-            }),
-        })
-    }
+    //    Ok(Statement::Macro {
+    //        name,
+    //        params: params.join(","),
+    //        body: Box::new(Expression::Lambda {
+    //            params,
+    //            body: Box::new(body),
+    //        }),
+    //    })
+    // }
 
     pub fn parse_async_statement(&mut self) -> Result<Statement, CrabbyError> {
         self.advance(); // consume 'async'
