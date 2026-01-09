@@ -1,4 +1,4 @@
-/**
+/*
 * MIT License
 *
 * Copyright (c) 2024 Kazooki123
@@ -23,10 +23,8 @@
 *
 */
 
-mod value;
-
-use std::collections::HashMap;
 use crate::value::ValueVM;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub enum Instructions {
@@ -86,7 +84,7 @@ impl VM {
         Self {
             stack: Vec::new(),
             constants: Vec::new(),
-            variables: Vec::new(),
+            variables: HashMap::new(),
         }
     }
 
@@ -106,7 +104,10 @@ impl VM {
                     println!("{} #{}", instruction.opcode_name(), name);
                 }
                 Instructions::Print => {
-                    println!("{} #crab/lib/std/Print.print:(Lcrab/lang/Object;)V", instruction.opcode_name());
+                    println!(
+                        "{} #crab/lib/std/Print.print:(Lcrab/lang/Object;)V",
+                        instruction.opcode_name()
+                    );
                 }
                 _ => {
                     println!("{}", instruction.opcode_name());
@@ -144,18 +145,18 @@ impl VM {
         bytecode
     }
 
-    pub fn execute(&mut self, instructions: Vec<Instructions>) -> Option<ValueVM> {
+    pub fn execute(&mut self, instructions: &[Instructions]) -> Option<ValueVM> {
         for instruction in instructions {
             match instruction {
                 Instructions::LoadConstant(index) => {
-                    if let Some(value) = self.constants.get(index) {
+                    if let Some(value) = self.constants.get(*index) {
                         self.stack.push(value.clone());
                     } else {
                         panic!("Invalid constant index: {}", index);
                     }
                 }
                 Instructions::LoadVariable(name) => {
-                    if let Some(value) = self.variables.get(&name) {
+                    if let Some(value) = self.variables.get(name) {
                         self.stack.push(value.clone());
                     } else {
                         panic!("Undefined variable: {}", name);
@@ -163,7 +164,7 @@ impl VM {
                 }
                 Instructions::StoreVariable(name) => {
                     if let Some(value) = self.stack.pop() {
-                        self.variables.insert(name, value);
+                        self.variables.insert(name.to_string(), value);
                     } else {
                         panic!("Stack underflow when storing variable");
                     }
@@ -179,7 +180,7 @@ impl VM {
                         (ValueVM::String(a), ValueVM::String(b)) => {
                             self.stack.push(ValueVM::String(format!("{}{}", a, b)));
                         }
-                        _ => panic!("Cannot add these types")
+                        _ => panic!("Cannot add these types"),
                     }
                 }
                 Instructions::Subtract => {
@@ -241,4 +242,3 @@ impl VM {
         self.constants.len() - 1
     }
 }
-

@@ -1,7 +1,7 @@
 // Value file that defines what value **exist** in Crabby.
 
-use crate::utils::CrabbyError;
 use crate::ast::Statement;
+use crate::utils::CrabbyError;
 
 #[derive(Clone, PartialEq)]
 pub struct Function {
@@ -44,12 +44,10 @@ impl Value {
             Value::Lambda(_) => "<lambda>".to_string(),
             Value::Boolean(b) => b.to_string(),
             Value::Array(elements) => {
-                let elements_str: Vec<String> = elements.iter()
-                    .map(|e| e.to_string())
-                    .collect();
+                let elements_str: Vec<String> = elements.iter().map(|e| e.to_string()).collect();
                 format!("[{}]", elements_str.join(", "))
-            },
-            Value::Void => "void".to_string()
+            }
+            Value::Void => "void".to_string(),
         }
     }
 
@@ -60,9 +58,8 @@ impl Value {
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
             (Value::Array(a), Value::Array(b)) => {
-                a.len() == b.len() && 
-                a.iter().zip(b.iter()).all(|(x, y)| x.matches(y))
-            },
+                a.len() == b.len() && a.iter().zip(b.iter()).all(|(x, y)| x.matches(y))
+            }
             (Value::Void, Value::Void) => true,
             // Lambda comparison is always false since functions aren't comparable
             (Value::Lambda(_), Value::Lambda(_)) => false,
@@ -78,21 +75,22 @@ impl Value {
     //        (Value::Boolean(a), Value::Boolean(b)) => a == b,
     //        _ => false,
     //    }
-   // }
+    // }
 
     pub fn get_index(&self, index: i64) -> Result<Value, CrabbyError> {
         match self {
             Value::Array(elements) => {
                 if index < 0 || index >= elements.len() as i64 {
                     Err(CrabbyError::InterpreterError(format!(
-                        "Array index out of bounds: {}", index
+                        "Array index out of bounds: {}",
+                        index
                     )))
                 } else {
                     Ok(elements[index as usize].clone())
                 }
             }
             _ => Err(CrabbyError::InterpreterError(
-                "Cannot index non-array value".to_string()
+                "Cannot index non-array value".to_string(),
             )),
         }
     }

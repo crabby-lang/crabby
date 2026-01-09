@@ -1,24 +1,24 @@
+use crate::etc::deadcode::DeadCodeAnalyzer;
+use crate::parser::*;
 use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
-use crate::etc::deadcode::DeadCodeAnalyzer;
-use crate::parser::*;
 
-mod utils;
-mod lexer;
-mod parser;
 mod ast;
-mod interpreter;
-mod runtime;
-mod value;
-mod modules;
-mod repl;
 mod core;
 mod etc;
+mod interpreter;
+mod lexer;
+mod modules;
+mod parser;
+mod repl;
+mod runtime;
+mod utils;
+mod value;
 
 #[derive(Parser)]
 #[command(name = "crabby")]
-#[command(author="Kazooki123")]
+#[command(author = "Kazooki123")]
 #[command(about = "Crabby Programming Language Interpreter", long_about=None)]
 #[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(disable_version_flag = true)]
@@ -31,7 +31,6 @@ pub struct Cli {
 
     #[arg(long, help = "Analyze code for unused declarations")]
     deadcodewarn: bool,
-
     // #[arg(help = "REPL playground to test Crabby")]
     // repl: String,
 }
@@ -43,8 +42,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(input) = cli.input {
         let absolute_path = input.canonicalize().expect("Failed to get absolute path");
         let source = fs::read_to_string(&absolute_path).expect("Failed to read file");
-        let tokens = lexer::tokenize(source).await;
-        let ast = parse(tokens.expect("Failed to parse token")).await.expect("Failed to parse AST");
+        let tokens = lexer::TokenStream::tokenize(source);
+        let ast = parse(tokens.expect("Failed to parse token")).expect("Failed to parse AST");
         let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
         interpreter.interpret(&ast);
 

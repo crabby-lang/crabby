@@ -71,11 +71,17 @@ impl Expression {
                     return false;
                 }
                 a.iter().zip(b.iter()).all(|(x, y)| x.matches(y))
-            },
-            (Expression::Index { array: a1, index: i1 },
-             Expression::Index { array: a2, index: i2 }) => {
-                a1.matches(a2) && i1.matches(i2)
-            },
+            }
+            (
+                Expression::Index {
+                    array: a1,
+                    index: i1,
+                },
+                Expression::Index {
+                    array: a2,
+                    index: i2,
+                },
+            ) => a1.matches(a2) && i1.matches(i2),
             _ => false,
         }
     }
@@ -97,43 +103,61 @@ impl fmt::Display for Expression {
             Expression::Boolean(b) => write!(f, "{}", b),
             Expression::Range(count) => write!(f, "range({})", count),
             Expression::Pattern(pattern) => write!(f, "{:?}", pattern),
-            Expression::Where { expr, condition, body } => {
+            Expression::Where {
+                expr,
+                condition,
+                body,
+            } => {
                 write!(f, "{} where {} {}", expr, condition, body)
-            },
-            Expression::Binary { left, operator, right } => {
+            }
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => {
                 write!(f, "({} {} {})", left, operator, right)
-            },
-            Expression::FString { template, expressions: _ } => {
+            }
+            Expression::FString {
+                template,
+                expressions: _,
+            } => {
                 write!(f, "f\"{}\"", template)
-            },
+            }
             Expression::Await { expr } => {
                 write!(f, "await {}", expr)
-            },
-            Expression::Call { function, arguments } => {
-                write!(f, "{}({})", function,
-                    arguments.iter()
+            }
+            Expression::Call {
+                function,
+                arguments,
+            } => {
+                write!(
+                    f,
+                    "{}({})",
+                    function,
+                    arguments
+                        .iter()
                         .map(|arg| arg.to_string())
                         .collect::<Vec<_>>()
                         .join(", ")
                 )
-            },
+            }
             Expression::Lambda { params, body } => {
-                write!(f, "lambda({}) {}",
-                    params.join(", "),
-                    body
-                )
-            },
+                write!(f, "lambda({}) {}", params.join(", "), body)
+            }
             Expression::Array(elements) => {
-                write!(f, "[{}]",
-                    elements.iter()
+                write!(
+                    f,
+                    "[{}]",
+                    elements
+                        .iter()
                         .map(|e| e.to_string())
                         .collect::<Vec<_>>()
                         .join(", ")
                 )
-            },
+            }
             Expression::Index { array, index } => {
                 write!(f, "{}[{}]", array, index)
-            },
+            }
         }
     }
 }
@@ -156,13 +180,16 @@ impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Statement::Block(stmts) => {
-                write!(f, "{{ {} }}",
-                    stmts.iter()
+                write!(
+                    f,
+                    "{{ {} }}",
+                    stmts
+                        .iter()
                         .map(|stmt| stmt.to_string())
                         .collect::<Vec<_>>()
                         .join("; ")
                 )
-            },
+            }
             Statement::Expression(expr) => write!(f, "{}", expr),
             _ => write!(f, "{:?}", self),
         }
@@ -172,12 +199,21 @@ impl fmt::Display for Statement {
 impl fmt::Display for CrabbyError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            CrabbyError::LexerError(loc) => write!(f, "Lexer error at line {}, column {}: {}", 
-                loc.line, loc.column, loc.message),
-            CrabbyError::ParserError(loc) => write!(f, "Parser error at line {}, column {}: {}", 
-                loc.line, loc.column, loc.message),
-            CrabbyError::MissingCaseKeyword(loc) => write!(f, "Missing case keyword at line {}, column {}: {}", 
-                loc.line, loc.column, loc.message),
+            CrabbyError::LexerError(loc) => write!(
+                f,
+                "Lexer error at line {}, column {}: {}",
+                loc.line, loc.column, loc.message
+            ),
+            CrabbyError::ParserError(loc) => write!(
+                f,
+                "Parser error at line {}, column {}: {}",
+                loc.line, loc.column, loc.message
+            ),
+            CrabbyError::MissingCaseKeyword(loc) => write!(
+                f,
+                "Missing case keyword at line {}, column {}: {}",
+                loc.line, loc.column, loc.message
+            ),
             CrabbyError::InterpreterError(msg) => write!(f, "Interpreter error: {}", msg),
             CrabbyError::TypeError(msg) => write!(f, "Type error: {}", msg),
             CrabbyError::RuntimeError(msg) => write!(f, "Runtime error: {}", msg),
