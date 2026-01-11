@@ -139,6 +139,7 @@ pub enum Statement {
     Expression(Expression),
 }
 
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
     Integer(i64),

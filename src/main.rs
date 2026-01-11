@@ -37,6 +37,7 @@ pub struct Cli {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    unsafe { backtrace_on_stack_overflow::enable() };
     let cli = Cli::parse();
 
     if let Some(input) = cli.input {
@@ -44,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let source = fs::read_to_string(&absolute_path).expect("Failed to read file");
         let tokens = lexer::TokenStream::tokenize(source);
         let ast = parse(tokens.expect("Failed to parse token")).expect("Failed to parse AST");
-        let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
+        let interpreter = interpreter::Interpreter::new(Some(absolute_path));
         interpreter.interpret(&ast);
 
         // Shows the version of Crabby

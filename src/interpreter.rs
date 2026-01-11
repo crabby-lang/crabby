@@ -1,10 +1,8 @@
 use crate::fs;
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::future::Future;
 use std::path::PathBuf;
 use std::pin::Pin;
-use std::rc::Rc;
 
 use crate::ast::{BinaryOp, Expression, MatchArm, PatternKind, Program, Statement, Visibility};
 use crate::lexer::*;
@@ -21,15 +19,15 @@ const MAX_RECURSION_DEPTH: usize = 1000;
 
 pub struct Environment {
     variables: HashMap<String, Value>,
-    parent: Option<Rc<RefCell<Environment>>>,
+    parent: Option<Box<Environment>>,
 }
 
 pub struct Interpreter {
-    pub env: Rc<RefCell<Environment>>,
+    pub env: Environment,
     awaiting: Vec<Pin<Box<dyn Future<Output = Value>>>>,
     function_definitions: HashMap<String, Function>,
     call_stack: Vec<String>,
-    module: Module,
+    pub module: Module,
     current_file: Option<PathBuf>,
     recursion_depth: usize,
     // pub ffi_manager: FFIManager,
@@ -37,25 +35,25 @@ pub struct Interpreter {
 }
 
 impl Environment {
-    pub fn new() -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+    pub fn new() -> Self {
+        Self {
             variables: HashMap::new(),
             parent: None,
-        }))
+        }
     }
 
-    pub fn with_parent(parent: Rc<RefCell<Environment>>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+    pub fn with_parent(parent: Environment) -> Self {
+        Self {
             variables: HashMap::new(),
-            parent: Some(parent),
-        }))
+            parent: Some(Box::new(parent)),
+        }
     }
 
     pub fn get(&self, name: &str) -> Option<Value> {
         self.variables
             .get(name)
             .cloned()
-            .or_else(|| self.parent.as_ref().and_then(|p| p.borrow().get(name)))
+            .or_else(|| self.parent.as_ref().and_then(|p| p.get(name)))
     }
 
     pub fn insert(&mut self, name: String, value: Value) {
@@ -220,7 +218,7 @@ impl Interpreter {
         }
 
         self.recursion_depth += 1;
-        let lambda_opt = self.env.borrow().get(function);
+        let lambda_opt = self.env.get(function);
         let result = match lambda_opt {
             Some(Value::Lambda(lambda)) => self.handle_lambda_call(lambda.clone(), arguments),
             _ => {
@@ -245,7 +243,7 @@ impl Interpreter {
     ) -> Result<Value, CrabbyError> {
         for (param, arg) in lambda.params.iter().zip(arguments) {
             let arg_value = self.interpret_expression(arg)?;
-            self.env.borrow_mut().insert(param.clone(), arg_value);
+            self.env.insert(param.clone(), arg_value);
         }
 
         if let Some(value) = self.interpret_statement(&lambda.body)? {
@@ -371,7 +369,7 @@ impl Interpreter {
     }
 
     pub fn load_and_import_module(
-        mut self,
+        self,
         _import_name: &str,
         import_path: &str,
     ) -> Result<Module, CrabbyError> {
@@ -416,7 +414,7 @@ impl Interpreter {
                 };
 
                 self.function_definitions
-                    .insert(name.to_string(), function.clone()); //bruh `.clone()` a &String??
+                    .insert(name.to_string(), function.clone());
 
                 match visibility {
                     Visibility::Public => {
@@ -507,7 +505,7 @@ impl Interpreter {
                         .insert(var_name.clone(), interpreted_value.clone());
                 }
 
-                self.env.borrow().insert(var_name, interpreted_value);
+                self.env.insert(var_name, interpreted_value);
                 Ok(None)
             }
             Statement::Var { name, value } => {
@@ -530,7 +528,7 @@ impl Interpreter {
                         .insert(var_name.clone(), interpreted_value.clone());
                 }
 
-                self.env.borrow().insert(var_name, interpreted_value);
+                self.env.insert(var_name, interpreted_value);
                 Ok(None)
             }
             Statement::Const { name, value } => {
@@ -553,7 +551,7 @@ impl Interpreter {
                         .insert(var_name.clone(), interpreted_value.clone());
                 }
 
-                self.env.borrow().insert(var_name, interpreted_value);
+                self.env.insert(var_name, interpreted_value);
                 Ok(None)
             }
             Statement::AsyncFunction { .. } => Ok(None),
@@ -649,20 +647,21 @@ impl Interpreter {
                 let value = self.interpret_expression(expr)?;
                 Ok(Some(value))
             }
-            Statement::Import { name, source } => {
-                let module = self
-                    .module_loader
-                    .load(self.current_file.as_ref().unwrap(), &source.unwrap())?;
+            Statement::Import { name: _, source: _ } => {
+                // let module = self
+                //     .module_loader
+                //     .load(self.current_file.as_ref().unwrap(), &source.unwrap())?;
 
-                let value = module.exports.get(&name).ok_or_else(|| {
-                    CrabbyError::InterpreterError(format!("Item '{}' not found in module!", name))
-                })?;
+                // let value = module.exports.get(&name).ok_or_else(|| {
+                //     CrabbyError::InterpreterError(format!("Item '{}' not found in module!", name))
+                // })?;
 
-                self.env.borrow_mut().define(name, value.clone());
-                Ok(None)
+                // self.env.define(name, value.clone());
+                // Ok(None)
+                unimplemented!(/* I just want it to compile... */)
             }
             // Statement::Macro { name, params, body } => {
-            //    self.env.borrow().insert(name.clone(), Value::Lambda(Function {
+            //    self.env.insert(name.clone(), Value::Lambda(Function {
             //        params: vec![params.clone()],
             //        body: Box::new(Statement::Expression(*(*body).clone())),
             //    }));
@@ -676,9 +675,7 @@ impl Interpreter {
                 let iter_value = self.interpret_expression(iterator)?;
                 if let Value::Integer(n) = iter_value {
                     for i in 0..n {
-                        self.env
-                            .borrow()
-                            .insert(variable.clone(), Value::Integer(i));
+                        self.env.insert(variable.clone(), Value::Integer(i));
                         self.interpret_statement(body)?;
                     }
                     Ok(None)
@@ -694,7 +691,7 @@ impl Interpreter {
                 where_clause: _,
             } => {
                 let value = Value::String(format!("enum {}", name));
-                self.env.borrow().insert(name.clone(), value);
+                self.env.insert(name.clone(), value);
                 Ok(None)
             }
             Statement::Struct {
@@ -703,7 +700,7 @@ impl Interpreter {
                 where_clause: _where_clause,
             } => {
                 let value = Value::String(format!("struct {}", name));
-                self.env.borrow().insert(name.clone(), value);
+                self.env.insert(name.clone(), value);
                 Ok(None)
             }
             _ => Ok(None),
@@ -711,12 +708,13 @@ impl Interpreter {
     }
 
     pub fn interpret_expression(&mut self, expr: &Expression) -> Result<Value, CrabbyError> {
+        #[allow(unreachable_patterns)]
         match expr {
             Expression::Integer(n) => Ok(Value::Integer(*n)),
             Expression::Float(f) => Ok(Value::Float(*f)),
             Expression::String(s) => Ok(Value::String(s.clone())),
             Expression::Boolean(value) => Ok(Value::Integer(if *value { 1 } else { 0 })),
-            Expression::Variable(name) => self.env.borrow().get(&name).ok_or_else(|| {
+            Expression::Variable(name) => self.env.get(&name).ok_or_else(|| {
                 CrabbyError::InterpreterError(format!("Undefined variable: {}", name))
             }),
             Expression::Await { expr } => self.interpret_expression(expr),
@@ -737,7 +735,7 @@ impl Interpreter {
                     return self.handle_print(&arguments);
                 }
 
-                let lambda_opt = self.env.borrow().get(&function);
+                let lambda_opt = self.env.get(&function);
                 if let Some(Value::Lambda(lambda)) = lambda_opt {
                     let result = self.handle_lambda_call(lambda.clone(), &arguments);
                     self.call_stack.pop();
@@ -765,10 +763,7 @@ impl Interpreter {
                 let mut new_interpret = Interpreter::new(None);
                 for (param, arg) in func.params.iter().zip(arguments) {
                     let arg_value = self.interpret_expression(arg)?;
-                    new_interpret
-                        .env
-                        .borrow_mut()
-                        .insert(param.clone(), arg_value);
+                    new_interpret.env.insert(param.clone(), arg_value);
                 }
 
                 let result = match new_interpret.interpret_statement(&func.body) {

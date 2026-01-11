@@ -2,8 +2,8 @@ mod bytecode;
 pub mod value;
 mod vm;
 
-use super::compiler::Compiler;
 use bytecode::BytecodeFile;
+use compiler::Compiler;
 use vm::VM;
 
 fn main() {

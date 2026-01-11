@@ -3,12 +3,12 @@ use crate::lexer::{Token, TokenStream};
 use crate::utils::{CrabbyError, ErrorLocation};
 
 pub struct Parser {
-    tokens: TokenStream,
+    tokens: Vec<TokenStream>,
     current: usize,
 }
 
 impl Parser {
-    pub fn new(tokens: TokenStream) -> Self {
+    pub fn new(tokens: Vec<TokenStream>) -> Self {
         Self { tokens, current: 0 }
     }
 
@@ -210,9 +210,10 @@ impl Parser {
         while !matches!(self.peek().token, Token::RBrace) {
             if !matches!(self.peek().token, Token::Case) {
                 return Err(CrabbyError::MissingCaseKeyword(ErrorLocation {
-                    // ASSUMPTION: `span.X` means `self.tokens.span.X`
-                    line: self.tokens.span.line,
-                    column: self.tokens.span.column,
+                    // line: self.tokens.span.line,
+                    line: self.peek().span.line,
+                    // column: self.tokens.span.column,
+                    column: self.peek().span.column,
                     message: "Expected 'case' keyword!".to_string(),
                 }));
             }
@@ -366,7 +367,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, CrabbyError> {
-        let expr = self.parse_primary()?;
+        let expr = self.parse_primary()?; // SO point 1/2
 
         let _ = match &self.peek().token {
             Token::Await => self.parse_expression(),
@@ -560,21 +561,27 @@ impl Parser {
                 self.consume(&Token::RBracket, "Expected ']' after array elements")?;
                 Ok(Expression::Array(elements))
             }
-            _ => {
-                let expr = self.parse_expression()?;
+            x => {
+                // let expr = self.parse_expression()?; //SO point 2/2
 
-                if matches!(self.peek().token, Token::LBracket) {
-                    self.advance(); // consume '['
-                    let index = self.parse_expression()?;
-                    self.consume(&Token::RBracket, "Expected ']' after array index")?;
+                // if matches!(self.peek().token, Token::LBracket) {
+                //     self.advance(); // consume '['
+                //     let index = self.parse_expression()?;
+                //     self.consume(&Token::RBracket, "Expected ']' after array index")?;
 
-                    Ok(Expression::Index {
-                        array: Box::new(expr),
-                        index: Box::new(index),
-                    })
-                } else {
-                    Ok(expr)
-                }
+                //     Ok(Expression::Index {
+                //         array: Box::new(expr),
+                //         index: Box::new(index),
+                //     })
+                // } else {
+                //     Ok(expr)
+                // }
+                // Ok(Expression::String("Bruh".to_string()))
+                Err(CrabbyError::ParserError(ErrorLocation {
+                    line: 581,
+                    column: 0,
+                    message: format!("Unexpected {x:?} at this time."),
+                }))
             }
         }
     }
@@ -903,6 +910,6 @@ impl Parser {
 }
 
 pub fn parse(tokens: Vec<TokenStream>) -> Result<Program, CrabbyError> {
-    let mut parser = Parser::new(&tokens);
+    let mut parser = Parser::new(tokens);
     parser.parse()
 }

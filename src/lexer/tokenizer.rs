@@ -400,7 +400,7 @@ impl TokenStream {
                     tokens.push(Self {
                         token,
                         span,
-                        len,
+                        len: String::default(), // FIX
                         slice: lex.slice().to_string(),
                         source: source.clone(),
                     });
