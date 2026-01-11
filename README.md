@@ -27,7 +27,7 @@ They're the reason why this project is still alive.
   </tr>
   <tr>
     <td><a href="https://github.com/FlameF0X">@FlameFox</a></td>
-    <td><a href="https://github.com/DitherDude">@DitherDude</a></td>
+    <td>⭐ <a href="https://github.com/DitherDude">@DitherDude</a></td>
   </tr>
 </table>
 
