@@ -367,7 +367,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, CrabbyError> {
-        let expr = self.parse_primary()?;
+        let expr = self.parse_primary()?; // SO point 1/2
 
         let _ = match &self.peek().token {
             Token::Await => self.parse_expression(),
@@ -561,21 +561,27 @@ impl Parser {
                 self.consume(&Token::RBracket, "Expected ']' after array elements")?;
                 Ok(Expression::Array(elements))
             }
-            _ => {
-                let expr = self.parse_expression()?;
+            x => {
+                // let expr = self.parse_expression()?; //SO point 2/2
 
-                if matches!(self.peek().token, Token::LBracket) {
-                    self.advance(); // consume '['
-                    let index = self.parse_expression()?;
-                    self.consume(&Token::RBracket, "Expected ']' after array index")?;
+                // if matches!(self.peek().token, Token::LBracket) {
+                //     self.advance(); // consume '['
+                //     let index = self.parse_expression()?;
+                //     self.consume(&Token::RBracket, "Expected ']' after array index")?;
 
-                    Ok(Expression::Index {
-                        array: Box::new(expr),
-                        index: Box::new(index),
-                    })
-                } else {
-                    Ok(expr)
-                }
+                //     Ok(Expression::Index {
+                //         array: Box::new(expr),
+                //         index: Box::new(index),
+                //     })
+                // } else {
+                //     Ok(expr)
+                // }
+                // Ok(Expression::String("Bruh".to_string()))
+                Err(CrabbyError::ParserError(ErrorLocation {
+                    line: 581,
+                    column: 0,
+                    message: format!("Unexpected {x:?} at this time."),
+                }))
             }
         }
     }

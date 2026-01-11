@@ -8,12 +8,7 @@ version = "1.2.1"
 repository = "https://github.com/crabby-lang/crabby"
 edition = "2024"
 license = "GPL-3.0-only"
-exclude = [
-    "extension/*",
-    "examples/*",
-    "docs/*",
-    "target/*",
-]
+exclude = ["extension/*", "examples/*", "docs/*", "target/*"]
 # build = "build.rs"
 
 [[bin]]
@@ -21,10 +16,7 @@ name = "crabby"
 path = "src/main.rs"
 
 [workspace]
-members = [
-    "src/compiler",
-    "src/vm"
-]
+members = ["src/compiler", "src/vm"]
 
 [dependencies]
 logos = "0.14.1"
@@ -43,8 +35,9 @@ serde = "1.0"
 ash = "0.38.0"
 libloading = "0.8.5"
 pest = { version = "2", default-features = false }
-pest_derive = { version = "2", default-features = false}
+pest_derive = { version = "2", default-features = false }
 typedef = "0.3"
+backtrace-on-stack-overflow = "0.3.0"
 
 # For WASM
 wasm-bindgen = "0.2"

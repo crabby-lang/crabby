@@ -37,6 +37,7 @@ pub struct Cli {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    unsafe { backtrace_on_stack_overflow::enable() };
     let cli = Cli::parse();
 
     if let Some(input) = cli.input {
