@@ -3,12 +3,12 @@ use crate::lexer::{Token, TokenStream};
 use crate::utils::{CrabbyError, ErrorLocation};
 
 pub struct Parser {
-    tokens: TokenStream,
+    tokens: Vec<TokenStream>,
     current: usize,
 }
 
 impl Parser {
-    pub fn new(tokens: TokenStream) -> Self {
+    pub fn new(tokens: Vec<TokenStream>) -> Self {
         Self { tokens, current: 0 }
     }
 
@@ -210,9 +210,10 @@ impl Parser {
         while !matches!(self.peek().token, Token::RBrace) {
             if !matches!(self.peek().token, Token::Case) {
                 return Err(CrabbyError::MissingCaseKeyword(ErrorLocation {
-                    // ASSUMPTION: `span.X` means `self.tokens.span.X`
-                    line: self.tokens.span.line,
-                    column: self.tokens.span.column,
+                    // line: self.tokens.span.line,
+                    line: self.peek().span.line,
+                    // column: self.tokens.span.column,
+                    column: self.peek().span.column,
                     message: "Expected 'case' keyword!".to_string(),
                 }));
             }
@@ -903,6 +904,6 @@ impl Parser {
 }
 
 pub fn parse(tokens: Vec<TokenStream>) -> Result<Program, CrabbyError> {
-    let mut parser = Parser::new(&tokens);
+    let mut parser = Parser::new(tokens);
     parser.parse()
 }

@@ -5,7 +5,6 @@ use crate::lexer::TokenStream;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use crate::interpreter::Interpreter;
 use crate::parser::*;
@@ -94,13 +93,17 @@ impl Module {
 
         let ast = parse(tokens)?;
 
-        let mut interpreter = Interpreter::new(Some(resolved_path.clone()));
-        interpreter.interpret(&ast)?;
+        let interpreter = Interpreter::new(Some(resolved_path.clone()));
 
-        let exports = interpreter.env.borrow().exports.clone();
-        let variable = interpreter.env.borrow().variable.clone();
-        let public_items = interpreter.env.borrow().public_items.clone();
-        let private_items = interpreter.env.borrow().private_items.clone();
+        // let exports = interpreter.env.exports.clone();
+        // let variable = interpreter.env.variable.clone();
+        // let public_items = interpreter.env.public_items.clone();
+        // let private_items = interpreter.env.private_items.clone();
+        let exports = interpreter.module.exports.clone();
+        let variable = interpreter.module.variable.clone();
+        let public_items = interpreter.module.public_items.clone();
+        let private_items = interpreter.module.private_items.clone();
+        interpreter.interpret(&ast)?;
 
         let module = Arc::new(Module {
             exports,

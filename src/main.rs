@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let source = fs::read_to_string(&absolute_path).expect("Failed to read file");
         let tokens = lexer::TokenStream::tokenize(source);
         let ast = parse(tokens.expect("Failed to parse token")).expect("Failed to parse AST");
-        let mut interpreter = interpreter::Interpreter::new(Some(absolute_path));
+        let interpreter = interpreter::Interpreter::new(Some(absolute_path));
         interpreter.interpret(&ast);
 
         // Shows the version of Crabby
