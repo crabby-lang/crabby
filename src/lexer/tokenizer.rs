@@ -361,7 +361,7 @@ pub struct TokenStream {
 }
 
 impl TokenStream {
-    // y was this `async`?
+    // yeah my bad for even making this async in the first place :p
     pub fn tokenize(source: String) -> Result<Vec<Self>, CrabbyError> {
         let mut tokens = Vec::new();
         let mut lex = Token::lexer(&source);
