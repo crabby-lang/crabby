@@ -2,7 +2,7 @@
 name = "crabvm"
 description = "Bytecode VM for Crabby"
 authors = ["Kazooki123 <mgamerdinge146@gmail.com>"]
-version = "0.1.0"
+version = "0.1.0-beta"
 edition = "2024"
 license = "MIT"
 

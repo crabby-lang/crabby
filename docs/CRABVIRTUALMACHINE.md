@@ -112,12 +112,16 @@ The **Crabby Virtual Machine (CVM)** is a custom bytecode-based execution engine
 EXAMPLE:
 
 ```plain
+[MAGIC]
+
 [0x01][0x00][0x03] => LOAD_CONST 3
 
 [0x02] => ADD
+```
 
-5. STACK BEHAVIOR
+## 5. STACK BEHAVIOR
 
+```plain
 Example for 1 + 2:
 
 INSTRUCTIONS:

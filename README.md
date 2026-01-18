@@ -362,5 +362,3 @@ Thanks goes to these wonderful people that used to help this project! 👨‍�
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=crabby-lang/crabby&type=date&legend=top-left)](https://www.star-history.com/#crabby-lang/crabby&type=date&legend=top-left)
-
-

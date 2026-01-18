@@ -1,7 +1,7 @@
 /*
 * MIT License
 *
-* Copyright (c) 2024 Kazooki123
+* Copyright (c) 2026 Kazooki123
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,10 @@ pub enum Instructions {
     Subtract,
     Multiply,
     Divide,
+    Push,
     Pop,
     Return,
+    Halt
 }
 
 // A set of Instructions
@@ -52,8 +54,10 @@ impl Instructions {
             Instructions::Multiply => 0x12,
             Instructions::Divide => 0x13,
             Instructions::Print => 0x20,
+            Instructions::Push => 0x60,
             Instructions::Pop => 0x30,
             Instructions::Return => 0x31,
+            Instructions::Halt => 0x55
         }
     }
 
@@ -67,8 +71,10 @@ impl Instructions {
             Instructions::Multiply => "imul",
             Instructions::Divide => "idiv",
             Instructions::Print => "invokevirtual",
+            Instructions::Push => "push",
             Instructions::Pop => "pop",
             Instructions::Return => "return",
+            Instructions::Halt => "halt"
         }
     }
 }
@@ -224,11 +230,17 @@ impl VM {
                         panic!("Stack underflow when printing");
                     }
                 }
+                Instructions::Push => {
+                    self.stack.push();
+                }
                 Instructions::Pop => {
                     self.stack.pop();
                 }
                 Instructions::Return => {
                     return self.stack.pop();
+                }
+                Instructions::Halt => {
+                    break;
                 }
             }
         }
